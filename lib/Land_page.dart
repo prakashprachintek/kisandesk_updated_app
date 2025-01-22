@@ -11,7 +11,10 @@ class LandPage extends StatefulWidget {
 
 class _LandPageState extends State<LandPage> {
   List<Map<String, dynamic>> landItems = []; // Dynamic list to store fetched land data
-  List<Map<String, dynamic>> favoriteItems = []; // List to store favorite items
+  List<Map<String, dynamic>> favoriteItems = [];
+  String errorMessage = '';
+  TextEditingController searchController = TextEditingController();
+  String selectedFilter = '';// List to store favorite items
 
   bool isLoading = true;
 
@@ -51,7 +54,7 @@ class _LandPageState extends State<LandPage> {
               'price': item['price'] ?? 0,
               'description': item['description'] ?? 'No description available',
               'location': item['village'] ?? 'Unknown location',
-              'image': item['image'] ?? ' assets/land1.jpg',
+              'image': item['post_url'] ?? ' assets/land1.jpg',
               'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
               'Phone': farmerDetails?['phone'] ?? 'N/A',
             };
@@ -86,6 +89,59 @@ class _LandPageState extends State<LandPage> {
     });
   }
 
+  void applyFilter(String filter) {
+    setState(() {
+      selectedFilter = filter;
+      if (filter == 'Price: Low to High') {
+        landItems.sort((a, b) => a['price'].compareTo(b['price']));
+      } else if (filter == 'Price: High to Low') {
+        landItems.sort((a, b) => b['price'].compareTo(a['price']));
+      }
+    });
+  }
+  void showFilterDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Filter',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(height: 10),
+              RadioListTile<String>(
+                title: Text('Price: Low to High'),
+                value: 'Price: Low to High',
+                groupValue: selectedFilter,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  if (value != null) applyFilter(value);
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('Price: High to Low'),
+                value: 'Price: High to Low',
+                groupValue: selectedFilter,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  if (value != null) applyFilter(value);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,6 +152,7 @@ class _LandPageState extends State<LandPage> {
           child: Container(
             height: 40,
             child: TextField(
+              controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search Land",
                 hintStyle: TextStyle(color: Colors.white),
@@ -107,20 +164,23 @@ class _LandPageState extends State<LandPage> {
                 ),
                 prefixIcon: Icon(Icons.search, color: Colors.white),
               ),
+              onChanged: (value) {
+                setState(() {
+                  landItems = landItems
+                      .where((item) => item['name']
+                      .toString()
+                      .toLowerCase()
+                      .contains(value.toLowerCase()))
+                      .toList();
+                });
+              },
             ),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.favorite, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => FavoritePage(favoriteItems: favoriteItems),
-                ),
-              );
-            },
+            icon: Icon(Icons.filter_list_sharp, color: Colors.white, size: 30,),
+            onPressed: () => showFilterDialog(context),
           ),
         ],
       ),
@@ -133,7 +193,7 @@ class _LandPageState extends State<LandPage> {
         child: GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 2 / 2.5,
+            childAspectRatio: 2 / 2.7,
             mainAxisSpacing: 8.0,
             crossAxisSpacing: 8.0,
           ),
@@ -200,7 +260,9 @@ class LandCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          // Fixed height for the image
+          SizedBox(
+            height: 150, // Set a fixed height for the image
             child: ClipRRect(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10),
@@ -222,26 +284,30 @@ class LandCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        maxLines: 2, // Allows wrapping to a maximum of 2 lines
+                        overflow: TextOverflow.ellipsis, // Displays '...' if text overflows
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      price,
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                      SizedBox(height: 4),
+                      Text(
+                        price,
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 IconButton(
                   icon: Icon(

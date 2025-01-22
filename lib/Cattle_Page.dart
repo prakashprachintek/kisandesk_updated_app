@@ -14,6 +14,8 @@ class _CattlePageState extends State<CattlePage> {
   List<Map<String, dynamic>> favoriteItems = [];
   bool isLoading = true;
   String errorMessage = '';
+  TextEditingController searchController = TextEditingController();
+  String selectedFilter = '';
 
   @override
   void initState() {
@@ -44,13 +46,15 @@ class _CattlePageState extends State<CattlePage> {
               final farmerDetails = item['farmerDetails']?.isNotEmpty == true
                   ? item['farmerDetails'][0]
                   : null;
+              // Extract the image URL (post_url) from the API response
+            //  String postUrl = item['post_url'] ?? 'assets/cattle.jpg'; // Default to local image if not available
 
               return {
                 'name': item['post_name'] ?? 'Unknown Cattle',
                 'price': item['price'] ?? 0,
                 'description': item['description'] ?? 'No description available',
                 'location': item['village'] ?? 'Unknown location',
-                'image': 'assets/cattle.jpg',
+                'image': item['post_url'] ?? 'assets/cattle.jpg',
                 'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
                 'Phone': farmerDetails?['phone'] ?? 'N/A',
               };
@@ -84,6 +88,59 @@ class _CattlePageState extends State<CattlePage> {
     });
   }
 
+  void applyFilter(String filter) {
+    setState(() {
+      selectedFilter = filter;
+      if (filter == 'Price: Low to High') {
+        cattleItems.sort((a, b) => a['price'].compareTo(b['price']));
+      } else if (filter == 'Price: High to Low') {
+        cattleItems.sort((a, b) => b['price'].compareTo(a['price']));
+      }
+    });
+  }
+  void showFilterDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Filter',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(height: 10),
+              RadioListTile<String>(
+                title: Text('Price: Low to High'),
+                value: 'Price: Low to High',
+                groupValue: selectedFilter,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  if (value != null) applyFilter(value);
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('Price: High to Low'),
+                value: 'Price: High to Low',
+                groupValue: selectedFilter,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  if (value != null) applyFilter(value);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,6 +151,7 @@ class _CattlePageState extends State<CattlePage> {
           child: Container(
             height: 40,
             child: TextField(
+              controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search Cattle",
                 hintStyle: TextStyle(color: Colors.white),
@@ -105,21 +163,23 @@ class _CattlePageState extends State<CattlePage> {
                 ),
                 prefixIcon: Icon(Icons.search, color: Colors.white),
               ),
+              onChanged: (value) {
+                setState(() {
+                  cattleItems = cattleItems
+                      .where((item) => item['name']
+                      .toString()
+                      .toLowerCase()
+                      .contains(value.toLowerCase()))
+                      .toList();
+                });
+              },
             ),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.favorite, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      FavoritePage(favoriteItems: favoriteItems),
-                ),
-              );
-            },
+            icon: Icon(Icons.filter_list_sharp, color: Colors.white, size: 30,),
+            onPressed: () => showFilterDialog(context),
           ),
         ],
       ),
@@ -144,7 +204,7 @@ class _CattlePageState extends State<CattlePage> {
         child: GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 2 / 2.5,
+            childAspectRatio: 2 / 2.7,
             mainAxisSpacing: 8.0,
             crossAxisSpacing: 8.0,
           ),
@@ -165,8 +225,8 @@ class _CattlePageState extends State<CattlePage> {
                       imagePath: cattleItem['image'],
                       location: cattleItem['location'] ?? 'Unknown location', // Make sure location is not null
                       description: cattleItem['description'] ?? 'No description available', // Make sure description is not null
-                      FarmerName: cattleItem['farmerName'],
-                      Phone: cattleItem['phone'],
+                      FarmerName: cattleItem['FarmerName'], // Pass full name
+                      Phone: cattleItem['Phone'], // Pass phone
                       review: 'This is a sample review.',
                     ),
                   ),
@@ -212,7 +272,9 @@ class CattleCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          // Fixed height for the image
+          SizedBox(
+            height: 150, // Set a fixed height for the image
             child: ClipRRect(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10),
@@ -223,7 +285,8 @@ class CattleCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 errorBuilder: (context, error, stackTrace) => Image.asset(
-                  'assets/cattle.jpg',
+                  'assets/cattle'
+                      '.jpg',
                   fit: BoxFit.cover,
                 ),
               ),
@@ -234,26 +297,30 @@ class CattleCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        maxLines: 2, // Allows wrapping to a maximum of 2 lines
+                        overflow: TextOverflow.ellipsis, // Displays '...' if text overflows
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      price,
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                      SizedBox(height: 4),
+                      Text(
+                        price,
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 IconButton(
                   icon: Icon(

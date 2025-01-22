@@ -1,52 +1,50 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'CattleDetailsPage.dart';
-import 'favoritePage.dart';
 import 'Cropdetails_page.dart';
+import 'machinerydetailspage.dart';
+import 'favoritePage.dart';
 
-class CropsPage extends StatefulWidget {
+class CropsPage  extends StatefulWidget {
   @override
   _CropsPageState createState() => _CropsPageState();
 }
 
-class _CropsPageState extends State<CropsPage> {
-  List<Map<String, dynamic>> CropsItems = [];
-  List<Map<String, dynamic>> favoriteItems = [];
+class _CropsPageState extends State<CropsPage > {
+  List<Map<String, dynamic>> CropsItems  = []; // List to store machinery items
+  List<Map<String, dynamic>> favoriteItems = []; // List to store favorite machinery items
   bool isLoading = true;
   String errorMessage = '';
+  TextEditingController searchController = TextEditingController();
+  String selectedFilter = '';
 
   @override
   void initState() {
     super.initState();
-    fetchCropsPosts();
+    fetchMachineryPosts();
   }
 
-  Future<void> fetchCropsPosts() async {
-
-
-    const String url = 'http://3.110.121.159/api/admin/getAll_market_post';
+  // Fetch machinery posts from API
+  Future<void> fetchMachineryPosts() async {
+    const String url = 'http://3.110.121.159/api/admin/getAll_market_post'; // Replace with your API endpoint
     try {
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "category": "adati",
+          "category": "crop",  // Adjust the category for machinery
           "search": "",
           "currentPage": "1",
           "pageSize": "10",
         }),
       );
 
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Response data: $data');  // Debug: Check the full API response
-
         final results = data['results']; // Accessing the results key
         if (results != null) {
           setState(() {
-            CropsItems =  results.map<Map<String, dynamic>>((item) {
+            CropsItems  = results.map<Map<String, dynamic>>((item) {
               final farmerDetails = (item['farmerDetails'] as List?)?.isNotEmpty == true
                   ? item['farmerDetails'][0]
                   : null;
@@ -54,9 +52,10 @@ class _CropsPageState extends State<CropsPage> {
               return {
                 'name': item['post_name'] ?? 'Unknown Machinery',
                 'price': item['price'] ?? 0,
+                'quantity':item['quantity'] ?? 0,
                 'description': item['description'] ?? 'No description available',
                 'location': item['village'] ?? 'Unknown location',
-                'image': item['image'] ?? 'assets/rice1.jpg',
+                'image': item['post_url'] ?? 'assets/machinery1.webp',
                 'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
                 'Phone': farmerDetails?['phone'] ?? 'N/A',
               };
@@ -76,18 +75,71 @@ class _CropsPageState extends State<CropsPage> {
       setState(() {
         isLoading = false;
       });
-      print('Error fetching Crops posts: $e');
+      print('Error fetching machinery posts: $e');
     }
   }
 
-  void toggleFavorite(Map<String, dynamic> CropsItem) {
+  void toggleFavorite(Map<String, dynamic> machineryItem) {
     setState(() {
-      if (favoriteItems.contains(CropsItem)) {
-        favoriteItems.remove(CropsItem);
+      if (favoriteItems.contains(machineryItem)) {
+        favoriteItems.remove(machineryItem);
       } else {
-        favoriteItems.add(CropsItem);
+        favoriteItems.add(machineryItem);
       }
     });
+  }
+
+  void applyFilter(String filter) {
+    setState(() {
+      selectedFilter = filter;
+      if (filter == 'Price: Low to High') {
+        CropsItems .sort((a, b) => a['price'].compareTo(b['price']));
+      } else if (filter == 'Price: High to Low') {
+        CropsItems .sort((a, b) => b['price'].compareTo(a['price']));
+      }
+    });
+  }
+  void showFilterDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Filter',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(height: 10),
+              RadioListTile<String>(
+                title: Text('Price: Low to High'),
+                value: 'Price: Low to High',
+                groupValue: selectedFilter,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  if (value != null) applyFilter(value);
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('Price: High to Low'),
+                value: 'Price: High to Low',
+                groupValue: selectedFilter,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  if (value != null) applyFilter(value);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -100,6 +152,7 @@ class _CropsPageState extends State<CropsPage> {
           child: Container(
             height: 40,
             child: TextField(
+              controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search Crops",
                 hintStyle: TextStyle(color: Colors.white),
@@ -111,51 +164,53 @@ class _CropsPageState extends State<CropsPage> {
                 ),
                 prefixIcon: Icon(Icons.search, color: Colors.white),
               ),
+              onChanged: (value) {
+                setState(() {
+                  CropsItems  = CropsItems
+                      .where((item) => item['name']
+                      .toString()
+                      .toLowerCase()
+                      .contains(value.toLowerCase()))
+                      .toList();
+                });
+              },
             ),
           ),
         ),
-        // Removed favorite button from actions
+        actions: [
+          IconButton(
+            icon: Icon(Icons.filter_list_sharp, color: Colors.white, size: 30,),
+            onPressed: () => showFilterDialog(context),
+          ),
+        ],
       ),
-
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : errorMessage.isNotEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(errorMessage),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: fetchCropsPosts,
-              child: Text('Retry'),
-            ),
-          ],
-        ),
-      )
+          : CropsItems .isEmpty
+          ? Center(child: Text('No machinery posts found.'))
           : Padding(
         padding: const EdgeInsets.all(16.0),
         child: GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 2 / 2.5,
+            childAspectRatio: 2 / 2.9,
             mainAxisSpacing: 8.0,
             crossAxisSpacing: 8.0,
           ),
-          itemCount: CropsItems.length,
+          itemCount: CropsItems .length,
           itemBuilder: (context, index) {
             final CropsItem = CropsItems[index];
+            final isFavorited = favoriteItems.contains(CropsItem);
 
             return GestureDetector(
               onTap: () {
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CropsDetailsPage(
                       name: CropsItem['name'],
-                      quantity: '${CropsItem['quantity']} kg',
                       price: '₹${CropsItem['price']}',
+                      quantity: '${CropsItem['quantity']} kg',
                       imagePath: CropsItem['image'],
                       location: CropsItem['location'] ?? 'Unknown location', // Make sure location is not null
                       description: CropsItem['description'] ?? 'No description available', // Make sure description is not null
@@ -166,11 +221,13 @@ class _CropsPageState extends State<CropsPage> {
                   ),
                 );
               },
-              child:CropsCard(
+              child: CropsCard(
                 name: CropsItem['name'],
                 price: '₹${CropsItem['price']}',
-                quantity: '${CropsItem['quantity']} kg', // Replace 'kg' with appropriate unit
                 imagePath: CropsItem['image'],
+                quantity: '${CropsItem['quantity']} kg', // Replace 'kg' with appropriate unit
+                // isFavorited: isFavorited,
+                // onFavoritePressed: () => toggleFavorite(CropsItem),
               ),
             );
           },
@@ -203,7 +260,8 @@ class CropsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          SizedBox(
+            height: 150, // Set a fixed height for the image
             child: ClipRRect(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10),
@@ -212,7 +270,6 @@ class CropsCard extends StatelessWidget {
               child: Image.network(
                 imagePath,
                 fit: BoxFit.cover,
-
                 width: double.infinity,
                 errorBuilder: (context, error, stackTrace) => Image.asset(
                   'assets/rice.jpg',
@@ -232,6 +289,8 @@ class CropsCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
+                  maxLines: 2, // Allows wrapping to a maximum of 2 lines
+                  overflow: TextOverflow.ellipsis, // Displays '...' if text overflows
                 ),
                 SizedBox(height: 4),
                 Text(

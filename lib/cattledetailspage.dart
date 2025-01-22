@@ -4,12 +4,12 @@ import 'package:share_plus/share_plus.dart'; // Import share_plus package
 class CattleDetailsPage extends StatefulWidget {
   final String name;
   final String price;
-  final String imagePath;
+  final String imagePath; // Main image from API
   final String location;
   final String description;
   final String review;
-  final String FarmerName;
-  final String Phone;
+  final String FarmerName; // Farmer's name
+  final String Phone; // Phone number
 
   const CattleDetailsPage({
     required this.name,
@@ -27,28 +27,14 @@ class CattleDetailsPage extends StatefulWidget {
 }
 
 class _CattleDetailsPageState extends State<CattleDetailsPage> {
-  late String selectedImage;
   double _selectedRating = 0.0;
-
-  // List of thumbnails
-  final List<String> imageThumbnails = [
-    'assets/cattle1.jpg',
-    'assets/cattle2.webp',
-    'assets/cattle1.jpg',
-    'assets/cattle2.webp',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    selectedImage = widget.imagePath; // Set initial image
-  }
 
   void _onStarTap(double rating) {
     setState(() {
       _selectedRating = rating;
     });
   }
+
   // Method to handle sharing the product details
   void _shareProductDetails() {
     String productDetails =
@@ -56,7 +42,7 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
         'Price: ${widget.price}\n'
         'Location: ${widget.location}\n'
         'Description: ${widget.description}\n'
-        'Farmer: ${widget.FarmerName}\n'
+        'Farmer Name: ${widget.FarmerName}\n'
         'Phone: ${widget.Phone}\n'
         'Rating: $_selectedRating stars\n';
 
@@ -68,7 +54,7 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Cattle Details',
+          'CattleDetails',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Color(0xFF00AD83),
@@ -90,51 +76,19 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
-                  image: AssetImage(selectedImage),
+                  image: NetworkImage(widget.imagePath),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-            SizedBox(height: 10),
-
-            // Image Thumbnails
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: imageThumbnails.map((image) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedImage = image;
-                    });
-                  },
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    margin: EdgeInsets.symmetric(horizontal: 1), // Reduced margin
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: selectedImage == image
-                              ? Color(0xFF00AD83)
-                              : Colors.transparent,
-                          width: 2),
-                      borderRadius: BorderRadius.circular(10),
-                      image: DecorationImage(
-                        image: AssetImage(image),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
             SizedBox(height: 20),
 
-            // Cattle Price, Location, and Favorite Button
+            // Price, Location, and Favorite Button
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align price and heart icon at opposite corners
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Name: ${widget.name}',
+                  'Price: ${widget.price}',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -148,15 +102,6 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
                 ),
               ],
             ),
-
-            SizedBox(height: 10),
-            Text(
-              'Price: ${widget.price}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
             SizedBox(height: 10),
             Text(
               'Location: ${widget.location}',
@@ -166,8 +111,6 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
               ),
             ),
             SizedBox(height: 10),
-
-            // Cattle Description
             Text(
               'Description: ${widget.description}',
               style: TextStyle(
@@ -177,10 +120,10 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
             ),
             SizedBox(height: 10),
             Text(
-              'Farmer: ${widget.FarmerName}',
+              'Farmer Name: ${widget.FarmerName}',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[800],
+                color: Colors.grey[600],
               ),
             ),
             SizedBox(height: 10),
@@ -188,10 +131,11 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
               'Phone: ${widget.Phone}',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[800],
+                color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 30),
+
             // Review Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -211,7 +155,6 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
                     style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 16),
-                  // Star Rating System
                   Row(
                     children: List.generate(5, (index) {
                       return GestureDetector(
@@ -227,7 +170,6 @@ class _CattleDetailsPageState extends State<CattleDetailsPage> {
                     }),
                   ),
                   SizedBox(height: 16),
-                  // Star Rating Distribution (Progress Bars)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: List.generate(5, (index) {

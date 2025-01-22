@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart'; // Import share_plus package
 
-
-
-
 class landdetailspage extends StatefulWidget {
   final String name;
   final String price;
-  final String imagePath;
+  final String imagePath; // Main image from API
   final String location;
   final String description;
   final String review;
-  final String FarmerName; // Add full name
-  final String Phone; // Add phone
-
+  final String FarmerName; // Farmer's name
+  final String Phone; // Phone number
 
   const landdetailspage({
     required this.name,
@@ -31,28 +27,14 @@ class landdetailspage extends StatefulWidget {
 }
 
 class _landdetailspageState extends State<landdetailspage> {
-  late String selectedImage;
   double _selectedRating = 0.0;
-
-  // List of thumbnails
-  final List<String> imageThumbnails = [
-    'assets/land1.jpg',
-    'assets/land2.jpg',
-    'assets/land1.jpg',
-    'assets/land2.jpg',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    selectedImage = widget.imagePath; // Set initial image
-  }
 
   void _onStarTap(double rating) {
     setState(() {
       _selectedRating = rating;
     });
   }
+
   // Method to handle sharing the product details
   void _shareProductDetails() {
     String productDetails =
@@ -60,20 +42,19 @@ class _landdetailspageState extends State<landdetailspage> {
         'Price: ${widget.price}\n'
         'Location: ${widget.location}\n'
         'Description: ${widget.description}\n'
-        'FarmerName: ${widget.FarmerName}\n'
+        'Farmer Name: ${widget.FarmerName}\n'
         'Phone: ${widget.Phone}\n'
         'Rating: $_selectedRating stars\n';
 
     Share.share(productDetails);
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Land Details',
+          'landdetailspage',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Color(0xFF00AD83),
@@ -95,48 +76,16 @@ class _landdetailspageState extends State<landdetailspage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
-                  image: AssetImage(selectedImage),
+                  image: NetworkImage(widget.imagePath),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-            SizedBox(height: 10),
-
-            // Image Thumbnails
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: imageThumbnails.map((image) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedImage = image;
-                    });
-                  },
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    margin: EdgeInsets.symmetric(horizontal: 1), // Reduced margin
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: selectedImage == image
-                              ? Color(0xFF00AD83)
-                              : Colors.transparent,
-                          width: 2),
-                      borderRadius: BorderRadius.circular(10),
-                      image: DecorationImage(
-                        image: AssetImage(image),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
             SizedBox(height: 20),
 
-            // Cattle Price, Location, and Favorite Button
+            // Price, Location, and Favorite Button
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align price and heart icon at opposite corners
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Price: ${widget.price}',
@@ -153,7 +102,6 @@ class _landdetailspageState extends State<landdetailspage> {
                 ),
               ],
             ),
-
             SizedBox(height: 10),
             Text(
               'Location: ${widget.location}',
@@ -164,7 +112,15 @@ class _landdetailspageState extends State<landdetailspage> {
             ),
             SizedBox(height: 10),
             Text(
-              'FarmerName: ${widget.FarmerName}',
+              'Description: ${widget.description}',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[800],
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Farmer Name: ${widget.FarmerName}',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],
@@ -178,20 +134,7 @@ class _landdetailspageState extends State<landdetailspage> {
                 color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 10),
-
-            // Cattle Description
-            Text(
-              'Description: ${widget.description}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[800],
-              ),
-            ),
             SizedBox(height: 30),
-
-
-
 
             // Review Section
             Padding(
@@ -212,7 +155,6 @@ class _landdetailspageState extends State<landdetailspage> {
                     style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 16),
-                  // Star Rating System
                   Row(
                     children: List.generate(5, (index) {
                       return GestureDetector(
@@ -228,7 +170,6 @@ class _landdetailspageState extends State<landdetailspage> {
                     }),
                   ),
                   SizedBox(height: 16),
-                  // Star Rating Distribution (Progress Bars)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: List.generate(5, (index) {

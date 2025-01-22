@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:mainproject1/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// // Function to store user ID
-// Future<void> storeUserId(String userId) async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   await prefs.setString('farmer_id', userId);
-// }
+import 'mandiRates.dart';
 
 class ProfilePage extends StatelessWidget {
   final Map<String, dynamic> userData;
@@ -15,8 +11,174 @@ class ProfilePage extends StatelessWidget {
 
   ProfilePage({required this.userData, required this.phoneNumber});
 
+
   String _capitalizeName(String fullName) {
-    if (fullName == null || fullName.isEmpty) {
+    if (fullName.isEmpty) {
+      return '';
+    }
+    List<String> nameParts = fullName.split(' ');
+    List<String> capitalizedParts = nameParts.map((part) {
+      if (part.isEmpty) return '';
+      return part[0].toUpperCase() + part.substring(1).toLowerCase();
+    }).toList();
+    return capitalizedParts.join(' ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xFF00AD83),
+        title: Text(tr('Profile')),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.share, color: Colors.white),
+            onPressed: () {
+              // Implement sharing functionality
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 60,
+              backgroundImage: AssetImage('assets/profile.jpg'),
+            ),
+            SizedBox(height: 16),
+            Text(
+              _capitalizeName(userData['full_name']),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF00AD83),
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              userData['phone']?.toString() ?? '',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 32),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildSectionWithDivider(
+                    context,
+                    icon: Icons.settings,
+                    title: 'Profile Setting',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ProfileSettingPage(
+                                userData: userData,
+                                phoneNumber: phoneNumber,
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildSectionWithDivider(
+                    context,
+                    icon: Icons.account_balance,
+                    title: 'Government Scheme',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GovernmentSchemePage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildSectionWithDivider(
+                    context,
+                    icon: Icons.work,
+                    title: 'Mandi Rate',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MandiRatesPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildSectionWithDivider(
+                    context,
+                    icon: Icons.delete_forever,
+                    title: 'Account Delete',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AccountDeletePage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildSectionWithDivider(
+                    context,
+                    icon: Icons.logout,
+                    title: 'Logout',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionWithDivider(BuildContext context,
+      {required IconData icon, required String title, required VoidCallback onTap}) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(icon, color: Color(0xFF00AD83)),
+          title: Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey),
+          onTap: onTap,
+        ),
+        Divider(thickness: 1.0, color: Colors.grey[300]),
+        SizedBox(height: 8), // Adjust spacing as needed
+      ],
+    );
+  }
+}
+
+// Placeholder pages for navigation
+class ProfileSettingPage extends StatelessWidget {
+  final Map<String, dynamic> userData;
+  final String phoneNumber;
+
+  ProfileSettingPage({required this.userData, required this.phoneNumber});
+
+  String _capitalizeName(String fullName) {
+    if (fullName.isEmpty) {
       return '';
     }
 
@@ -125,6 +287,51 @@ class ProfilePage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class GovernmentSchemePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xFF00AD83),
+        title: Text('Government Scheme'),
+      ),
+      body: Center(
+        child: Text('Government scheme details go here.'),
+      ),
+    );
+  }
+}
+
+class AgricultureJobPostsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xFF00AD83),
+        title: Text('Agriculture Job Posts'),
+      ),
+      body: Center(
+        child: Text('mandi rates'),
+      ),
+    );
+  }
+}
+
+class AccountDeletePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xFF00AD83),
+        title: Text('Account Delete'),
+      ),
+      body: Center(
+        child: Text('Account deletion details go here.'),
       ),
     );
   }

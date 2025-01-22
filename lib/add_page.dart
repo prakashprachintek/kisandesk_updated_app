@@ -5,14 +5,15 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:flutter/services.dart';
-
-import 'Home_page.dart';
+import 'Home_page2.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 class AddMarketPostPage extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String phoneNumber;
+  final bool isUserExists; // Add a flag to check if user exists
 
-  AddMarketPostPage({required this.userData, required this.phoneNumber});
+  AddMarketPostPage({required this.userData, required this.phoneNumber, required this.isUserExists});
 
   @override
   _AddMarketPostPageState createState() => _AddMarketPostPageState();
@@ -21,6 +22,14 @@ class AddMarketPostPage extends StatefulWidget {
 class _AddMarketPostPageState extends State<AddMarketPostPage> {
   final _formKey = GlobalKey<FormState>();
   bool isSubmitting = false;
+  final ImagePicker _picker = ImagePicker();
+ // File? _selectedImage; // Changed to File?
+  String? _uploadedFileName;
+  File? _selectedImage;
+  bool _isUploading = false; // Flag to indicate upload status
+  double _uploadProgress = 0.0;
+
+
 
   // Controllers
   final _cropNameController = TextEditingController();
@@ -31,14 +40,23 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   final _TalukaController = TextEditingController();
   final _villageController = TextEditingController();
   final _pincodeController = TextEditingController();
+  String? _selectedCategory;
 
   String? _errorText;
 
   // State Variables
-  String? _selectedState;
-  String? _selectedDistrict;
-  String? _selectedCategory;
-  File? _selectedImage;
+  Map<String, dynamic> locationData = {};
+  List<String> states = [];
+  List<String> districts = [];
+  List<String> talukas = [];
+  List<String> villages = [];
+
+  String? selectedState;
+  String? selectedDistrict;
+  String? selectedTaluka;
+  String? selectedVillage;
+
+
 
   String capitalize(String text) {
     if (text.isEmpty) return text;
@@ -53,7 +71,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       'price': 'Price',
       'quantity': 'Number of Cattle',
     },
-    'farmer': {
+    'crop': {
       'cropName': 'Crop Name',
       'description': 'Crop Description',
       'price': 'Price',
@@ -77,12 +95,12 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       'price': 'Price',
       'quantity': 'Quantity Available',
     },
-    'adati': {
-      'cropName': 'cropName',
-      'description': 'description',
-      'price': 'Price',
-      'quantity': 'Quantity',
-    },
+    // 'crop': {
+    //   'cropName': 'cropName',
+    //   'description': 'description',
+    //   'price': 'Price',
+    //   'quantity': 'Quantity',
+    // },
 
   };
 
@@ -95,65 +113,69 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
 
   final Map<String, List<String>> _districtsByState = {
-    'Karnataka': ["Bagalkot",
-      "Ballari (Bellary)",
-      "Belagavi (Belgaum)",
-      "Bengaluru Rural",
-      "Bengaluru Urban",
-      "Bidar",
-      "Chamarajanagar",
-      "Chikkaballapur",
-      "Chikkamagaluru (Chikmagalur)",
-      "Chitradurga",
-      "Dakshina Kannada (Mangalore)",
-      "Davanagere",
-      "Dharwad",
-      "Gadag",
-      "Hassan",
-      "Haveri",
-      "Kalaburagi",
-      "Kodagu (Coorg)",
-      "Kolar",
-      "Koppal",
-      "Mandya",
-      "Mysuru (Mysore)",
-      "Raichur",
-      "Ramanagara",
-      "Shivamogga (Shimoga)",
-      "Tumakuru (Tumkur)",
-      "Udupi",
-      "Uttara Kannada (Karwar)",
-      "Vijayapura (Bijapur)",
-      "Yadgir"],
+    'Karnataka': ["Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikballapur", "Chikkamagaluru",
+      "Chitradurga", "Dakshina Kannada", "Davangere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya",
+      "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"],
     'Maharashtra': ['Mumbai', 'Pune', 'Nagpur'],
   };
-
-  // final List<String> _categories = [
-  //   'Cattle',
-  //   'Farmer',
-  //   'Land',
-  //   'Labour',
-  //   'Machinery',
-  // ];
-
-
   @override
   void initState() {
     super.initState();
 
     // Pre-fill fields from userData
-    _selectedState = widget.userData['state'];
-    _selectedDistrict = widget.userData['district'];
+
     _TalukaController.text = widget.userData['taluka'] ?? '';
     _villageController.text = widget.userData['village'] ?? '';
     _pincodeController.text = (widget.userData['pincode'] ?? '').toString();
     _phoneNumberController.text = widget.userData['phone'] ?? '';
+
+    // Pre-fill state and district dropdowns if the user exists
+    if (widget.isUserExists) {
+      selectedState = widget.userData['state'];
+      selectedDistrict = widget.userData['district'];
+      selectedTaluka = widget.userData['taluka'];
+      selectedVillage = widget.userData['village'];
+    }
     _updateFieldLabels('farmer'); // Default category
-
-
-
-
   }
+
+  Future<void> loadLocationData() async {
+    final String response =
+    await rootBundle.loadString('assets/loadLocation_data.json');
+    final data = await json.decode(response);
+    setState(() {
+      locationData = data;
+      states = List<String>.from(locationData['states']);
+    });
+  }
+
+  void updateDistricts(String state) {
+    setState(() {
+      selectedDistrict = null;
+      selectedTaluka = null;
+      selectedVillage = null;
+      districts = List<String>.from(locationData['districts'][state] ?? []);
+      talukas = [];
+      villages = [];
+    });
+  }
+
+  void updateTalukas(String district) {
+    setState(() {
+      selectedTaluka = null;
+      selectedVillage = null;
+      talukas = List<String>.from(locationData['talukas'][district] ?? []);
+      villages = [];
+    });
+  }
+
+  void updateVillages(String taluka) {
+    setState(() {
+      selectedVillage = null;
+      villages = List<String>.from(locationData['villages'][taluka] ?? []);
+    });
+  }
+
 
 
   void _updateFieldLabels(String? category) {
@@ -163,19 +185,113 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       });
     }
   }
-
+  // Image Picker function
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+    final ImagePicker _picker = ImagePicker();
+    try {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.camera_alt, color: Color(0xFF00AD83)),
+                  title: Text('Take Picture', style: TextStyle(color: Color(0xFF00AD83))),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final XFile? image = await _picker.pickImage(
+                      source: ImageSource.camera,
+                      maxWidth: 1024,
+                      maxHeight: 1024,
+                    );
+                    await _handleImageSelection(image);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.photo_library, color: Color(0xFF00AD83)),
+                  title: Text('Select from Gallery', style: TextStyle(color: Color(0xFF00AD83))),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final XFile? image = await _picker.pickImage(
+                      source: ImageSource.gallery,
+                      maxWidth: 1024,
+                      maxHeight: 1024,
+                    );
+                    await _handleImageSelection(image);
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error picking image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to pick image.')));
     }
   }
 
+  Future<void> _handleImageSelection(XFile? image) async {
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+        _isUploading = true;
+        _uploadProgress = 0.0; // Reset upload progress
+      });
+
+      String? fileName = await _uploadImage(File(image.path));
+      setState(() {
+        _isUploading = false; // End uploading
+      });
+
+      if (fileName != null) {
+        setState(() => _uploadedFileName = fileName);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Image uploaded successfully!')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image.')));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No image selected.')));
+    }
+  }
+  Future<String?> _uploadImage(File file) async {
+    try {
+      print('Uploading file: ${file.path}');
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://3.110.121.159/api/upload_document'),
+      );
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+      print('Server Response: $responseData');
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(responseData);
+        return data['filename'] ?? file.path.split('/').last;
+      } else {
+        print('Image Upload Failed: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Upload Error: $e');
+      return null;
+    }
+  }
+
+
+
+// Function to submit the market post
   Future<void> _submitMarketPost() async {
     if (_formKey.currentState!.validate()) {
+      if (_uploadedFileName == null || _uploadedFileName!.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please upload an image first.')),
+        );
+        return;
+      }
       setState(() => isSubmitting = true);
 
       final url = Uri.parse(
@@ -192,14 +308,13 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             "description": _descriptionController.text,
             "price": int.tryParse(_priceController.text) ?? 0,
             "quantity": int.tryParse(_quantityController.text) ?? 0,
-            "state": _selectedState,
-            "district": _selectedDistrict,
-            "taluka": _TalukaController.text,
-            "village": _villageController.text,
+            "state": selectedState,
+            "district": selectedDistrict,
+            "taluka": selectedTaluka,
+            "village": selectedVillage,
             "pincode": _pincodeController.text,
             "category": _selectedCategory,
-            "image": _selectedImage != null ? base64Encode(
-                _selectedImage!.readAsBytesSync()) : null,
+            "fileName": _uploadedFileName,
           }),
         );
 
@@ -251,6 +366,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   title: Text('Error'),
                   content: Text(data['message'] ?? 'Failed to add post.'),
                   actions: [
+
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop(); // Close the dialog
@@ -287,9 +403,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       }
     }
   }
-
-
-
   InputDecoration _buildInputDecoration(String labelText) {
     return InputDecoration(
       border: OutlineInputBorder(
@@ -472,70 +585,94 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               },
             ),
             SizedBox(height: 10),
-            DropdownButtonFormField<String>(
-              decoration: _buildInputDecoration('State'),
-              value: _selectedState,
-              items: ['Karnataka', 'Maharashtra'].map((state) {
-                return DropdownMenuItem(value: state, child: Text(state));
-              }).toList(),
+            // State Dropdown
+            DropdownSearch<String>(
+              items: states,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: 'State',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+              ),
               onChanged: (value) {
                 setState(() {
-                  _selectedState = value;
-                  _selectedDistrict = null;
+                  selectedState = value;
                 });
+                if (value != null) {
+                  updateDistricts(value);
+                }
               },
-              validator: (value) => value == null ? 'Please select a state' : null,
-            ),
-            SizedBox(height: 10),
+              selectedItem: selectedState,
+              validator: (value) =>
+              value == null ? 'Please select a state' : null,
 
-            DropdownButtonFormField<String>(
-              decoration: _buildInputDecoration('District'),
-              value: _selectedDistrict,
-              items: (_districtsByState[_selectedState] ?? []).map((district) {
-                return DropdownMenuItem(value: district, child: Text(district));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedDistrict = value;
-                });
-              },
-              validator: (value) => value == null ? 'Please select a District' : null,
             ),
-            SizedBox(height: 10),
-            TextFormField(controller: _TalukaController, decoration: _buildInputDecoration('Taluka'),
-              inputFormatters: [
-                LengthLimitingTextInputFormatter(64), // Limit the input to 64 characters
-              ],
+            SizedBox(height: 16),
+            DropdownSearch<String>(
+              items: districts,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: 'District',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+              ),
               onChanged: (value) {
-                // Clear the error message when the user starts typing
                 setState(() {
-                  _formKey.currentState!.validate();
+                  selectedDistrict = value;
                 });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a cropName';
+                if (value != null) {
+                  updateTalukas(value);
                 }
-                return null;
               },
+              selectedItem: selectedDistrict,
+              validator: (value) =>
+              value == null ? 'Please select a District' : null,
             ),
-            SizedBox(height: 10),
-            TextFormField(controller: _villageController, decoration: _buildInputDecoration('Village'),
-              inputFormatters: [
-                LengthLimitingTextInputFormatter(64), // Limit the input to 64 characters
-              ],
+            SizedBox(height: 16),
+            DropdownSearch<String>(
+              items: talukas,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: 'Taluka',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+              ),
               onChanged: (value) {
-                // Clear the error message when the user starts typing
                 setState(() {
-                  _formKey.currentState!.validate();
+                  selectedTaluka = value;
+                });
+                if (value != null) {
+                  updateVillages(value);
+                }
+              },
+              selectedItem: selectedTaluka,
+              validator: (value) =>
+              value == null ? 'Please select a Taluka' : null,
+            ),
+            SizedBox(height: 16),
+            DropdownSearch<String>(
+              popupProps: PopupProps.menu(
+                showSearchBox: true,
+                searchFieldProps: TextFieldProps(
+                  decoration: InputDecoration(labelText: 'Search Village'),
+                ),
+              ),
+              items: villages,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: 'Village',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  selectedVillage = value;
                 });
               },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a cropName';
-                }
-                return null;
-              },),
+              selectedItem: selectedVillage,
+              validator: (value) =>
+              value == null ? 'Please select a Village' : null,
+            ),
             SizedBox(height: 10),
             TextFormField(
               controller: _pincodeController,
@@ -563,8 +700,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
             ),
             SizedBox(height: 10),
-
-            // Image selection box styled as a text field
             GestureDetector(
               onTap: _pickImage,
               child: Container(
@@ -576,15 +711,55 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 child: Row(
                   children: [
                     Icon(Icons.camera_alt, color: Color(0xFF00AD83)),
-                    SizedBox(width: 10),
-                    Text(
-                      _selectedImage == null ? 'Select Image' : 'Image Selected',
-                      style: TextStyle(color: Color(0xFF00AD83)),
+                    SizedBox(width: 10), // Reduced spacing between the icon and text
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          // Text or Image
+                          if (_selectedImage == null)
+                            Text(
+                              _uploadedFileName == null
+                                  ? 'Select Image'
+                                  : 'Image Uploaded: $_uploadedFileName',
+                              style: TextStyle(color: Color(0xFF00AD83)),
+                              overflow: TextOverflow.ellipsis, // Prevents overflow
+                            )
+                          else
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.file(
+                                _selectedImage!,
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+
+                          // Circular progress indicator with dynamic completion percentage
+                          if (_isUploading)
+                            Positioned(
+                              top: 0,
+                              bottom: 0,
+                              left: 0,
+                              right: 125,
+                              child: Align(
+                                alignment: Alignment.center, // Center the indicator inside the image
+                                child: CircularProgressIndicator(
+                                  value: null, // This makes it indeterminate (circulating)
+                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00AD83)),
+                                  backgroundColor: Colors.white.withOpacity(0.8),
+                                  strokeWidth: 4.0,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
+
             SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -613,3 +788,4 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     );
   }
 }
+

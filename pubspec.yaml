@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.3.1 <4.0.0'
+  sdk: '>=3.3.4 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  win32: ^5.5.1
+  win32: ^5.5.4
   google_maps_flutter: ^2.1.1
   url_launcher: ^6.1.7
   image_picker: ^0.8.5+3
@@ -43,6 +43,8 @@ dependencies:
   share_plus: ^10.0.2
   provider: ^6.0.0
   shared_preferences: ^2.0.6
+  dio: ^5.0.3
+  dropdown_search: ^5.0.3
 
 
 
@@ -61,6 +63,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   carousel_slider: ^5.0.0
+
+  flutter_launcher_icons: ^0.13.1
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.png"  # Replace with the path to your app icon
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -89,12 +97,12 @@ flutter:
     - assets/pesticide.webp
     - assets/Agricultural Land.webp
     - assets/Labor.jpeg
-    - assets/cattle.jpg
     - assets/shop2.webp
     - assets/lang/en.json
     - assets/lang/kn.json
     - assets/lang/hi.json
     - assets/lang/mr.json
+    - assets/loadLocation_data.json
     - assets/image2.2.jpg
     - assets/image1.webp
     - assets/scrolimage3.jpg
@@ -107,6 +115,7 @@ flutter:
     - assets/weat.webp
     - assets/dal.jpg
     - assets/cattle1.jpg
+    - assets/cattle.jpg
     - assets/cattle2.webp
     - assets/machinery1.webp
     - assets/machinery2.webp
@@ -125,6 +134,7 @@ flutter:
     - assets/rice1.jpg
     - assets/rice3.jpg
     - assets/menlabour2.webp
+
 
 
 

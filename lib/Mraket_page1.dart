@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'Home_page.dart';
+import 'package:mainproject1/tabpage.dart';
+import 'Home_page2.dart';
 import 'TraderDetailsPage.dart';
 import 'TransactionPage.dart';
 import 'add_page.dart';
@@ -33,7 +34,7 @@ class _MarketPageState extends State<MarketPage> {
     if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MyTransactionPage()),
+        MaterialPageRoute(builder: (context) =>TabbedPage(userData: widget.userData,phoneNumber:widget.phoneNumber,)),
       );
     } else if (index == 0) {
       Navigator.push(
@@ -46,11 +47,16 @@ class _MarketPageState extends State<MarketPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => AddMarketPostPage(userData: widget.userData, phoneNumber: widget.phoneNumber),
+          builder: (context) => AddMarketPostPage(userData: widget.userData,
+              phoneNumber: widget.phoneNumber,
+            isUserExists: true,
+          ),
         ),
       );
     }
   }
+
+
 
   Future<void> fetchTraders() async {
     setState(() {
@@ -176,32 +182,72 @@ class _MarketPageState extends State<MarketPage> {
         ],
       ),
     ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Color(0xFF00AD83),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'Add',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.swap_horiz),
-            label: 'Transaction',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.store),
-            label: 'Market',
-          ),
-        ],
-      ),
+        bottomNavigationBar: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Color(0xFF00AD83),
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white,
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+              items: <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: tr('Home'),
+                ),
+                BottomNavigationBarItem(
+                  icon: SizedBox.shrink(), // Empty icon for Buy/Sell (replaced with Stack)
+                  label: '',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.business_sharp),
+                  label: tr('Market'),
+                ),
+              ],
+            ),
+            Positioned(
+              top: -24, // Elevates the button out of the navigation bar
+              left: MediaQuery.of(context).size.width / 2 - 30, // Centers the button
+              child: GestureDetector(
+                onTap: () => _onItemTapped(1), // Handle tap for Buy/Sell
+                child: Column(
+                  children: [
+                    Container(
+                      height: 50, // Size of the circular button
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white, // Highlight color
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: Offset(0, 3), // Shadow below the button
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.add,
+                        size: 31, // Icon size
+                        color: Color(0xFF00AD83), // Icon color
+                      ),
+                    ),
+                    SizedBox(height: 4), // Space between icon and label
+                    Text(
+                      tr('Buy/Sell'),
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        color: Colors.white, // Label color
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        )
     );
   }
 }

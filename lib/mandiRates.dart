@@ -9,11 +9,7 @@ class MandiRatesPage extends StatefulWidget {
 
 class _MandiRatesPageState extends State<MandiRatesPage> {
   final String apiUrl =
-      'https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24'
-      '?api-key=579b464db66ec23bdd00000193cd44da4f644b886d3a756d44d8bbfe'
-      '&format=json&filters%5BState.keyword%5D=Karnataka'
-      '&filters%5BArrival_Date%5D=04%2F12%2F2024&limit=10000'
-      '&filters%5BDistrict.keyword%5D=Kalburgi';
+      'https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24?format=json&filters%5BArrival_Date%5D=04%2F12%2F2024&api-key=579b464db66ec23bdd00000193cd44da4f644b886d3a756d44d8bbfe&limit=10000';
 
   List<dynamic> mandiData = [];
   List<dynamic> filteredData = [];
@@ -68,7 +64,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
       appBar: AppBar(
         title: Text("Mandi Rates"),
         centerTitle: true,
-        backgroundColor: Colors.green.shade800,
+        backgroundColor: Color(0xFF00AD83),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -85,7 +81,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.green.shade800),
+                        borderSide: BorderSide(color:  Color(0xFF00AD83)),
                       ),
                     ),
                     onChanged: (value) {
@@ -97,8 +93,8 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                 DropdownButton<String>(
                   value: selectedCommodity,
                   dropdownColor: Colors.green.shade50,
-                  style: TextStyle(color: Colors.green.shade800),
-                  items: ['All', 'Wheat', 'Rice', 'Maize', 'Cotton']
+                  style: TextStyle(color:  Color(0xFF00AD83)),
+                  items: ['All', 'Arhar (Tur/Red Gram)(Whole)', 'Jowar(Sorghum)','Beans', 'Brinjal', 'Bhindi(Ladies Finger)','onion', 'soyabean', 'Sesamum(Sesame,Gingelly,Til)','Sunflower', 'tomato','Wheat', 'Rice', 'Maize', 'Cotton']
                       .map((commodity) => DropdownMenuItem(
                     value: commodity,
                     child: Text(commodity),
@@ -142,13 +138,16 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                             MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                record['Market'] ?? 'N/A',
+                                record['District'] ?? 'N/A',
+
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.green.shade900,
+                                  color:  Color(0xFF00AD83),
                                 ),
                               ),
+
+
                               Chip(
                                 label: Text(
                                   record['Commodity'] ?? 'N/A',
@@ -157,7 +156,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                                   ),
                                 ),
                                 backgroundColor:
-                                Colors.green.shade700,
+                                Color(0xFF00AD83),
                               ),
                             ],
                           ),
@@ -166,10 +165,11 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                             mainAxisAlignment:
                             MainAxisAlignment.spaceBetween,
                             children: [
+
                               PriceTile(
                                 label: "Min Price",
                                 value: record['Min_Price'] ?? 'N/A',
-                                color: Colors.green.shade800,
+                                color:  Colors.black87,
                               ),
                               PriceTile(
                                 label: "Max Price",

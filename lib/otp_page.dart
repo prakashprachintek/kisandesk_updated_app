@@ -63,7 +63,7 @@ class _OtpPageState extends State<OtpPage> {
     }
   }
 
-  void _handleProfileTap() async {
+  void _navigateToRegistration() async {
     final userData = await fetchUserData(widget.phoneNumber); // Fetch user data by phone number
 
     // Check if user data exists or not
@@ -136,11 +136,8 @@ class _OtpPageState extends State<OtpPage> {
                             _otpController2.text +
                             _otpController3.text +
                             _otpController4.text;
-
-
-
                         // Simulate OTP verification success and fetch user data
-                        _handleProfileTap();
+                        _navigateToRegistration();
                       },
                       child: Text(
                         tr('verify_otp'),

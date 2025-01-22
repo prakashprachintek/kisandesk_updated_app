@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
-
-import 'Home_page.dart';
+import 'Home_page2.dart';
+import 'package:flutter/services.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 class FarmerRegisterPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -19,60 +21,30 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
   final _formKey = GlobalKey<FormState>();
   bool isSubmitting = false;
 
-  // Define lists for states and districts
-  final List<String> _states = ['Karnataka', 'Maharashtra'];
-  final Map<String, List<String>> _districts = {
-    'Karnataka': ["Bagalkot",
-    "Ballari (Bellary)",
-    "Belagavi (Belgaum)",
-    "Bengaluru Rural",
-    "Bengaluru Urban",
-    "Bidar",
-    "Chamarajanagar",
-    "Chikkaballapur",
-    "Chikkamagaluru (Chikmagalur)",
-    "Chitradurga",
-    "Dakshina Kannada (Mangalore)",
-    "Davanagere",
-    "Dharwad",
-    "Gadag",
-    "Hassan",
-    "Haveri",
-    "Kalaburagi",
-    "Kodagu (Coorg)",
-    "Kolar",
-    "Koppal",
-    "Mandya",
-    "Mysuru (Mysore)",
-    "Raichur",
-    "Ramanagara",
-    "Shivamogga (Shimoga)",
-    "Tumakuru (Tumkur)",
-    "Udupi",
-    "Uttara Kannada (Karwar)",
-    "Vijayapura (Bijapur)",
-    "Yadgir"],
-    'Maharashtra': ['Mumbai', 'Pune', 'Nagpur']
-  };
-
-  // Selected values for state and district dropdowns
-  String? _selectedState;
-  String? _selectedDistrict;
-
 
 
   // TextEditingControllers to manage form fields
   late TextEditingController _fullNameController;
   late TextEditingController _phoneController;
-  late TextEditingController _addressController;
   late TextEditingController _pincodeController;
 
-  late TextEditingController _talukaController;
-  late TextEditingController _villageController;
+
+
+  Map<String, dynamic> locationData = {};
+  List<String> states = [];
+  List<String> districts = [];
+  List<String> talukas = [];
+  List<String> villages = [];
+
+  String? selectedState;
+  String? selectedDistrict;
+  String? selectedTaluka;
+  String? selectedVillage;
 
   @override
   void initState() {
     super.initState();
+    loadLocationData();
 
     // Initialize controllers with user data
     _fullNameController = TextEditingController(
@@ -82,9 +54,7 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
     _phoneController = TextEditingController(
       text: widget.phoneNumber,
     );
-    _addressController = TextEditingController(
-      text: widget.isUserExists ? widget.userData['address'] ?? '' : '',
-    );
+
     _pincodeController = TextEditingController(
       text: widget.isUserExists
           ? (widget.userData['pincode'] != null
@@ -92,19 +62,53 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
           : '')
           : '',
     );
-    _talukaController = TextEditingController(
-      text: widget.isUserExists ? widget.userData['taluka'] ?? '' : '',
-    );
-    _villageController = TextEditingController(
-      text: widget.isUserExists ? widget.userData['village'] ?? '' : '',
-    );
-
-    // Pre-fill state and district dropdowns if the user exists
+       // Pre-fill state and district dropdowns if the user exists
     if (widget.isUserExists) {
-      _selectedState = widget.userData['state'];
-      _selectedDistrict = widget.userData['district'];
+      selectedState = widget.userData['state'];
+      selectedDistrict = widget.userData['district'];
+      selectedTaluka = widget.userData['taluka'];
+      selectedVillage = widget.userData['village'];
     }
   }
+
+  Future<void> loadLocationData() async {
+    final String response =
+    await rootBundle.loadString('assets/loadLocation_data.json');
+    final data = await json.decode(response);
+    setState(() {
+      locationData = data;
+      states = List<String>.from(locationData['states']);
+    });
+  }
+
+  void updateDistricts(String state) {
+    setState(() {
+      selectedDistrict = null;
+      selectedTaluka = null;
+      selectedVillage = null;
+      districts = List<String>.from(locationData['districts'][state] ?? []);
+      talukas = [];
+      villages = [];
+    });
+  }
+
+  void updateTalukas(String district) {
+    setState(() {
+      selectedTaluka = null;
+      selectedVillage = null;
+      talukas = List<String>.from(locationData['talukas'][district] ?? []);
+      villages = [];
+    });
+  }
+
+  void updateVillages(String taluka) {
+    setState(() {
+      selectedVillage = null;
+      villages = List<String>.from(locationData['villages'][taluka] ?? []);
+    });
+  }
+
+
 
 
 
@@ -113,10 +117,7 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
   void dispose() {
     _fullNameController.dispose();
     _phoneController.dispose();
-    _addressController.dispose();
     _pincodeController.dispose();
-    _talukaController.dispose();
-    _villageController.dispose();
     super.dispose();
   }
 
@@ -133,12 +134,12 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
           body: jsonEncode({
             'fullName': _fullNameController.text,
             'phoneNumber': _phoneController.text,
-            'address': _addressController.text,
+            'address': '',
             'pincode': int.tryParse(_pincodeController.text) ?? 0,
-            'state': _selectedState,
-            'district': _selectedDistrict,
-            'taluka': _talukaController.text,
-            'village': _villageController.text,
+            'state': selectedState,
+            'district': selectedDistrict,
+            'taluka':selectedTaluka,
+            'village': selectedVillage,
             'password': 'Securessword452', // Replace with user input or a secure value
             'orgId': '66c3467bd7d312820dd68d01', // Replace with dynamic orgId if needed
             'createdBy': 'admin',
@@ -180,10 +181,9 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
         backgroundColor: Color(0xFF00AD83),
         title: Row(
           children: [
-
             SizedBox(width: 8),
             Text(
-              'PrachinTek',
+              'PrachinTek'.tr(),
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
@@ -209,14 +209,20 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide(color: Color(0xFF00AD83)),
                     ),
-                    labelText: 'Full Name'
+                    labelText: 'full_name'.tr(),
                 ),
                 inputFormatters: [
                   LengthLimitingTextInputFormatter(64), // Limit the input to 64 characters
                 ],
+                onChanged: (value) {
+                  // Clear the error message when the user starts typing
+                  setState(() {
+                    _formKey.currentState!.validate();
+                  });
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your full name';
+                    return 'Please enter a full_name';
                   }
                   return null;
                 },
@@ -233,61 +239,43 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide(color: Color(0xFF00AD83)),
                   ),
-                  labelText: 'Phone Number',
+                  labelText:  'phone_number'.tr(),
                 ),
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly, // Allow only digits
                   LengthLimitingTextInputFormatter(10),  // Limit to 10 digits
                 ],
+                onChanged: (value) {
+                  // Clear the error message when the user starts typing
+                  setState(() {
+                    _formKey.currentState!.validate();
+                  });
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your phone number';
-                  } else if (value.length != 10) {
+                  }
+                  if (value.length != 10) {
                     return 'Phone number must be 10 digits';
                   }
                   return null;
                 },
               ),
               SizedBox(height: 20),
-
-              TextFormField(
-                controller: _addressController,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(color: Color(0xFF00AD83)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(color: Color(0xFF00AD83)),
-                    ),
-                    labelText: 'Address'
-                ),
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(64), // Limit the input to 64 characters
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your address';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-
               TextFormField(
                 controller: _pincodeController,
                 decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(color: Color(0xFF00AD83)),
+                      borderSide
+                          : BorderSide(color: Color(0xFF00AD83)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide(color: Color(0xFF00AD83)),
                     ),
-                    labelText: 'Pincode'
+                    labelText: 'pincode'.tr(),
                 ),
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
@@ -305,113 +293,105 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
               ),
               SizedBox(height: 20),
               // State Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedState,
-                items: _states.map((String state) {
-                  return DropdownMenuItem<String>(
-                    value: state,
-                    child: Text(state),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
+              DropdownSearch<String>(
+                items: states,
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: 'State',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                ),
+                onChanged: (value) {
                   setState(() {
-                    _selectedState = newValue;
-                    _selectedDistrict = null; // Reset district if state changes
+                    selectedState = value;
+                  });
+                  if (value != null) {
+                    updateDistricts(value);
+                  }
+                },
+                selectedItem: selectedState,
+                validator: (value) =>
+                value == null ? 'Please select a state' : null,
+
+              ),
+              SizedBox(height: 16),
+              DropdownSearch<String>(
+                items: districts,
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: 'District',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    selectedDistrict = value;
+                  });
+                  if (value != null) {
+                    updateTalukas(value);
+                  }
+                },
+                selectedItem: selectedDistrict,
+                validator: (value) =>
+                value == null ? 'Please select a District' : null,
+              ),
+              SizedBox(height: 16),
+              DropdownSearch<String>(
+                items: talukas,
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: 'Taluka',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    selectedTaluka = value;
+                  });
+                  if (value != null) {
+                    updateVillages(value);
+                  }
+                },
+                selectedItem: selectedTaluka,
+                validator: (value) =>
+                value == null ? 'Please select a Taluka' : null,
+              ),
+              SizedBox(height: 16),
+              DropdownSearch<String>(
+                popupProps: PopupProps.menu(
+                  showSearchBox: true,
+                  searchFieldProps: TextFieldProps(
+                    decoration: InputDecoration(labelText: 'Search Village'),
+                  ),
+                ),
+                items: villages,
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: 'Village',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    selectedVillage = value;
                   });
                 },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                  labelText: 'State',
-                ),
-                validator: (value) => value == null ? 'Please select a state' : null,
-              ),
-              SizedBox(height: 20),
-
-              // District Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedDistrict,
-                items: _selectedState != null
-                    ? _districts[_selectedState!]!.map((String district) {
-                  return DropdownMenuItem<String>(
-                    value: district,
-                    child: Text(district),
-                  );
-                }).toList()
-                    : [],
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedDistrict = newValue;
-                  });
-                },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                  labelText: 'District',
-                ),
-                validator: (value) => value == null ? 'Please select a district' : null,
-              ),
-              SizedBox(height: 20),
-
-              TextFormField(
-                controller:_talukaController,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(color: Color(0xFF00AD83)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(color: Color(0xFF00AD83)),
-                    ),
-                    labelText: 'taluka'
-                ),
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(64), // Limit the input to 64 characters
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your taluka';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-
-              TextFormField(
-                controller: _villageController,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(color: Color(0xFF00AD83)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(color: Color(0xFF00AD83)),
-                    ),
-                    labelText: 'village'
-                ),
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(64), // Limit the input to 64 characters
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your village';
-                  }
-                  return null;
-                },
+                selectedItem: selectedVillage,
+                validator: (value) =>
+                value == null ? 'Please select a Village' : null,
               ),
               SizedBox(height: 35),
               ElevatedButton(
                 onPressed: isSubmitting ? null : _submitForm,
                 child: isSubmitting
                     ? CircularProgressIndicator(color: Colors.white)
-                    : Text('Save and Continue',
-                  style: TextStyle(color: Colors.white),),
+                    : Text (tr('save and continue'),
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF00AD83),
                 ),
               ),
-
-
             ],
           ),
         ),
