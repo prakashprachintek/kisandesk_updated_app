@@ -1,0 +1,56 @@
+{
+  "verify_phone_number": "अपना फ़ोन \nनंबर सत्यापित करें",
+  "enter_phone_description": "वन टाइम पासवर्ड भेजने के लिए \nअपना फ़ोन नंबर दर्ज करें",
+  "phone_number_label": "फ़ोन नंबर",
+  "phone_number_hint": "अपना फ़ोन नंबर दर्ज करें",
+  "error_invalid_phone": "कृपया एक मान्य फ़ोन नंबर दर्ज करें",
+  "get_otp_button": "OTP प्राप्त करें",
+
+  "verification_code": "सत्यापन कोड",
+  "otp_sent_to": "ओटीपी भेजा गया ",
+  "verify_otp": "ओटीपी सत्यापित करें",
+  "resend_otp_link": "ओटीपी लिंक पुनः भेजें",
+
+  "Success": "सफलता",
+  "Congratulations!_You_have_been_successfully_authenticated": "बधाई हो! आपने सफलतापूर्वक प्रमाणित कर लिया है",
+  "Continue": "जारी रखें",
+
+  "Search": "खोजें...",
+  "Home": "होम",
+  "Add": "जोड़ें",
+  "Transaction": "लेन-देन",
+  "Market": "बाजार",
+  "Addati": "अड्डाटी",
+  "Machinery": "मशीनरी",
+  "Pesticides": "कीटनाशक",
+  "Land": "भूमि",
+  "Labour": "श्रमिक",
+  "Cattle": "पशुधन",
+  "farmer": "किसान",
+
+  "Add Item": "सामान जोड़ें",
+  "Category": "श्रेणी",
+  "What are you selling?": "आप क्या बेच रहे हैं?",
+  "Price": "कीमत",
+  "Location": "स्थान",
+  "Description": "विवरण",
+  "Add Images": "छवियां जोड़ें",
+  "save": "जोड़ें",
+  "Please select a category": "कृपया एक श्रेणी चुनें",
+  "Please enter what you are selling": "कृपया आप क्या बेच रहे हैं, इसे दर्ज करें",
+  "Please enter the price": "कृपया मूल्य दर्ज करें",
+  "Please enter the location": "कृपया स्थान दर्ज करें",
+  "Please enter a description": "कृपया एक विवरण दर्ज करें",
+
+
+  "Profile": "प्रोफ़ाइल",
+  "Full Name": "पूरा नाम",
+  "Email": "ईमेल",
+  "Phone": "फोन",
+  "Address": "पता",
+  "John Doe": "जॉन डो",
+  "john.doe@example.com": "john.doe@example.com",
+  "+1 234 567 890": "+1 234 567 890",
+  "1234 Street, City, Country": "1234 सड़क, शहर, देश"
+
+}

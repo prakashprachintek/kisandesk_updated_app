@@ -1,0 +1,57 @@
+{
+  "verify_phone_number": "ನಿಮ್ಮ ಫೋನ್ \nನಂಬರವನ್ನು ದೃಢೀಕರಿಸಿ",
+  "enter_phone_description": "ಒಂದು ಕೀಲಿಯ ಪಾಸ್ವರ್ಡ್ ಕಳುಹಿಸಲು \nನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
+  "phone_number_label": "ಫೋನ್ ನಂಬರ",
+  "phone_number_hint": "ನಿಮ್ಮ ಫೋನ್ ನಂಬರವನ್ನು ನಮೂದಿಸಿ",
+  "error_invalid_phone": "ಮಾನ್ಯ ಫೋನ್ ನಂಬರವನ್ನು ನಮೂದಿಸಿ",
+  "get_otp_button": "ಓಟಿಪಿ ಪಡೆಯಿರಿ",
+
+  "verification_code": "ಪರಿಶೀಲನೆ ಕೋಡ್",
+  "otp_sent_to": "ಓಟಿಪಿ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "verify_otp": "ಓಟಿಪಿಯನ್ನು ದೃಢೀಕರಿಸಿ",
+  "resend_otp_link": "ಓಟಿಪಿ ಬಂದಿಲ್ಲವೇ? ಓಟಿಪಿ ಪುನಃ ಕಳುಹಿಸಿ",
+
+
+  "Success": "ಓಟಿಪಿ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "Congratulations!_You_have_been_successfully_authenticated": "ಅಭಿನಂದನೆಗಳು! ನೀವು ಯಶಸ್ವಿಯಾಗಿ ದೃಢೀಕರಿಸಿದ್ದೀರಿ",
+  "Continue":"ಮುಂದುವರಿಸಿ",
+
+  "Search": "ಹುಡುಕಿ...",
+  "Home": "ಮನೆ",
+  "Add": "ಸೇರಿಸಿ",
+  "Transaction": "ವ್ಯವಹಾರ",
+  "Market": "ಮಾರುಕಟ್ಟೆ",
+  "Addati": "ಅಡ್ಡತಿ",
+  "Machinery": "ಯಂತ್ರೋಪಕರಣ",
+  "Pesticides": "ಹೊಂದಾಣಿಕೆ",
+  "Land": "ಭೂಮಿ",
+  "Labour": "ಕಾರ್ಮಿಕ",
+  "Cattle": "ಆಡುಗೋವು",
+  "farmer": "ಕೃಷಿಕ",
+
+  "Add Item": "ವಸ್ತು ಸೇರಿಸಿ",
+  "Category": "ವರ್ಗ",
+  "What are you selling?": "ನೀವು ಏನನ್ನು ಮಾರುತ್ತಿದ್ದೀರಿ?",
+  "Price": "ಬೆಲೆ",
+  "Location": "ಸ್ಥಳ",
+  "Description": "ವಿವರಣೆ",
+  "Add Images": "ಚಿತ್ರಗಳನ್ನು ಸೇರಿಸಿ",
+  "save": "ಸೇರಿಸು",
+  "Please select a category": "ದಯವಿಟ್ಟು ಒಂದು ವರ್ಗ ಆಯ್ಕೆಮಾಡಿ",
+  "Please enter what you are selling": "ನೀವು ಮಾರುತ್ತಿದ್ದ ವಸ್ತುವನ್ನು ನಮೂದಿಸಿ",
+  "Please enter the price": "ದಯವಿಟ್ಟು ಬೆಲೆ ನಮೂದಿಸಿ",
+  "Please enter the location": "ದಯವಿಟ್ಟು ಸ್ಥಳವನ್ನು ನಮೂದಿಸಿ",
+  "Please enter a description": "ದಯವಿಟ್ಟು ವಿವರಣೆಯನ್ನು ನಮೂದಿಸಿ",
+
+  "Profile": "ಪ್ರೊಫೈಲ್",
+  "Full Name": "ಪೂರ್ಣ ಹೆಸರು",
+  "Email": "ಇಮೇಲ್",
+  "Phone": "ಫೋನ್",
+  "Address": "ವಿಳಾಸ",
+  "John Doe": "ಜಾನ್ ಡೋ",
+  "john.doe@example.com": "john.doe@example.com",
+  "+1 234 567 890": "+1 234 567 890",
+  "1234 Street, City, Country": "1234 ರಸ್ತೆ, ನಗರ, ದೇಶ"
+
+
+}

@@ -1,0 +1,57 @@
+{
+  "verify_phone_number": "Verify your\nphone number",
+  "enter_phone_description": "Enter your phone number to send one \ntime password",
+  "phone_number_label": "Phone Number",
+  "phone_number_hint": "Enter your phone number",
+  "error_invalid_phone": "Please enter a valid phone number",
+  "get_otp_button": "Get OTP",
+
+  "verification_code": "Verification Code",
+  "otp_sent_to": "We have sent the OTP to ",
+  "verify_otp": "Verify OTP",
+  "resend_otp_link": "Haven't received? Resend OTP",
+
+
+  "Success": "Success",
+  "Congratulations!_You_have_been_successfully_authenticated": "Congratulations! You have been successfully authenticated",
+  "Continue": "Continue",
+
+
+  "Search": "Search...",
+  "Home": "Home",
+  "Add": "Add",
+  "Transaction": "Transaction",
+  "Market": "Market",
+  "Addati": "Addati",
+  "Machinery": "Machinery",
+  "Pesticides": "Pesticides",
+  "Land": "Land",
+  "Labour": "Labour",
+  "Cattle": "Cattle",
+
+  "Add Item": "Add Item",
+  "Category": "Category",
+  "What are you selling?": "What are you selling?",
+  "Price": "Price",
+  "Location": "Location",
+  "Description": "Description",
+  "Add Images": "Add Images",
+  "save": "save",
+  "Please select a category": "Please select a category",
+  "Please enter what you are selling": "Please enter what you are selling",
+  "Please enter the price": "Please enter the price",
+  "Please enter the location": "Please enter the location",
+  "Please enter a description": "Please enter a description",
+
+  "Profile": "Profile",
+  "Full Name": "Full Name",
+  "Email": "Email",
+  "Phone": "Phone",
+  "Address": "Address",
+  "John Doe": "John Doe",
+  "john.doe@example.com": "john.doe@example.com",
+  "+1 234 567 890": "+1 234 567 890",
+  "1234 Street, City, Country": "1234 Street, City, Country",
+  "farmer": "Farmer"
+
+}
