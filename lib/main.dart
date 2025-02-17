@@ -1,41 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:provider/provider.dart';
-import 'favorites_provider.dart'; // Import the favorites provider
-import 'Languageselection_page.dart';
-import 'add_page.dart';
-import 'profile_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'views/splashs/SplashScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
-
-  runApp(
-    EasyLocalization(
-      supportedLocales: [Locale('en'), Locale('kn'), Locale('hi'), Locale('mr')],
-      path: 'assets/lang', // Path to your JSON files
-      fallbackLocale: Locale('en'),
-      child: ChangeNotifierProvider(
-        create: (context) => FavoritesProvider(), // Provide the FavoritesProvider
-        child: MyApp(),
-      ),
-    ),
-  );
+  await Firebase.initializeApp();
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Kisan Desk',
       debugShowCheckedModeBanner: false,
-      title: 'My App',
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      home: LanguageSelectionPage(
-        onLocaleChange: (locale) {
-          context.setLocale(locale);
-        },
+      theme: _buildThemeData(),
+      home: SplashScreen(),
+    );
+  }
+
+  ThemeData _buildThemeData() {
+    return ThemeData(
+      primaryColor: Color(0xFF1B5E20),
+      colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.teal)
+          .copyWith(secondary: Color(0xFFFFA000)),
+      scaffoldBackgroundColor: Colors.white,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.white,
+          backgroundColor: Color(0xFF1B5E20),
+          minimumSize: Size.fromHeight(48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Color(0xFF1B5E20), width: 2),
+        ),
+        labelStyle: TextStyle(color: Colors.grey[700]),
       ),
     );
   }

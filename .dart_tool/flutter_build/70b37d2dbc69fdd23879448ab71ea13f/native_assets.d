@@ -1,0 +1,1 @@
+ /Users/abhishek/abhishek/prachintech/kisandesk_app/.dart_tool/flutter_build/70b37d2dbc69fdd23879448ab71ea13f/native_assets.yaml: 
