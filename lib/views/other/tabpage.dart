@@ -1,43 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:mainproject1/views/posts/Post_page.dart';
-import 'package:share_plus/share_plus.dart';
-import 'dart:convert';
+import '../posts/AllPostsPage.dart';
+import '../posts/MyTransactionPage.dart';
 import '../posts/Mypost_Page.dart';
-import '../transctions/Mytransaction_page.dart';
-import 'add_page.dart';
+import '../posts/post_page.dart';
+
+// If you have a "userData" map that identifies the current user, pass it in here.
 
 class TabbedPage extends StatelessWidget {
   final Map<String, dynamic> userData;
   final String phoneNumber;
-  TabbedPage({required this.userData,required this.phoneNumber});
+
+  const TabbedPage({
+    Key? key,
+    required this.userData,
+    required this.phoneNumber,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3, // Number of tabs
+      length: 3, // posts, my posts, transactions
       child: Scaffold(
         appBar: AppBar(
           title: Text('My Dashboard'),
-          backgroundColor: Color(0xFF00AD83), // Your preferred color
+          backgroundColor: Color(0xFF00AD83),
           bottom: TabBar(
-            indicatorColor: Colors.white, // Tab indicator color
+            indicatorColor: Colors.white,
             tabs: [
-              Tab( text: 'post'),
-              Tab( text: 'My Posts'),
-              Tab( text: 'My Transactions'),
+              Tab(text: 'Post'),
+              Tab(text: 'My Posts'),
+              Tab(text: 'My Transactions'),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            postPage(),
-            MyPostPage(userData: userData,phoneNumber:phoneNumber,),
-            MyTransactionPage(),
+            // 1) Show all posts
+            AllPostsPage(),
 
+            // 2) Show only the current user's posts
+            MyPostPage(userData: userData, phoneNumber: phoneNumber),
+            // 3) Some placeholder for transactions
+            MyTransactionPage(),
           ],
         ),
       ),
     );
   }
 }
-

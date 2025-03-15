@@ -39,8 +39,14 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomeScreen(phoneNumber: widget.phoneNumber, userData: {})),
+        MaterialPageRoute(
+          builder: (_) => HomePage(
+            phoneNumber: widget.phoneNumber,
+            userData: {},
+          ),
+        ),
       );
+
     } catch (e) {
       print("OTP Verification failed: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("OTP Verification failed: $e")));

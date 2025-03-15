@@ -1,96 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For date formatting
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:intl/intl.dart';
 
-import '../home/DashboardTab_page.dart';
+// Ensure this file exists and has your "Add Me As Labour" functionality.
 import '../other/AddMeAsLabour_page.dart';
 
 class LabourRequestPage extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String phoneNumber;
-  LabourRequestPage({required this.phoneNumber,required this.userData});
+
+  const LabourRequestPage({
+    Key? key,
+    required this.userData,
+    required this.phoneNumber,
+  }) : super(key: key);
 
   @override
   _LabourRequestPageState createState() => _LabourRequestPageState();
 }
 
-class _LabourRequestPageState extends State<LabourRequestPage> with SingleTickerProviderStateMixin {
+class _LabourRequestPageState extends State<LabourRequestPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  // Controllers for Labour Form
   final TextEditingController _maleLabourController = TextEditingController();
   final TextEditingController _femaleLabourController = TextEditingController();
   final TextEditingController _workDescriptionController = TextEditingController();
   DateTime? _fromDate;
   DateTime? _toDate;
-
   bool _isMaleSelected = false;
   bool _isFemaleSelected = false;
-
-  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // Updated to 3 tabs
+    _tabController = TabController(length: 3, vsync: this);
   }
 
-  void _resetForm() {
-    setState(() {
-      _maleLabourController.clear();
-      _femaleLabourController.clear();
-      _workDescriptionController.clear();
-      _fromDate = null;
-      _toDate = null;
-      _isMaleSelected = false;
-      _isFemaleSelected = false;
-    });
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _maleLabourController.dispose();
+    _femaleLabourController.dispose();
+    _workDescriptionController.dispose();
+    super.dispose();
   }
 
-  Future<void> _submitRequest() async {
-    if (_validateForm()) {
-      final url = Uri.parse('http://3.110.121.159/api/admin/create_labours_request');
-      final body = {
-        "farmer_id": widget.userData['farmer_id'], // Replace with actual farmer ID
-        "work": _workDescriptionController.text,
-        "work_date_from": _fromDate != null ? DateFormat('yyyy-MM-dd').format(_fromDate!) : '',
-        "work_date_to": _toDate != null ? DateFormat('yyyy-MM-dd').format(_toDate!) : '',
-        "total_male_labours": _maleLabourController.text,
-        "total_female_labours": _femaleLabourController.text,
-      };
+  // Submits the labour request to Firebase
+  Future<void> _submitLabourRequest() async {
+    if (!_validateForm()) return;
 
-      try {
-        final response = await http.post(
-          url,
-          headers: {"Content-Type": "application/json"},
-          body: json.encode(body),
-        );
+    Map<String, dynamic> request = {
+      'work': _workDescriptionController.text,
+      'work_date_from': _fromDate != null ? DateFormat('yyyy-MM-dd').format(_fromDate!) : '',
+      'work_date_to': _toDate != null ? DateFormat('yyyy-MM-dd').format(_toDate!) : '',
+      'total_male_labours': _isMaleSelected ? _maleLabourController.text : '0',
+      'total_female_labours': _isFemaleSelected ? _femaleLabourController.text : '0',
+      'farmer_id': widget.userData['farmer_id'] ?? '',
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
 
-        if (response.statusCode == 200) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text('Success'),
-              content: Text('Labour request created successfully.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _resetForm();
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to create labour request: ${response.body}')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
+    final DatabaseReference requestsRef = FirebaseDatabase.instance.ref("labourRequests");
+
+    try {
+      await requestsRef.push().set(request);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Labour request submitted successfully!")),
+      );
+      _resetForm();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to submit request: $e")),
+      );
     }
   }
 
@@ -108,7 +90,7 @@ class _LabourRequestPageState extends State<LabourRequestPage> with SingleTicker
       return false;
     }
     if (_fromDate == null || _toDate == null) {
-      _showError("Please select both from and to dates.");
+      _showError("Please select both start and end dates.");
       return false;
     }
     if (_workDescriptionController.text.isEmpty) {
@@ -118,13 +100,25 @@ class _LabourRequestPageState extends State<LabourRequestPage> with SingleTicker
     return true;
   }
 
-  void _showError(String message) {
+  void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(content: Text(msg)),
     );
   }
 
-  Future<void> _pickDate(BuildContext context, bool isFromDate) async {
+  void _resetForm() {
+    setState(() {
+      _maleLabourController.clear();
+      _femaleLabourController.clear();
+      _workDescriptionController.clear();
+      _fromDate = null;
+      _toDate = null;
+      _isMaleSelected = false;
+      _isFemaleSelected = false;
+    });
+  }
+
+  Future<void> _pickDate(bool isFromDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -142,20 +136,248 @@ class _LabourRequestPageState extends State<LabourRequestPage> with SingleTicker
     }
   }
 
+  // ----------------- Labour Form Tab -----------------
+  Widget _buildLabourFormTab() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Create Labour Request",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              SizedBox(height: 16),
+              Text("Select Labour Type:",
+                  style: TextStyle(fontSize: 16, color: Colors.black87)),
+              Row(
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isMaleSelected,
+                        onChanged: (value) {
+                          setState(() {
+                            _isMaleSelected = value ?? false;
+                          });
+                        },
+                      ),
+                      Text("Male", style: TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                  SizedBox(width: 20),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isFemaleSelected,
+                        onChanged: (value) {
+                          setState(() {
+                            _isFemaleSelected = value ?? false;
+                          });
+                        },
+                      ),
+                      Text("Female", style: TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                ],
+              ),
+              if (_isMaleSelected)
+                Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: TextField(
+                    controller: _maleLabourController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Number of Male Labours',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                  ),
+                ),
+              SizedBox(height: 16),
+              if (_isFemaleSelected)
+                Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: TextField(
+                    controller: _femaleLabourController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Number of Female Labours',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                  ),
+                ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("From Date: ${_fromDate != null ? DateFormat('yyyy-MM-dd').format(_fromDate!) : 'Not selected'}",
+                            style: TextStyle(fontSize: 16)),
+                        SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () => _pickDate(true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF2E7D32),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: Text("Select From Date"),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("To Date: ${_toDate != null ? DateFormat('yyyy-MM-dd').format(_toDate!) : 'Not selected'}",
+                            style: TextStyle(fontSize: 16)),
+                        SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () => _pickDate(false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF2E7D32),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: Text("Select To Date"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: _workDescriptionController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  labelText: 'Work Description',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                ),
+              ),
+              SizedBox(height: 24),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _submitLabourRequest,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF2E7D32),
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Text("Submit Request",
+                      style: TextStyle(fontSize: 18, color: Colors.white)),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ----------------- Labour Dashboard Tab -----------------
+  Widget _buildLabourDashboardTab() {
+    final DatabaseReference requestsRef =
+    FirebaseDatabase.instance.ref("labourRequests");
+    return StreamBuilder(
+      stream: requestsRef.onValue,
+      builder: (context, AsyncSnapshot snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+        Map<dynamic, dynamic>? data = snapshot.data.snapshot.value as Map?;
+        if (data == null) {
+          return Center(child: Text("No Labour Requests Available"));
+        }
+        List<Map<String, dynamic>> requests =
+        data.values.map((e) => Map<String, dynamic>.from(e)).toList();
+
+        return ListView.builder(
+          padding: EdgeInsets.all(16),
+          itemCount: requests.length,
+          itemBuilder: (context, index) {
+            final item = requests[index];
+            return Card(
+              margin: EdgeInsets.symmetric(vertical: 8),
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item['work'] ?? 'No Work Description',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text('From: ${item['work_date_from'] ?? 'N/A'}'),
+                    Text('To: ${item['work_date_to'] ?? 'N/A'}'),
+                    Text('Status: ${item['status'] ?? 'N/A'}'),
+                    SizedBox(height: 8),
+                    Text('Male Labour: ${item['total_male_labours'] ?? 0}'),
+                    Text('Female Labour: ${item['total_female_labours'] ?? 0}'),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ----------------- Main Build -----------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Labour Management'),
-        backgroundColor: Color(0xFF00AD83),
+        title: Text("Labour Management",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF2E7D32),
+                Color(0xFF66BB6A),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white, // Color for the selected tab's text
-          unselectedLabelColor: Colors.black54, // Color for unselected tabs' text
-          indicatorColor: Colors.white, // Color for the selected tab's underline indicator
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
           tabs: [
             Tab(text: 'Labour Form'),
-            Tab(text: 'Add Me As\nLabour'),
+            Tab(text: 'Add Me As Labour'),
             Tab(text: 'Dashboard'),
           ],
         ),
@@ -164,160 +386,10 @@ class _LabourRequestPageState extends State<LabourRequestPage> with SingleTicker
         controller: _tabController,
         children: [
           _buildLabourFormTab(),
-          AddMeAsLabourPage(userData: widget.userData, phoneNumber:widget.phoneNumber,),
-          DashboardTab(userData:widget.userData, phoneNumber:widget.phoneNumber,),
+          AddMeAsLabourPage(userData: widget.userData, phoneNumber: widget.phoneNumber),
+          _buildLabourDashboardTab(),
         ],
       ),
-    );
-  }
-
-
-  Widget _buildLabourFormTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Select Labour Type:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: _isMaleSelected,
-                        onChanged: (value) {
-                          setState(() {
-                            _isMaleSelected = value!;
-                          });
-                        },
-                      ),
-                      Text("Male"),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: _isFemaleSelected,
-                        onChanged: (value) {
-                          setState(() {
-                            _isFemaleSelected = value!;
-                          });
-                        },
-                      ),
-                      Text("Female"),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _maleLabourController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Male Labours',
-                      border: OutlineInputBorder(),
-                      filled: true,
-                      fillColor: Colors.green.shade50,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: TextField(
-                    controller: _femaleLabourController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Female Labours',
-                      border: OutlineInputBorder(),
-                      filled: true,
-                      fillColor: Colors.green.shade50,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            _buildDatePickers(),
-            SizedBox(height: 16),
-            TextField(
-              controller: _workDescriptionController,
-              decoration: InputDecoration(
-                labelText: 'Work Description',
-                border: OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors.green.shade50,
-              ),
-              maxLines: 4,
-            ),
-            SizedBox(height: 16),
-            Center(
-              child: ElevatedButton(
-                onPressed: _submitRequest,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF00AD83),
-                ),
-                child: Text('Submit Request',
-                style:TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-
-
-
-  Widget _buildDatePickers() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildDatePicker(
-            label: 'From Date',
-            date: _fromDate,
-            onPickDate: () => _pickDate(context, true),
-          ),
-        ),
-        SizedBox(width: 16),
-        Expanded(
-          child: _buildDatePicker(
-            label: 'To Date',
-            date: _toDate,
-            onPickDate: () => _pickDate(context, false),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDatePicker({required String label, DateTime? date, required VoidCallback onPickDate}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('$label: ${date != null ? DateFormat('yyyy-MM-dd').format(date) : 'Not Selected'}'),
-        ElevatedButton(
-          onPressed: onPickDate,
-          style: ElevatedButton.styleFrom( backgroundColor: Color(0xFF00AD83)),
-          child: Text('Pick $label',
-          style: TextStyle(color:Colors.white),),
-        ),
-      ],
     );
   }
 }

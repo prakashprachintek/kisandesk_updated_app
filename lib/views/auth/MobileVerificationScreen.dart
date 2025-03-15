@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../main.dart';
 import '../home/HomePage.dart';
+import '../home/HomeScreen.dart';
 import '../widgets/GradientAuthButton.dart';
 import 'OTPVerificationScreen.dart';
 
@@ -38,8 +39,8 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
           await _auth.signInWithCredential(credential);
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => HomeScreen(phoneNumber: phoneNumber, userData: {})),
-          );
+            MaterialPageRoute(builder: (_) => HomeScreen(),
+          ));
         } catch (e) {
           print("Auto sign-in failed: $e");
         }

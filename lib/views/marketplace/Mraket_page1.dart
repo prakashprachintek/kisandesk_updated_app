@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
+import '../home/HomePage.dart';
 import '../home/home_page2.dart';
 import '../machinery/TraderDetailsPage.dart';
 import '../other/add_page.dart';
@@ -129,10 +130,10 @@ class _MarketPageState extends State<MarketPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start
           children: [
-            DashboardBox(
+           /* DashboardBox(
               height: 125,
               content: ImageSlideshow(),
-            ),
+            ),*/
             SizedBox(height: 22),
             Text(
               'Gulbarga',

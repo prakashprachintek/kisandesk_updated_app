@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import 'HomePage.dart';
 import 'home_page2.dart';
 
 class HomeScreen extends StatelessWidget {

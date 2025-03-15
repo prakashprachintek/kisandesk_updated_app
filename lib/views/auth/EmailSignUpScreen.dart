@@ -43,15 +43,15 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomeScreen(
+          builder: (_) => HomePage(
             phoneNumber: '',
             userData: {
               "email": userCred.user?.email,
-              "fullName": fullName
             },
           ),
         ),
       );
+
     } catch (e) {
       _showError("Sign-Up failed: $e");
     }

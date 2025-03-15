@@ -36,14 +36,17 @@ class _GoogleSignInHandlerState extends State<GoogleSignInHandler> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomeScreen(
-          phoneNumber: '',
-          userData: {
-            "email": _auth.currentUser?.email,
-            "displayName": _auth.currentUser?.displayName,
-          },
-        )),
+        MaterialPageRoute(
+          builder: (_) => HomePage(
+            phoneNumber: '',
+            userData: {
+              "email": _auth.currentUser?.email,
+              "displayName": _auth.currentUser?.displayName,
+            },
+          ),
+        ),
       );
+
     } catch (e) {
       print("Google Sign-In failed: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Google Sign-In failed: $e")));

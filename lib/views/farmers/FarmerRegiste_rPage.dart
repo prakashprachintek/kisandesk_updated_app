@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:dropdown_search/dropdown_search.dart';
 
+import '../home/HomePage.dart';
 import '../home/home_page2.dart';
 
 class FarmerRegisterPage extends StatefulWidget {

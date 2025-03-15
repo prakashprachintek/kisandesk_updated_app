@@ -1,17 +1,58 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:firebase_database/firebase_database.dart';
 
-class DashboardTab extends StatefulWidget {
+
+import '../posts/PostDetailsPage.dart';
+
+/// A combined dashboard page with tabs for Labour Requests and Market Posts.
+class DashboardTabbedPage extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String phoneNumber;
-  DashboardTab({required this.phoneNumber,required this.userData});
+  DashboardTabbedPage({required this.phoneNumber, required this.userData});
 
   @override
-  _DashboardTabState createState() => _DashboardTabState();
+  _DashboardTabbedPageState createState() => _DashboardTabbedPageState();
 }
 
-class _DashboardTabState extends State<DashboardTab> {
+class _DashboardTabbedPageState extends State<DashboardTabbedPage> {
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2, // Two tabs: Labour Requests and Market Posts
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Dashboard"),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: "Labour Requests"),
+              Tab(text: "Market Posts"),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            LabourRequestsTab(userData: widget.userData),
+            MarketPostsTab(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ------------------------------------------------------------------
+/// Labour Requests Tab (reusing your existing DashboardTab logic)
+class LabourRequestsTab extends StatefulWidget {
+  final Map<String, dynamic> userData;
+  LabourRequestsTab({required this.userData});
+
+  @override
+  _LabourRequestsTabState createState() => _LabourRequestsTabState();
+}
+
+class _LabourRequestsTabState extends State<LabourRequestsTab> {
   List<dynamic> _dashboardData = [];
   bool _isLoading = true;
 
@@ -36,10 +77,8 @@ class _DashboardTabState extends State<DashboardTab> {
         headers: headers,
         body: json.encode(body),
       );
-
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-
         if (data['status'] == 'success') {
           setState(() {
             _dashboardData = data['results'] ?? [];
@@ -66,9 +105,7 @@ class _DashboardTabState extends State<DashboardTab> {
   }
 
   Widget _buildLoadingIndicator() {
-    return Center(
-      child: CircularProgressIndicator(),
-    );
+    return Center(child: CircularProgressIndicator());
   }
 
   Widget _buildNoDataMessage() {
@@ -127,6 +164,60 @@ class _DashboardTabState extends State<DashboardTab> {
           : _dashboardData.isEmpty
           ? _buildNoDataMessage()
           : _buildDashboardList(),
+    );
+  }
+}
+
+/// ------------------------------------------------------------------
+/// Market Posts Tab - Displays posts from Firebase
+class MarketPostsTab extends StatelessWidget {
+  final DatabaseReference postsRef =
+  FirebaseDatabase.instance.ref("marketPosts");
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: postsRef.onValue,
+      builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+        Map<dynamic, dynamic>? data =
+        snapshot.data!.snapshot.value as Map?;
+        if (data == null) {
+          return Center(child: Text("No posts found."));
+        }
+        List<Map<String, dynamic>> posts = data.values
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+
+        return ListView.builder(
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            Map<String, dynamic> post = posts[index];
+            return ListTile(
+              leading: post["imageUrl"] != null && post["imageUrl"].isNotEmpty
+                  ? Image.network(post["imageUrl"],
+                  width: 50, height: 50, fit: BoxFit.cover)
+                  : Container(width: 50, height: 50, color: Colors.grey),
+              title: Text(post["title"] ?? "No Title"),
+              subtitle: Text(
+                post["description"] ?? "",
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PostDetailsPage(post: post),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

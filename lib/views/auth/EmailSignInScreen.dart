@@ -28,12 +28,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomeScreen(
+          builder: (_) => HomePage(
             phoneNumber: '',
             userData: {"email": userCred.user?.email},
           ),
         ),
       );
+
     } catch (e) {
       _showError("Sign-In failed: $e");
     }
