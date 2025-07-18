@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'views/splashs/SplashScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  await EasyLocalization.ensureInitialized(); // IMPORTANT!
+
+  runApp(
+    EasyLocalization(
+      supportedLocales: [Locale('en'), Locale('kn'), Locale('hi'), Locale('mr')],
+      path: 'assets/lang', // your JSON files are here
+      fallbackLocale: Locale('en'),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -16,6 +26,12 @@ class MyApp extends StatelessWidget {
       title: 'Kisan Desk',
       debugShowCheckedModeBanner: false,
       theme: _buildThemeData(),
+
+      // 👇 VERY IMPORTANT for EasyLocalization to work
+      locale: context.locale,
+      supportedLocales: context.supportedLocales,
+      localizationsDelegates: context.localizationDelegates,
+
       home: SplashScreen(),
     );
   }

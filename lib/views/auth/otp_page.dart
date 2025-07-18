@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../farmers/FarmerRegiste_rPage.dart';
+import '../home/HomePage.dart';
 
 class OtpPage extends StatefulWidget {
   final String phoneNumber;
@@ -52,7 +53,8 @@ class _OtpPageState extends State<OtpPage> {
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-      print('Response data: $responseData'); // Add this line to check the response
+      print(
+          'Response data: $responseData'); // Add this line to check the response
       if (responseData['status'] == 'success') {
         return responseData['results'];
       } else {
@@ -64,33 +66,52 @@ class _OtpPageState extends State<OtpPage> {
     }
   }
 
-  void _navigateToRegistration() async {
-    final userData = await fetchUserData(widget.phoneNumber); // Fetch user data by phone number
+  Future<void> _verifyOtpAndNavigate() async {
+    final enteredOtp = _otpController1.text +
+        _otpController2.text +
+        _otpController3.text +
+        _otpController4.text;
 
-    // Check if user data exists or not
-    if (userData != null && userData.isNotEmpty) {
-      // User exists, pre-fill the registration form
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FarmerRegisterPage(
-            userData: userData,
-            phoneNumber: widget.phoneNumber,
-            isUserExists: true, // Indicates user data exists
-          ),
-        ),
+    if (enteredOtp.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please enter the full OTP")),
       );
-    } else {
-      // User does not exist, navigate to registration page with empty fields
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FarmerRegisterPage(
-            userData: {}, // Empty data for new user
-            phoneNumber: widget.phoneNumber,
-            isUserExists: false, // Indicates new user
+      return;
+    }
+
+    final url = Uri.parse("http://13.233.103.50/api/admin/verify_otp");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone": widget.phoneNumber,
+          "otp": enteredOtp,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      print(data);
+
+      if (response.statusCode == 200 && data["status"] == "success") {
+        // Navigate to HomePage (you can pass userData later)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                HomePage(), // or HomePage(phoneNumber: ..., userData: ...)
           ),
-        ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Incorrect OTP. Please try again.")),
+        );
+      }
+    } catch (e) {
+      print("OTP verification failed: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Something went wrong. Try again.")),
       );
     }
   }
@@ -132,20 +153,24 @@ class _OtpPageState extends State<OtpPage> {
                     height: 60,
                     child: ElevatedButton(
                       onPressed: () {
+                        /*
                         // Concatenate the entered OTP digits
                         final enteredOtp = _otpController1.text +
                             _otpController2.text +
                             _otpController3.text +
                             _otpController4.text;
                         // Simulate OTP verification success and fetch user data
-                        _navigateToRegistration();
+                        // _navigateToRegistration();
+                        */
+                        _verifyOtpAndNavigate();
                       },
                       child: Text(
                         tr('verify_otp'),
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF00AD83), // Green button color
+                        backgroundColor:
+                            Color(0xFF00AD83), // Green button color
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(32),
                         ),

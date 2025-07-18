@@ -26,13 +26,14 @@ import '../farmers/FarmerPage.dart';
 import 'DashboardTab_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../marketplace/mandiService.dart';
+import '../doctor/doctor_page.dart';
 
 /// A placeholder cart page if you don't have one
 class CartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       appBar: AppBar(
         title: Text("My Cart"),
       ),
@@ -45,9 +46,6 @@ class CartPage extends StatelessWidget {
 
 /// ------------------- HOME PAGE ---------------------
 class HomePage extends StatefulWidget {
-
-
-
   final Map<String, dynamic>? userData;
   final String? phoneNumber;
 
@@ -93,13 +91,19 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
+
   void _showProfileUpdateDialog() {
     // Pre-fill controllers with current user details
-    TextEditingController nameController = TextEditingController(text: widget.userData?['name'] ?? "");
-    TextEditingController emailController = TextEditingController(text: widget.userData?['email'] ?? "");
-    TextEditingController dobController = TextEditingController(text: widget.userData?['dob'] ?? "");
-    TextEditingController genderController = TextEditingController(text: widget.userData?['gender'] ?? "");
-    TextEditingController phoneController = TextEditingController(text: widget.userData?['phoneNumber'] ?? "");
+    TextEditingController nameController =
+        TextEditingController(text: widget.userData?['name'] ?? "");
+    TextEditingController emailController =
+        TextEditingController(text: widget.userData?['email'] ?? "");
+    TextEditingController dobController =
+        TextEditingController(text: widget.userData?['dob'] ?? "");
+    TextEditingController genderController =
+        TextEditingController(text: widget.userData?['gender'] ?? "");
+    TextEditingController phoneController =
+        TextEditingController(text: widget.userData?['phoneNumber'] ?? "");
 
     showDialog(
       context: context,
@@ -143,14 +147,18 @@ class _HomePageState extends State<HomePage> {
               onPressed: () async {
                 String uid = widget.userData?['uid'] ?? "";
                 if (uid.isNotEmpty) {
-                  await FirebaseDatabase.instance.ref("users").child(uid).update({
+                  await FirebaseDatabase.instance
+                      .ref("users")
+                      .child(uid)
+                      .update({
                     'name': nameController.text,
                     'dob': dobController.text,
                     'gender': genderController.text,
                     'phoneNumber': phoneController.text,
                     'email': emailController.text,
                   });
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Profile updated successfully.")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Profile updated successfully.")));
                 }
                 Navigator.pop(context);
               },
@@ -166,6 +174,24 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _fetchLocation();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showLoginSuccessSnackbar();
+    });
+  }
+
+  void _showLoginSuccessSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Login Successful. Welcome to Kisan Desk!',
+          style: TextStyle(color: Colors.black),
+        ),
+        duration: Duration(seconds: 4), // Auto-dismiss after 3 seconds
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color.fromARGB(255, 238, 238, 238),
+      ),
+    );
   }
 
   /// 1) Determine position using geolocator
@@ -195,7 +221,8 @@ class _HomePageState extends State<HomePage> {
     }
 
     // If all good, get position
-    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
   }
 
   /// 2) Reverse geocode to city, state
@@ -241,6 +268,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // removed as per requirement
+/*
   // Tapping cart => to a CartPage
   void _handleCartTap() {
     Navigator.push(
@@ -248,7 +277,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(builder: (_) => CartPage()),
     );
   }
-
+*/
   // Bottom nav
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
@@ -264,10 +293,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       );
-
-
-    }
-    else if (index == 1) {
+    } else if (index == 1) {
       // "Add"
       Navigator.push(
         context,
@@ -281,6 +307,7 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
+
   Future<void> _pickProfilePicture() async {
     final ImagePicker picker = ImagePicker();
     showModalBottomSheet(
@@ -291,7 +318,8 @@ class _HomePageState extends State<HomePage> {
             children: [
               ListTile(
                 leading: Icon(Icons.camera_alt, color: Colors.black54),
-                title: Text('Take Photo', style: TextStyle(color: Colors.black54)),
+                title:
+                    Text('Take Photo', style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -304,7 +332,8 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: Colors.black54),
-                title: Text('Choose from Gallery', style: TextStyle(color: Colors.black54)),
+                title: Text('Choose from Gallery',
+                    style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -365,7 +394,8 @@ class _HomePageState extends State<HomePage> {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundImage: _profileImageBase64 != null && _profileImageBase64!.isNotEmpty
+                  backgroundImage: _profileImageBase64 != null &&
+                          _profileImageBase64!.isNotEmpty
                       ? MemoryImage(base64Decode(_profileImageBase64!))
                       : AssetImage('assets/profile.jpg') as ImageProvider,
                 ),
@@ -377,13 +407,13 @@ class _HomePageState extends State<HomePage> {
                     child: CircleAvatar(
                       radius: 12,
                       backgroundColor: Colors.white,
-                      child: Icon(Icons.camera_alt, size: 15, color: Colors.black),
+                      child:
+                          Icon(Icons.camera_alt, size: 15, color: Colors.black),
                     ),
                   ),
                 ),
               ],
             ),
-
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF1B5E20), Color(0xFF4CAF50)],
@@ -443,6 +473,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -474,13 +505,15 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   // (a) Top row: user avatar, language dropdown, favorites, cart
                   Padding(
-                    padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 8),
+                    padding: const EdgeInsets.only(
+                        left: 12, right: 12, top: 8, bottom: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Builder(
                           builder: (context) => IconButton(
-                            icon: Icon(Icons.menu, color: Colors.white, size: 30),
+                            icon:
+                                Icon(Icons.menu, color: Colors.white, size: 30),
                             onPressed: () => Scaffold.of(context).openDrawer(),
                           ),
                         ),
@@ -488,16 +521,18 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                icon: Text(
-                                  'A+',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                icon: Image.asset(
+                                  'assets/lang.png',
+                                  height: 24,
+                                  width: 24,
+                                  color: Colors.white,
                                 ),
-                                items: <String>['Kannada', 'English', 'Hindi', 'Marathi']
-                                    .map((String value) {
+                                items: <String>[
+                                  'Kannada',
+                                  'English',
+                                  'Hindi',
+                                  'Marathi'
+                                ].map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
                                     child: Text(value),
@@ -528,18 +563,23 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.favorite_border, color: Colors.white),
+                              icon: Icon(Icons.favorite_border,
+                                  color: Colors.white),
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => FavoritePage(favoriteItems: [])),
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          FavoritePage(favoriteItems: [])),
                                 );
                               },
                             ),
+                            /*
                             IconButton(
                               icon: Icon(Icons.shopping_cart_outlined, color: Colors.white),
                               onPressed: _handleCartTap,
                             ),
+                            */
                           ],
                         ),
                       ],
@@ -553,7 +593,8 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          tr("Farmer Tech Store"),
+                          tr("KisanDesk"), //updated as told
+                          // tr("Farmer Tech Store"),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -564,16 +605,20 @@ class _HomePageState extends State<HomePage> {
                         // Show location
                         Row(
                           children: [
-                            Icon(Icons.location_on, color: Colors.white, size: 16),
+                            Icon(Icons.location_on,
+                                color: Colors.white, size: 16),
                             SizedBox(width: 4),
                             Text(
                               _locationName ?? "Fetching...",
-                              style: TextStyle(color: Colors.white, fontSize: 14),
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14),
                             ),
                           ],
                         ),
                         SizedBox(height: 10),
                         // Search bar
+                        // Search bar removed as per directed
+                        /*
                         Container(
                           height: 40,
                           decoration: BoxDecoration(
@@ -588,7 +633,7 @@ class _HomePageState extends State<HomePage> {
                               contentPadding: EdgeInsets.symmetric(vertical: 8),
                             ),
                           ),
-                        ),
+                        ),*/
                       ],
                     ),
                   ),
@@ -608,6 +653,10 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
+                          // 0) Mandi Rates Carousel
+                          _buildMandiRatesCarousel(),
+                          SizedBox(height: 16),
+
                           // 1) Carousel
                           _buildCarouselSlideshow(),
                           SizedBox(height: 16),
@@ -743,6 +792,143 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// -----------------------------------------
+  /// carousel for mandirates
+  Widget _buildMandiRatesCarousel() {
+    return FutureBuilder<List<MandiRate>>(
+      future: fetchTopMandiRates(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: 110,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        } else if (snapshot.hasError || !snapshot.hasData) {
+          return Container(
+            height: 110,
+            child: Center(child: Text("Error loading mandi rates")),
+          );
+        }
+
+        final rates = snapshot.data!;
+        return CarouselSlider(
+          options: CarouselOptions(
+            height: 60,
+            autoPlay: true,
+            enlargeCenterPage: true,
+            viewportFraction: 1.0,
+          ),
+          items: rates.map((rate) {
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MandiRatesPage()),
+                );
+              },
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      blurRadius: 6,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Green Top Bar
+                    Container(
+                      height: 4,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Color(0xFF4CAF50),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Combined Text
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: TextStyle(fontSize: 12),
+                                  children: [
+                                    TextSpan(
+                                      text: '${rate.commodity} ',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF4CAF50),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: '${rate.market} ',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                    TextSpan(
+                                      text: '₹${rate.maxPrice}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            /*
+                        Icon(
+                          Icons.arrow_upward,
+                          color: Color(0xFF00AD83),
+                          size: 20,
+                        ),
+                        */
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _priceTag(String label, String value, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "$label Price",
+          style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+        ),
+        Text(
+          "₹$value",
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// -----------------------------------------
   /// Carousel (top slideshow)
   Widget _buildCarouselSlideshow() {
     final List<String> imageUrls = [
@@ -812,20 +998,20 @@ class _HomePageState extends State<HomePage> {
   /// 6 Categories Grid
   Widget _buildCategoriesGrid() {
     final List<String> imagePaths = [
-      'assets/shop2.webp',
-      'assets/machines.webp',
-      'assets/Agricultural Land.webp',
       'assets/Labor.jpeg',
-      'assets/cattle.jpg',
-      'assets/addatiimage3.jpg',
+      'assets/machines.webp',
+      'assets/fertilizers.jpg',
+      'assets/veterinary.webp',
+      'assets/loan.webp',
+      'assets/govtschemes.png',
     ];
     final List<String> labels = [
-      tr('Traders'),
-      tr('Machinery'),
-      tr('Land'),
       tr('Labours'),
-      tr('Cattle'),
-      tr('Crops'),
+      tr('Machinery'),
+      tr('Fertilizers'),
+      tr('Doctors'),
+      tr('Loan/Insurance'),
+      tr('Govt Schemes'),
     ];
 
     return GridView.builder(
@@ -852,9 +1038,14 @@ class _HomePageState extends State<HomePage> {
   /// "Deals of the Day" horizontal slider
   Widget _buildDealsOfDay() {
     final List<_SimpleItem> deals = [
-      _SimpleItem(title: "Fertilizer Combo", price: "\$25", image: "assets/pesticide.webp"),
-      _SimpleItem(title: "Bulk Seeds", price: "\$40", image: "assets/addatiimage3.jpg"),
-      _SimpleItem(title: "Tractor Tools", price: "\$55", image: "assets/machines.webp"),
+      _SimpleItem(
+          title: "Fertilizer Combo",
+          price: "\$25",
+          image: "assets/pesticide.webp"),
+      _SimpleItem(
+          title: "Bulk Seeds", price: "\$40", image: "assets/addatiimage3.jpg"),
+      _SimpleItem(
+          title: "Tractor Tools", price: "\$55", image: "assets/machines.webp"),
       _SimpleItem(title: "Cow Feed", price: "\$20", image: "assets/cattle.jpg"),
     ];
 
@@ -886,7 +1077,8 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(12)),
                     child: Image.asset(
                       item.image,
                       height: 80,
@@ -917,10 +1109,14 @@ class _HomePageState extends State<HomePage> {
   /// "Recommended" row
   Widget _buildRecommendedRow() {
     final List<_SimpleItem> recommendedItems = [
-      _SimpleItem(title: "Pesticides", price: "\$15", image: "assets/pesticide.webp"),
-      _SimpleItem(title: "Seeds", price: "\$20", image: "assets/addatiimage3.jpg"),
-      _SimpleItem(title: "Harvest Tools", price: "\$35", image: "assets/machines.webp"),
-      _SimpleItem(title: "Cattle Feed", price: "\$10", image: "assets/cattle.jpg"),
+      _SimpleItem(
+          title: "Pesticides", price: "\$15", image: "assets/pesticide.webp"),
+      _SimpleItem(
+          title: "Seeds", price: "\$20", image: "assets/addatiimage3.jpg"),
+      _SimpleItem(
+          title: "Harvest Tools", price: "\$35", image: "assets/machines.webp"),
+      _SimpleItem(
+          title: "Cattle Feed", price: "\$10", image: "assets/cattle.jpg"),
     ];
 
     return Container(
@@ -951,7 +1147,8 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(12)),
                     child: Image.asset(
                       item.image,
                       height: 80,
@@ -991,23 +1188,24 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     } else if (index == 1) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => MachineryPage()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => MachineryPage()));
     } else if (index == 2) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LandPage()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => LandPage()));
     } else if (index == 3) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => LabourRequestPage(
-            userData: widget.userData ?? {},
-            phoneNumber: widget.phoneNumber ?? '',
-          ),
+          builder: (context) => DoctorPage()
         ),
       );
     } else if (index == 4) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => CattlePage()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => DoctorPage()));
     } else if (index == 5) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => CropsPage()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => CropsPage()));
     }
   }
 }
@@ -1096,7 +1294,4 @@ class _SimpleItem {
     required this.price,
     required this.image,
   });
-
-
-
 }

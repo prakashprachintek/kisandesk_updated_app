@@ -22,7 +22,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<String> onboardingFiles = [
     "assets/animations/onb1.json",
-    "assets/animations/onb2.json",
+    // "assets/animations/onb2.json",
     "assets/animations/onb3.json",
   ];
 

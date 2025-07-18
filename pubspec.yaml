@@ -45,6 +45,7 @@ dependencies:
   shared_preferences: ^2.0.6
   dio: ^5.0.3
   dropdown_search: ^5.0.3
+  flutter_svg: 2.0.9
 
 
 
@@ -72,7 +73,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  carousel_slider: ^5.0.0
+  # carousel_slider: ^5.0.0
 
   flutter_launcher_icons: ^0.13.1
 flutter_icons:
@@ -126,9 +127,15 @@ flutter:
     - assets/dal.jpg
     - assets/cattle1.jpg
     - assets/cattle.jpg
+    - assets/lang.png
+    - assets/language.png
     - assets/cattle2.webp
     - assets/machinery1.webp
     - assets/machinery2.webp
+    - assets/fertilizers.jpg
+    - assets/veterinary.webp
+    - assets/loan.webp
+    - assets/govtschemes.png
     - assets/pesticides1.webp
     - assets/pesticide2.webp
     - assets/land1.jpg

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 class GradientAuthButton extends StatelessWidget {
   final String text;
-  final VoidCallback onTap;
+  // final VoidCallback onTap;
+  final Future<void> Function()? onTap;
+
 
   const GradientAuthButton({Key? key, required this.text, required this.onTap})
       : super(key: key);
@@ -11,7 +13,10 @@ class GradientAuthButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(8),
-      onTap: onTap,
+      // onTap: onTap,
+      onTap: () async {
+      if (onTap != null) await onTap!(); // Await the async callback
+    },
       child: Container(
         width: double.infinity,
         height: 48,

@@ -401,4 +401,3 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
     );
   }
 }
-

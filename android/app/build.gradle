@@ -22,21 +22,26 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+//Skipping keystore loading for local debug build
 
 def keystoreProperties = new Properties()
-def keystorePropertiesFile = rootProject.file("/Users/abhishek/abhishek/prachintech/kisandesk_app/mykey.properties")
+def keystorePropertiesFile = rootProject.file("mykey.properties")
+
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 } else {
     println("key.properties file not found!")
 }
 
+
 android {
     namespace "com.example.mainproject1"
     compileSdk 34
     ndkVersion flutter.ndkVersion
 
-    signingConfigs {
+    //was having some errors so commenting and adding new
+    /*
+    signingConfigs { 
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
@@ -44,6 +49,25 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
+    */
+    signingConfigs {
+        release {
+            if (keystoreProperties['keyAlias'] &&
+                keystoreProperties['keyPassword'] &&
+                keystoreProperties['storeFile'] &&
+                keystoreProperties['storePassword']) {
+
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            } else {
+                println("Keystore config is incomplete or missing.")
+            }
+        }
+    }
+
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
