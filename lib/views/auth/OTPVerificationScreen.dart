@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
@@ -25,10 +26,10 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   Future<void> verifyOTP() async {
     final otp = otpController.text.trim();
-    
+
     if (otp.length != 6 || !RegExp(r'^\d{6}$').hasMatch(otp)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Enter a valid 6-digit OTP")),
+        SnackBar(content: Text(tr("Enter a valid 6-digit OTP"))),
       );
       return;
     }
@@ -57,25 +58,27 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             context,
             MaterialPageRoute(builder: (_) => HomePage()),
           );
-        } else if (data["status"] == "failed") {
+        } else if (data["status"] == tr("failed")) {
           // OTP incorrect or not generated → Show error
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data["message"] ?? "OTP verification failed")),
+            SnackBar(
+                content:
+                    Text(data["message"] ?? tr("OTP verification failed"))),
           );
 
           // If OTP was never generated, force a retry
-          if (data["message"] == "Please generate OTP") {
+          if (data["message"] == tr("Please generate OTP")) {
             // Navigator.pop(context); // Go back to phone input
           }
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Server error. Try again.")),
+          SnackBar(content: Text(tr("Server error. Try again."))),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Network error. Try again.")),
+        SnackBar(content: Text(tr("Network error. Try again."))),
       );
     } finally {
       setState(() => isLoading = false);
@@ -92,7 +95,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("OTP Verification", style: TextStyle(color: Colors.grey[700])),
+        automaticallyImplyLeading: false,
+        title: Text(tr("OTP Verification"),
+            style: TextStyle(color: Colors.grey[700])),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.grey[700]),
@@ -102,10 +107,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         child: Column(
           children: [
             SizedBox(height: 16),
-            Lottie.asset("assets/animations/lock.json", width: 180, height: 180),
+            Lottie.asset("assets/animations/lock.json",
+                width: 180, height: 180),
             SizedBox(height: 20),
             Text(
-              "Enter OTP",
+              tr("Enter OTP"),
               style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -113,7 +119,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             ),
             SizedBox(height: 12),
             Text(
-              "OTP sent to: ${widget.phoneNumber}",
+              tr("OTP sent to: ${widget.phoneNumber}"),
               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
@@ -123,7 +129,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               keyboardType: TextInputType.number,
               maxLength: 6,
               decoration: InputDecoration(
-                labelText: "6-digit OTP",
+                labelText: tr("6-digit OTP"),
                 counterText: "",
                 prefixIcon: Icon(Icons.password, color: Colors.grey[700]),
                 fillColor: Colors.white,
@@ -132,11 +138,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             ),
             SizedBox(height: 24),
             GradientAuthButton(
-              text: isLoading ? "Verifying..." : "Verify OTP",
+              text: isLoading ? tr("Verifying...") : tr("Verify OTP"),
               onTap: isLoading ? null : verifyOTP,
             ),
             Spacer(),
-            Text("Wrong number? Go back",
+            Text(tr("Wrong number? Go back"),
                 style: TextStyle(color: Colors.grey[700])),
             SizedBox(height: 16),
           ],

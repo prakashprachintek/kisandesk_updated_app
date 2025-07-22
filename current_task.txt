@@ -1,0 +1,36 @@
+Generic - 
+    button can be clicked once for a certain while
+        create a Generic button and use it everywhere, once such button already exists - gradientButton/gradientAuthButton
+    check for all the texts whose translation is unavailable
+        check json files
+        wrap it: text() -> tr(text())
+        
+OTP page- 
+    resend otp button inside the otp input button with a timer of 60 second
+    reduce the size of the verify otp button
+    change number option on the left of of the verify button
+
+Homepage-
+    "KisanDesk" Title on the title bar beside options button --Done
+    The green border in the mandi price carousel |
+        decrease the width                       |== Done
+        add in the rest three sides              |
+    2nd carousel should display only weather information
+
+Doctors Page- 
+    text color -> white
+    if the image of the doctor is avaialable- good
+        else place a default image
+    add a search bar to search doctor
+    add filters to filter by location (village,taluk,district) 
+
+Mandi Rate page -
+    integreate the new upi
+    add filters to filter by mandis and crop name
+    the cards should show the mandi name and district 
+
+Machinery Page-
+    follow the app changes document
+        carousel of imaages of different machines
+        book button and orders button
+    etc..

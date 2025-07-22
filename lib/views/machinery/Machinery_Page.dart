@@ -9,8 +9,10 @@ class MachineryPage extends StatefulWidget {
 }
 
 class _MachineryPageState extends State<MachineryPage> {
-  List<Map<String, dynamic>> machineryItems = []; // List to store machinery items
-  List<Map<String, dynamic>> favoriteItems = []; // List to store favorite machinery items
+  List<Map<String, dynamic>> machineryItems =
+      []; // List to store machinery items
+  List<Map<String, dynamic>> favoriteItems =
+      []; // List to store favorite machinery items
   bool isLoading = true;
   String errorMessage = '';
   TextEditingController searchController = TextEditingController();
@@ -24,13 +26,14 @@ class _MachineryPageState extends State<MachineryPage> {
 
   // Fetch machinery posts from API
   Future<void> fetchMachineryPosts() async {
-    const String url = 'http://3.110.121.159/api/admin/getAll_market_post'; // Replace with your API endpoint
+    const String url =
+        'http://13.233.103.50/api/admin/getAll_market_post'; // Replace with your API endpoint
     try {
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "category": "machinery",  // Adjust the category for machinery
+          "category": "machinery", // Adjust the category for machinery
           "search": "",
           "currentPage": "1",
           "pageSize": "10",
@@ -43,14 +46,16 @@ class _MachineryPageState extends State<MachineryPage> {
         if (results != null) {
           setState(() {
             machineryItems = results.map<Map<String, dynamic>>((item) {
-              final farmerDetails = (item['farmerDetails'] as List?)?.isNotEmpty == true
-                  ? item['farmerDetails'][0]
-                  : null;
+              final farmerDetails =
+                  (item['farmerDetails'] as List?)?.isNotEmpty == true
+                      ? item['farmerDetails'][0]
+                      : null;
 
               return {
                 'name': item['post_name'] ?? 'Unknown Machinery',
                 'price': item['price'] ?? 0,
-                'description': item['description'] ?? 'No description available',
+                'description':
+                    item['description'] ?? 'No description available',
                 'location': item['village'] ?? 'Unknown location',
                 'image': item['post_url'] ?? 'assets/machinery1.webp',
                 'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
@@ -96,6 +101,7 @@ class _MachineryPageState extends State<MachineryPage> {
       }
     });
   }
+
   void showFilterDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -165,9 +171,9 @@ class _MachineryPageState extends State<MachineryPage> {
                 setState(() {
                   machineryItems = machineryItems
                       .where((item) => item['name']
-                      .toString()
-                      .toLowerCase()
-                      .contains(value.toLowerCase()))
+                          .toString()
+                          .toLowerCase()
+                          .contains(value.toLowerCase()))
                       .toList();
                 });
               },
@@ -176,7 +182,11 @@ class _MachineryPageState extends State<MachineryPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list_sharp, color: Colors.white, size: 30,),
+            icon: Icon(
+              Icons.filter_list_sharp,
+              color: Colors.white,
+              size: 30,
+            ),
             onPressed: () => showFilterDialog(context),
           ),
         ],
@@ -184,50 +194,54 @@ class _MachineryPageState extends State<MachineryPage> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : machineryItems.isEmpty
-          ? Center(child: Text('No machinery posts found.'))
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 2 / 2.7,
-            mainAxisSpacing: 8.0,
-            crossAxisSpacing: 8.0,
-          ),
-          itemCount: machineryItems.length,
-          itemBuilder: (context, index) {
-            final machineryItem = machineryItems[index];
-            final isFavorited = favoriteItems.contains(machineryItem);
-
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Machinerydetailspage(
-                      name: machineryItem['name'],
-                      price: '₹${machineryItem['price']}',
-                      imagePath: machineryItem['image'],
-                      location: machineryItem['location'] ?? 'Unknown location', // Make sure location is not null
-                      description: machineryItem['description'] ?? 'No description available', // Make sure description is not null
-                      FarmerName: machineryItem['FarmerName'], // Pass full name
-                      Phone: machineryItem['Phone'], // Pass phone
-                      review: 'This is a sample review.',
+              ? Center(child: Text('No machinery posts found.'))
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 2 / 2.7,
+                      mainAxisSpacing: 8.0,
+                      crossAxisSpacing: 8.0,
                     ),
+                    itemCount: machineryItems.length,
+                    itemBuilder: (context, index) {
+                      final machineryItem = machineryItems[index];
+                      final isFavorited = favoriteItems.contains(machineryItem);
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Machinerydetailspage(
+                                name: machineryItem['name'],
+                                price: '₹${machineryItem['price']}',
+                                imagePath: machineryItem['image'],
+                                location: machineryItem['location'] ??
+                                    'Unknown location', // Make sure location is not null
+                                description: machineryItem['description'] ??
+                                    'No description available', // Make sure description is not null
+                                FarmerName: machineryItem[
+                                    'FarmerName'], // Pass full name
+                                Phone: machineryItem['Phone'], // Pass phone
+                                review: 'This is a sample review.',
+                              ),
+                            ),
+                          );
+                        },
+                        child: MachineryCard(
+                          name: machineryItem['name'],
+                          price: '₹${machineryItem['price']}',
+                          imagePath: machineryItem['image'],
+                          isFavorited: isFavorited,
+                          onFavoritePressed: () =>
+                              toggleFavorite(machineryItem),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-              child: MachineryCard(
-                name: machineryItem['name'],
-                price: '₹${machineryItem['price']}',
-                imagePath: machineryItem['image'],
-                isFavorited: isFavorited,
-                onFavoritePressed: () => toggleFavorite(machineryItem),
-              ),
-            );
-          },
-        ),
-      ),
+                ),
     );
   }
 }
@@ -292,7 +306,8 @@ class MachineryCard extends StatelessWidget {
                           fontSize: 14,
                         ),
                         maxLines: 2, // Allows wrapping to a maximum of 2 lines
-                        overflow: TextOverflow.ellipsis, // Displays '...' if text overflows
+                        overflow: TextOverflow
+                            .ellipsis, // Displays '...' if text overflows
                       ),
                       SizedBox(height: 4),
                       Text(
