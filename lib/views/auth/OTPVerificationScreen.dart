@@ -66,6 +66,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           // If OTP was never generated, force a retry
           if (data["message"] == "Please generate OTP") {
             // Navigator.pop(context); // Go back to phone input
+            // will work when the changes in the backedn will be made
           }
         }
       } else {
@@ -92,6 +93,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text("OTP Verification", style: TextStyle(color: Colors.grey[700])),
         backgroundColor: Colors.white,
         elevation: 0,

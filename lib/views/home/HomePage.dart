@@ -861,32 +861,37 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             // Combined Text
                             Expanded(
-                              child: RichText(
-                                text: TextSpan(
-                                  style: TextStyle(fontSize: 12),
-                                  children: [
-                                    TextSpan(
-                                      text: '${rate.commodity} ',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF4CAF50),
-                                      ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Text(
+                                    '${rate.commodity}',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF4CAF50),
                                     ),
-                                    TextSpan(
-                                      text: '${rate.market} ',
-                                      style: TextStyle(color: Colors.black),
+                                  ),
+                                  Text(
+                                    '${rate.market}',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
                                     ),
-                                    TextSpan(
-                                      text: '₹${rate.maxPrice}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
+                                  ),
+                                  Text(
+                                    '₹${rate.maxPrice}',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
+
                             /*
                         Icon(
                           Icons.arrow_upward,
@@ -908,28 +913,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _priceTag(String label, String value, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "$label Price",
-          style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-        ),
-        Text(
-          "₹$value",
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
 
   /// -----------------------------------------
-  /// Carousel (top slideshow)
+  /// Second Carousel (top slideshow)
   Widget _buildCarouselSlideshow() {
     final List<String> imageUrls = [
       'assets/image2.2.jpg',
@@ -1196,9 +1182,7 @@ class _HomePageState extends State<HomePage> {
     } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => DoctorPage()
-        ),
+        MaterialPageRoute(builder: (context) => DoctorPage()),
       );
     } else if (index == 4) {
       Navigator.push(

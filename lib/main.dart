@@ -11,7 +11,12 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: [Locale('en'), Locale('kn'), Locale('hi'), Locale('mr')],
+      supportedLocales: [
+        Locale('en'),
+        Locale('kn'),
+        Locale('hi'),
+        Locale('mr')
+      ],
       path: 'assets/lang', // your JSON files are here
       fallbackLocale: Locale('en'),
       child: MyApp(),

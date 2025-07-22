@@ -161,6 +161,7 @@ flutter:
     - assets/animations/login.json
     - assets/animations/lock.json
     - assets/animations/location.json
+    - assets/doctor_placeholder.png 
 
 
 
