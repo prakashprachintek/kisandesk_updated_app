@@ -1,0 +1,1 @@
+ C:\\Users\\Surendra\ Reddy\\Desktop\\New\ folder\\kisandesk_updated_app\\.dart_tool\\flutter_build\\1aae2e1f252aafd65993da766582a5c1\\native_assets.yaml: 

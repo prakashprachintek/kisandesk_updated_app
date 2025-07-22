@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 482ea8caf55fccd8e5ce486b3ead726f90a5a74e
 Generic - 
     button can be clicked once for a certain while
         create a Generic button and use it everywhere, once such button already exists - gradientButton/gradientAuthButton
@@ -13,10 +16,17 @@ OTP page-
     change number option on the left of of the verify button
 
 Homepage-
+<<<<<<< HEAD
     "KisanDesk" Title on the title bar beside options button
     The green border in the mandi price carousel
         decrease the width
         add in the rest three sides
+=======
+    "KisanDesk" Title on the title bar beside options button --Done
+    The green border in the mandi price carousel |
+        decrease the width                       |== Done
+        add in the rest three sides              |
+>>>>>>> 482ea8caf55fccd8e5ce486b3ead726f90a5a74e
     2nd carousel should display only weather information
 
 Doctors Page- 

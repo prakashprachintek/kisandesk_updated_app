@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/widgets.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
@@ -35,16 +36,16 @@ class CartPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("My Cart"),
+        title: Text(tr("My Cart")),
       ),
       body: Center(
-        child: Text("This is the Cart Page (placeholder)."),
+        child: Text(tr("This is the Cart Page (placeholder).")),
       ),
     );
   }
 }
 
-/// ------------------- HOME PAGE ---------------------
+/// ------------------- HOME PAGE --------------------
 class HomePage extends StatefulWidget {
   final Map<String, dynamic>? userData;
   final String? phoneNumber;
@@ -109,30 +110,31 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Update Profile"),
+          title: Text(tr("Update Profile")),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: InputDecoration(labelText: "Name"),
+                  decoration: InputDecoration(labelText: tr("Name")),
                 ),
                 TextField(
                   controller: dobController,
-                  decoration: InputDecoration(labelText: "DOB (YYYY-MM-DD)"),
+                  decoration:
+                      InputDecoration(labelText: tr("DOB (YYYY-MM-DD)")),
                 ),
                 TextField(
                   controller: genderController,
-                  decoration: InputDecoration(labelText: "Gender"),
+                  decoration: InputDecoration(labelText: tr("Gender")),
                 ),
                 TextField(
                   controller: phoneController,
-                  decoration: InputDecoration(labelText: "Mobile Number"),
+                  decoration: InputDecoration(labelText: tr("Mobile Number")),
                   keyboardType: TextInputType.phone,
                 ),
                 TextField(
                   controller: emailController,
-                  decoration: InputDecoration(labelText: "Email"),
+                  decoration: InputDecoration(labelText: tr("Email")),
                   keyboardType: TextInputType.emailAddress,
                 ),
               ],
@@ -141,7 +143,7 @@ class _HomePageState extends State<HomePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
+              child: Text(tr("Cancel")),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -157,12 +159,12 @@ class _HomePageState extends State<HomePage> {
                     'phoneNumber': phoneController.text,
                     'email': emailController.text,
                   });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Profile updated successfully.")));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(tr("Profile updated successfully."))));
                 }
                 Navigator.pop(context);
               },
-              child: Text("Update"),
+              child: Text(tr("Update")),
             ),
           ],
         );
@@ -184,7 +186,7 @@ class _HomePageState extends State<HomePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Login Successful. Welcome to Kisan Desk!',
+          tr('Login Successful. Welcome to Kisan Desk!'),
           style: TextStyle(color: Colors.black),
         ),
         duration: Duration(seconds: 4), // Auto-dismiss after 3 seconds
@@ -202,7 +204,7 @@ class _HomePageState extends State<HomePage> {
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
+      return Future.error(tr('Location services are disabled.'));
     }
 
     // Check permission
@@ -210,13 +212,13 @@ class _HomePageState extends State<HomePage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied.');
+        return Future.error(tr('Location permissions are denied.'));
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       return Future.error(
-        'Location permissions are permanently denied, we cannot request permission.',
+        tr('Location permissions are permanently denied, we cannot request permission.'),
       );
     }
 
@@ -235,8 +237,8 @@ class _HomePageState extends State<HomePage> {
       );
       if (placemarks.isNotEmpty) {
         final place = placemarks[0];
-        final city = place.locality ?? "Unknown City";
-        final state = place.administrativeArea ?? "Unknown State";
+        final city = place.locality ?? tr("Unknown City");
+        final state = place.administrativeArea ?? tr("Unknown State");
         final locationStr = "$city, $state";
 
         setState(() {
@@ -244,14 +246,14 @@ class _HomePageState extends State<HomePage> {
         });
       } else {
         setState(() {
-          _locationName = "Unknown Location";
+          _locationName = tr("Unknown Location");
         });
       }
     } catch (e) {
       setState(() {
-        _locationName = "Location Error";
+        _locationName = tr("Location Error");
       });
-      print("Error fetching location: $e");
+      print(tr("Error fetching location: $e"));
     }
   }
 
@@ -318,8 +320,8 @@ class _HomePageState extends State<HomePage> {
             children: [
               ListTile(
                 leading: Icon(Icons.camera_alt, color: Colors.black54),
-                title:
-                    Text('Take Photo', style: TextStyle(color: Colors.black54)),
+                title: Text(tr('Take Photo'),
+                    style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -332,7 +334,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: Colors.black54),
-                title: Text('Choose from Gallery',
+                title: Text(tr('Choose from Gallery'),
                     style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -354,7 +356,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _handleProfileImage(XFile? pickedFile) async {
     if (pickedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No image selected.")),
+        SnackBar(content: Text(tr("No image selected."))),
       );
       return;
     }
@@ -373,11 +375,11 @@ class _HomePageState extends State<HomePage> {
         });
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Profile image updated successfully.")),
+        SnackBar(content: Text(tr("Profile image updated successfully."))),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update image.")),
+        SnackBar(content: Text(tr("Failed to update image."))),
       );
     }
   }
@@ -388,8 +390,8 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text(widget.userData?['name'] ?? "Guest"),
-            accountEmail: Text(widget.userData?['email'] ?? ""),
+            accountName: Text(widget.userData?[tr('name')] ?? tr("Guest")),
+            accountEmail: Text(widget.userData?[tr('email')] ?? tr("")),
             currentAccountPicture: Stack(
               children: [
                 CircleAvatar(
@@ -424,7 +426,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.person),
-            title: Text("Profile"),
+            title: Text(tr("Profile")),
             onTap: () {
               Navigator.pop(context);
               _showProfileUpdateDialog();
@@ -432,7 +434,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.settings),
-            title: Text("Settings"),
+            title: Text(tr("Settings")),
             onTap: () {
               Navigator.pop(context);
               // Navigate to Settings page if available.
@@ -440,7 +442,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.contact_phone),
-            title: Text("Inquire"),
+            title: Text(tr("Inquire")),
             onTap: () {
               Navigator.pop(context);
               // Navigate to an inquiry page or show inquiry dialog.
@@ -448,7 +450,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.help),
-            title: Text("Help"),
+            title: Text(tr("Help")),
             onTap: () {
               Navigator.pop(context);
               // Navigate to Help page.
@@ -456,14 +458,14 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.info),
-            title: Text("Version"),
-            subtitle: Text("v1.0.0"),
+            title: Text(tr("Version")),
+            subtitle: Text(tr("v1.0.0")),
             onTap: () => Navigator.pop(context),
           ),
           Divider(),
           ListTile(
             leading: Icon(Icons.logout),
-            title: Text("Logout"),
+            title: Text(tr("Logout")),
             onTap: () {
               Navigator.pop(context);
               // Implement logout functionality.
@@ -510,12 +512,44 @@ class _HomePageState extends State<HomePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Builder(
-                          builder: (context) => IconButton(
-                            icon:
-                                Icon(Icons.menu, color: Colors.white, size: 30),
-                            onPressed: () => Scaffold.of(context).openDrawer(),
-                          ),
+                        Row(
+                          children: [
+                            Builder(
+                              builder: (context) => IconButton(
+                                icon: Icon(Icons.menu,
+                                    color: Colors.white, size: 30),
+                                onPressed: () =>
+                                    Scaffold.of(context).openDrawer(),
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  tr("KisanDesk"),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Icon(Icons.location_on_outlined,
+                                        color: Colors.white, size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      _locationName ?? tr("Fetching...."),
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 8),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                         Row(
                           children: [
@@ -587,7 +621,7 @@ class _HomePageState extends State<HomePage> {
                   ),
 
                   // (b) Title, location, search
-                  Padding(
+                  /*Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -597,7 +631,7 @@ class _HomePageState extends State<HomePage> {
                           // tr("Farmer Tech Store"),
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -611,7 +645,7 @@ class _HomePageState extends State<HomePage> {
                             Text(
                               _locationName ?? "Fetching...",
                               style:
-                                  TextStyle(color: Colors.white, fontSize: 14),
+                                  TextStyle(color: Colors.white, fontSize: 11),
                             ),
                           ],
                         ),
@@ -637,7 +671,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 16),*/
 
                   // (c) White container for "body" layout
                   Container(
@@ -805,7 +839,7 @@ class _HomePageState extends State<HomePage> {
         } else if (snapshot.hasError || !snapshot.hasData) {
           return Container(
             height: 110,
-            child: Center(child: Text("Error loading mandi rates")),
+            child: Center(child: Text(tr("Error loading mandi rates"))),
           );
         }
 
@@ -830,10 +864,14 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.green,
+                    width: 2.0,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      blurRadius: 6,
+                      color: Colors.grey.withOpacity(0.25),
+                      blurRadius: 8,
                       offset: Offset(0, 4),
                     ),
                   ],
@@ -842,7 +880,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Green Top Bar
-                    Container(
+                    /* Container(
                       height: 4,
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -852,7 +890,7 @@ class _HomePageState extends State<HomePage> {
                           topRight: Radius.circular(12),
                         ),
                       ),
-                    ),
+                    ),*/
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -912,7 +950,6 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
 
   /// -----------------------------------------
   /// Second Carousel (top slideshow)
@@ -1025,14 +1062,19 @@ class _HomePageState extends State<HomePage> {
   Widget _buildDealsOfDay() {
     final List<_SimpleItem> deals = [
       _SimpleItem(
-          title: "Fertilizer Combo",
+          title: tr("Fertilizer Combo"),
           price: "\$25",
           image: "assets/pesticide.webp"),
       _SimpleItem(
-          title: "Bulk Seeds", price: "\$40", image: "assets/addatiimage3.jpg"),
+          title: tr("Bulk Seeds"),
+          price: "\$40",
+          image: "assets/addatiimage3.jpg"),
       _SimpleItem(
-          title: "Tractor Tools", price: "\$55", image: "assets/machines.webp"),
-      _SimpleItem(title: "Cow Feed", price: "\$20", image: "assets/cattle.jpg"),
+          title: tr("Tractor Tools"),
+          price: "\$55",
+          image: "assets/machines.webp"),
+      _SimpleItem(
+          title: tr("Cow Feed"), price: "\$20", image: "assets/cattle.jpg"),
     ];
 
     return Container(
@@ -1096,13 +1138,17 @@ class _HomePageState extends State<HomePage> {
   Widget _buildRecommendedRow() {
     final List<_SimpleItem> recommendedItems = [
       _SimpleItem(
-          title: "Pesticides", price: "\$15", image: "assets/pesticide.webp"),
+          title: tr("Pesticides"),
+          price: "\$15",
+          image: "assets/pesticide.webp"),
       _SimpleItem(
-          title: "Seeds", price: "\$20", image: "assets/addatiimage3.jpg"),
+          title: tr("Seeds"), price: "\$20", image: "assets/addatiimage3.jpg"),
       _SimpleItem(
-          title: "Harvest Tools", price: "\$35", image: "assets/machines.webp"),
+          title: tr("Harvest Tools"),
+          price: "\$35",
+          image: "assets/machines.webp"),
       _SimpleItem(
-          title: "Cattle Feed", price: "\$10", image: "assets/cattle.jpg"),
+          title: tr("Cattle Feed"), price: "\$10", image: "assets/cattle.jpg"),
     ];
 
     return Container(

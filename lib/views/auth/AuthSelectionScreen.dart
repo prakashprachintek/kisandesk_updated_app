@@ -1,4 +1,5 @@
 /**/
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:convert';
@@ -33,7 +34,7 @@ class AuthSelectionScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 16),
                       Text(
-                        "Welcome to Kisan Desk!",
+                        tr("Welcome to Kisan Desk!"),
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -43,15 +44,15 @@ class AuthSelectionScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        "Choose your preferred sign-in method below",
+                        tr("Choose your preferred sign-in method below"),
                         style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 24),
                       AuthOptionCard(
                         lottieFile: 'assets/animations/phone.json',
-                        title: "Mobile OTP",
-                        subtitle: "Login with your phone number",
+                        title: tr("Mobile OTP"),
+                        subtitle: tr("Login with your phone number"),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -96,7 +97,7 @@ class AuthSelectionScreen extends StatelessWidget {
                             elevation: 4,
                           ),
                           child: Text(
-                            "🚀 Skip to Home (Dev Only)",
+                            tr("🚀 Skip to Home (Dev Only)"),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

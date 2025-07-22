@@ -74,7 +74,7 @@ class _OtpPageState extends State<OtpPage> {
 
     if (enteredOtp.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please enter the full OTP")),
+        SnackBar(content: Text(tr("Please enter the full OTP"))),
       );
       return;
     }

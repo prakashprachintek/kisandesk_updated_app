@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../../main.dart';
@@ -34,7 +35,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
 
     if (!isValid10Digit(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Invalid phone number. Enter 10 digits.")),
+        SnackBar(content: Text(tr("Invalid phone number. Enter 10 digits."))),
       );
       return;
     }
@@ -108,18 +109,18 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text("Sign Up"),
+              title: Text(tr("Sign Up")),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       controller: _nameController,
-                      decoration: InputDecoration(labelText: "Full Name"),
+                      decoration: InputDecoration(labelText: tr("Full Name")),
                     ),
                     SizedBox(height: 10),
                     DropdownButton<String>(
-                      hint: Text("Select District"),
+                      hint: Text(tr("Select District")),
                       value: selectedDistrict,
                       isExpanded: true,
                       items: districts.map((district) {
@@ -142,7 +143,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                     SizedBox(height: 10),
                     if (selectedDistrict != null)
                       DropdownButton<String>(
-                        hint: Text("Select Taluk"),
+                        hint: Text(tr("Select Taluk")),
                         value: selectedTaluk,
                         isExpanded: true,
                         items: taluks.map((taluk) {
@@ -163,7 +164,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                     SizedBox(height: 10),
                     if (selectedTaluk != null)
                       DropdownButton<String>(
-                        hint: Text("Select Village"),
+                        hint: Text(tr("Select Village")),
                         value: selectedVillage,
                         isExpanded: true,
                         items: villagesList.map((village) {
@@ -183,20 +184,20 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
               ),
               actions: [
                 TextButton(
-                  child: Text("Cancel"),
+                  child: Text(tr("Cancel")),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 ElevatedButton(
                   child: isSubmitting
                       ? CircularProgressIndicator()
-                      : Text("Submit"),
+                      : Text(tr("Submit")),
                   onPressed: () async {
                     if (_nameController.text.isEmpty ||
                         selectedDistrict == null ||
                         selectedTaluk == null ||
                         selectedVillage == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please fill all fields")),
+                        SnackBar(content: Text(tr("Please fill all fields"))),
                       );
                       return;
                     }
@@ -226,7 +227,8 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                           data["status"] == "success") {
                         Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Registration successful!")),
+                          SnackBar(
+                              content: Text(tr("Registration successful!"))),
                         );
                         Navigator.push(
                           context,
@@ -271,7 +273,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mobile Verification",
+        title: Text(tr("Mobile Verification"),
             style: TextStyle(color: Colors.grey[700])),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -286,7 +288,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 width: 180, height: 180),
             SizedBox(height: 20),
             Text(
-              "Enter Your Phone Number",
+              tr("Enter Your Phone Number"),
               style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -294,7 +296,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
             ),
             SizedBox(height: 12),
             Text(
-              "We'll send an OTP to verify your number (+91)",
+              tr("We'll send an OTP to verify your number (+91)"),
               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
@@ -303,7 +305,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
               controller: phoneController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
-                labelText: "10-digit number",
+                labelText: tr("10-digit number"),
                 prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
                 fillColor: Colors.white,
                 filled: true,
@@ -311,11 +313,11 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
             ),
             SizedBox(height: 24),
             GradientAuthButton(
-              text: isLoading ? "Checking..." : "Send OTP",
+              text: isLoading ? tr("Checking...") : tr("Send OTP"),
               onTap: isLoading ? null : verifyPhoneNumber,
             ),
             Spacer(),
-            Text("Need Help?", style: TextStyle(color: Colors.grey[700])),
+            Text(tr("Need Help?"), style: TextStyle(color: Colors.grey[700])),
             SizedBox(height: 16),
           ],
         ),

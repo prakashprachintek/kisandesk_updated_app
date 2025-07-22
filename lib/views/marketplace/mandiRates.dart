@@ -81,7 +81,8 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color:  Color(0xFF00AD83)),
+                        borderSide: BorderSide(
+                            color: Color.fromARGB(255, 249, 253, 252)),
                       ),
                     ),
                     onChanged: (value) {
@@ -92,13 +93,29 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                 SizedBox(width: 10),
                 DropdownButton<String>(
                   value: selectedCommodity,
-                  dropdownColor: Colors.green.shade50,
-                  style: TextStyle(color:  Color(0xFF00AD83)),
-                  items: ['All', 'Arhar (Tur/Red Gram)(Whole)', 'Jowar(Sorghum)','Beans', 'Brinjal', 'Bhindi(Ladies Finger)','onion', 'soyabean', 'Sesamum(Sesame,Gingelly,Til)','Sunflower', 'tomato','Wheat', 'Rice', 'Maize', 'Cotton']
+                  dropdownColor: const Color.fromARGB(255, 32, 231, 45),
+                  style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                  items: [
+                    'All',
+                    'Arhar (Tur/Red Gram)(Whole)',
+                    'Jowar(Sorghum)',
+                    'Beans',
+                    'Brinjal',
+                    'Bhindi(Ladies Finger)',
+                    'onion',
+                    'soyabean',
+                    'Sesamum(Sesame,Gingelly,Til)',
+                    'Sunflower',
+                    'tomato',
+                    'Wheat',
+                    'Rice',
+                    'Maize',
+                    'Cotton'
+                  ]
                       .map((commodity) => DropdownMenuItem(
-                    value: commodity,
-                    child: Text(commodity),
-                  ))
+                            value: commodity,
+                            child: Text(commodity),
+                          ))
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -115,81 +132,76 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
             isLoading
                 ? Center(child: CircularProgressIndicator())
                 : filteredData.isEmpty
-                ? Center(child: Text("No data available"))
-                : Expanded(
-              child: ListView.builder(
-                itemCount: filteredData.length,
-                itemBuilder: (context, index) {
-                  final record = filteredData[index];
-                  return Card(
-                    margin: EdgeInsets.only(bottom: 10),
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    color: Colors.green.shade50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                record['District'] ?? 'N/A',
-
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color:  Color(0xFF00AD83),
+                    ? Center(child: Text("No data available"))
+                    : Expanded(
+                        child: ListView.builder(
+                          itemCount: filteredData.length,
+                          itemBuilder: (context, index) {
+                            final record = filteredData[index];
+                            return Card(
+                              margin: EdgeInsets.only(bottom: 10),
+                              elevation: 5,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              color: const Color.fromARGB(255, 255, 255, 255),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          record['District'] ?? 'N/A',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF00AD83),
+                                          ),
+                                        ),
+                                        Chip(
+                                          label: Text(
+                                            record['Commodity'] ?? 'N/A',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          backgroundColor: Color(0xFF00AD83),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 10),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        PriceTile(
+                                          label: "Min Price",
+                                          value: record['Min_Price'] ?? 'N/A',
+                                          color: Colors.black87,
+                                        ),
+                                        PriceTile(
+                                          label: "Max Price",
+                                          value: record['Max_Price'] ?? 'N/A',
+                                          color: Colors.red.shade700,
+                                        ),
+                                        PriceTile(
+                                          label: "Modal Price",
+                                          value: record['Modal_Price'] ?? 'N/A',
+                                          color: Colors.orange.shade700,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
-
-
-                              Chip(
-                                label: Text(
-                                  record['Commodity'] ?? 'N/A',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                backgroundColor:
-                                Color(0xFF00AD83),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                            children: [
-
-                              PriceTile(
-                                label: "Min Price",
-                                value: record['Min_Price'] ?? 'N/A',
-                                color:  Colors.black87,
-                              ),
-                              PriceTile(
-                                label: "Max Price",
-                                value: record['Max_Price'] ?? 'N/A',
-                                color: Colors.red.shade700,
-                              ),
-                              PriceTile(
-                                label: "Modal Price",
-                                value: record['Modal_Price'] ?? 'N/A',
-                                color: Colors.orange.shade700,
-                              ),
-                            ],
-                          ),
-                        ],
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
           ],
         ),
       ),
