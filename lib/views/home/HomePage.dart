@@ -8,6 +8,8 @@ import 'package:flutter/widgets.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/views/laborers/Labors_page.dart';
+import 'package:mainproject1/views/marketplace/Market_page.dart';
 
 // Adjust these imports for your actual file structure
 import '../posts/CombinedDashboardPage.dart';
@@ -15,9 +17,9 @@ import '../posts/MarketTabbedPage.dart';
 import '../profile/profile_page.dart';
 import '../other/favoritePage.dart';
 import '../marketplace/Mraket_page1.dart';
-import '../marketplace/mandiRates.dart';
+import '../mandi/mandiRates.dart';
 import '../whether/whetherinfo.dart';
-import '../machinery/Machinery_Page.dart';
+import '../machinery/Machinery_Page_old.dart';
 import '../cattle/Cattle_Page.dart';
 import '../agriculture/Land_page.dart';
 import '../laborers/LabourRequest.dart';
@@ -27,8 +29,9 @@ import '../farmers/FarmerPage.dart';
 import 'DashboardTab_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../marketplace/mandiService.dart';
+import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
+import '../machinery/machinery_rent_page.dart';
 
 /// A placeholder cart page if you don't have one
 class CartPage extends StatelessWidget {
@@ -289,10 +292,10 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => MarketTabbedPage(
-            userData: widget.userData ?? {},
-            phoneNumber: widget.phoneNumber ?? '',
-          ),
+          builder: (_) => MarketPage(
+              // userData: widget.userData ?? {},
+              // phoneNumber: widget.phoneNumber ?? '',
+              ),
         ),
       );
     } else if (index == 1) {
@@ -1211,31 +1214,29 @@ class _HomePageState extends State<HomePage> {
   void _handleCategoryTap(int index) {
     if (index == 0) {
       Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MarketPage(
-            userData: widget.userData ?? {},
-            phoneNumber: widget.phoneNumber ?? '',
-          ),
-        ),
-      );
+          context,
+          MaterialPageRoute(
+              //   builder: (context) => MarketPage(
+              //     userData: widget.userData ?? {},
+              //     phoneNumber: widget.phoneNumber ?? '',
+              //   ),
+              // ),
+              builder: (context) => LabourPage()));
     } else if (index == 1) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => MachineryPage()));
+          context, MaterialPageRoute(builder: (context) => MachineryRentPage()));
     } else if (index == 2) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => LandPage()));
+          context, MaterialPageRoute(builder: (context) => HomePage()));
     } else if (index == 3) {
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => DoctorPage()),
-      );
+          context, MaterialPageRoute(builder: (context) => DoctorPage()));
     } else if (index == 4) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => DoctorPage()));
+          context, MaterialPageRoute(builder: (context) => HomePage()));
     } else if (index == 5) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => CropsPage()));
+          context, MaterialPageRoute(builder: (context) => HomePage()));
     }
   }
 }
