@@ -35,29 +35,33 @@ class _MarketPageState extends State<MarketPage> {
     if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) =>TabbedPage(userData: widget.userData,phoneNumber:widget.phoneNumber,)),
+        MaterialPageRoute(
+            builder: (context) => TabbedPage(
+                  userData: widget.userData,
+                  phoneNumber: widget.phoneNumber,
+                )),
       );
     } else if (index == 0) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => HomePage(phoneNumber: widget.phoneNumber, userData: widget.userData),
+          builder: (context) => HomePage(
+              phoneNumber: widget.phoneNumber, userData: widget.userData),
         ),
       );
     } else if (index == 1) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => AddMarketPostPage(userData: widget.userData,
-              phoneNumber: widget.phoneNumber,
+          builder: (context) => AddMarketPostPage(
+            userData: widget.userData,
+            phoneNumber: widget.phoneNumber,
             isUserExists: true,
           ),
         ),
       );
     }
   }
-
-
 
   Future<void> fetchTraders() async {
     setState(() {
@@ -75,7 +79,8 @@ class _MarketPageState extends State<MarketPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          traders = data['results']; // Update the traders list with the results array
+          traders =
+              data['results']; // Update the traders list with the results array
           isLoading = false;
         });
       } else {
@@ -92,97 +97,103 @@ class _MarketPageState extends State<MarketPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFF00AD83),
-        title: Container(
-          width: MediaQuery.of(context).size.width * 0.6,
-          height: 40.0,
-          child: TextField(
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              prefixIcon: Icon(Icons.search, color: Color(0xFF00AD83)),
-              hintText: 'Search...',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(19),
-                borderSide: BorderSide(color: Color(0xFF00AD83)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(19),
-                borderSide: BorderSide(color: Color(0xFF00AD83)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(19),
-                borderSide: BorderSide(color: Color(0xFF00AD83)),
+        appBar: AppBar(
+          backgroundColor: Color(0xFF00AD83),
+          title: Container(
+            width: MediaQuery.of(context).size.width * 0.6,
+            height: 40.0,
+            child: TextField(
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: Icon(Icons.search, color: Color(0xFF00AD83)),
+                hintText: 'Search...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(19),
+                  borderSide: BorderSide(color: Color(0xFF00AD83)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(19),
+                  borderSide: BorderSide(color: Color(0xFF00AD83)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(19),
+                  borderSide: BorderSide(color: Color(0xFF00AD83)),
+                ),
               ),
             ),
           ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.notifications, color: Colors.white),
+              onPressed: () {},
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start
-          children: [
-           /* DashboardBox(
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start, // Aligns children to the start
+            children: [
+              /* DashboardBox(
               height: 125,
               content: ImageSlideshow(),
             ),*/
-            SizedBox(height: 22),
-            Text(
-              'Gulbarga',
-              style: TextStyle(color: Color(0xFF00AD83), fontSize: 16),
-            ),
-            SizedBox(height: 16), // Add spacing after "Gulbarga"
-         Expanded(
-    child:isLoading
-          ? Center(child: CircularProgressIndicator())
-          : traders.isEmpty
-          ? Center(child: Text('No traders found'))
-          : ListView.builder(
-        itemCount: traders.length,
-        itemBuilder: (context, index) {
-          final trader = traders[index];
-          return ListTile(
-            title: Text(trader['org_name'] ?? 'Unknown Trader'),
-            subtitle: Text(trader['address'] ?? 'Unknown Address'),
-            trailing: Text(trader['phone_number'] ?? 'Unknown Contact'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TraderDetailsPage(
-                    shopName: trader['org_name'],
-                    Address: trader['address'],
-                    contactDetails: trader['phone_number'],
-                    share: 'Share',
-                    location: trader['address'],
-                    review: 'Great trader!',
-                    latitude: 17.367810,  // Latitude of the shop
-                    longitude: 76.812670, // Longitude of the shop
-                    imageAssets: [
-                      'assets/addatiimage3.jpg',
-                      'assets/addatiimage1.jpg',
-                      'assets/addatiimage4.jpg',
-                      'assets/addatiimage2.jpg'
-                    ], // Assuming logo is the trader's image
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    ),
-        ],
-      ),
-    ),
+              SizedBox(height: 22),
+              Text(
+                'Gulbarga',
+                style: TextStyle(color: Color(0xFF00AD83), fontSize: 16),
+              ),
+              SizedBox(height: 16), // Add spacing after "Gulbarga"
+              Expanded(
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : traders.isEmpty
+                        ? Center(child: Text('No traders found'))
+                        : ListView.builder(
+                            itemCount: traders.length,
+                            itemBuilder: (context, index) {
+                              final trader = traders[index];
+                              return ListTile(
+                                title: Text(
+                                    trader['org_name'] ?? 'Unknown Trader'),
+                                subtitle: Text(
+                                    trader['address'] ?? 'Unknown Address'),
+                                trailing: Text(trader['phone_number'] ??
+                                    'Unknown Contact'),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TraderDetailsPage(
+                                        shopName: trader['org_name'],
+                                        Address: trader['address'],
+                                        contactDetails: trader['phone_number'],
+                                        share: 'Share',
+                                        location: trader['address'],
+                                        review: 'Great trader!',
+                                        latitude:
+                                            17.367810, // Latitude of the shop
+                                        longitude:
+                                            76.812670, // Longitude of the shop
+                                        imageAssets: [
+                                          'assets/addatiimage3.jpg',
+                                          'assets/addatiimage1.jpg',
+                                          'assets/addatiimage4.jpg',
+                                          'assets/addatiimage2.jpg'
+                                        ], // Assuming logo is the trader's image
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+              ),
+            ],
+          ),
+        ),
         bottomNavigationBar: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -199,7 +210,8 @@ class _MarketPageState extends State<MarketPage> {
                   label: tr('Home'),
                 ),
                 BottomNavigationBarItem(
-                  icon: SizedBox.shrink(), // Empty icon for Buy/Sell (replaced with Stack)
+                  icon: SizedBox
+                      .shrink(), // Empty icon for Buy/Sell (replaced with Stack)
                   label: '',
                 ),
                 BottomNavigationBarItem(
@@ -210,7 +222,8 @@ class _MarketPageState extends State<MarketPage> {
             ),
             Positioned(
               top: -24, // Elevates the button out of the navigation bar
-              left: MediaQuery.of(context).size.width / 2 - 30, // Centers the button
+              left: MediaQuery.of(context).size.width / 2 -
+                  30, // Centers the button
               child: GestureDetector(
                 onTap: () => _onItemTapped(1), // Handle tap for Buy/Sell
                 child: Column(
@@ -248,8 +261,7 @@ class _MarketPageState extends State<MarketPage> {
               ),
             ),
           ],
-        )
-    );
+        ));
   }
 }
 

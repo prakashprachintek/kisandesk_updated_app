@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,7 +24,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       return;
     }
     try {
-      final userCred = await _auth.signInWithEmailAndPassword(email: email, password: pass);
+      final userCred =
+          await _auth.signInWithEmailAndPassword(email: email, password: pass);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -35,7 +35,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           ),
         ),
       );
-
     } catch (e) {
       _showError("Sign-In failed: $e");
     }
@@ -57,7 +56,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     return Scaffold(
       // White AppBar
       appBar: AppBar(
-        title: Text("Sign In with Email", style: TextStyle(color: Colors.grey[700])),
+        title: Text("Sign In with Email",
+            style: TextStyle(color: Colors.grey[700])),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.grey[700]),
@@ -66,7 +66,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Lottie.asset("assets/animations/email.json", width: 180, height: 180),
+            Lottie.asset("assets/animations/email.json",
+                width: 180, height: 180),
             SizedBox(height: 20),
             Text(
               "Enter your email and password",
@@ -74,7 +75,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 40),
-
             TextField(
               controller: emailCtrl,
               decoration: InputDecoration(
@@ -96,10 +96,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               ),
             ),
             SizedBox(height: 24),
-
             GradientAuthButton(
               text: "Sign In",
               onTap: _signIn,
+              textStyle: TextStyle(fontSize: 14),
             ),
           ],
         ),

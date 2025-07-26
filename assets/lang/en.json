@@ -1,10 +1,26 @@
 {
+  "Welcome_To_Kisan_Desk": "Welcome To Kisan Desk",
+  "Select_a_Language": "Select a Language",
+  "Next": "Next",
+  "Kisan_Desk": "Kisan Desk",
+
+
+  "Buy_&_Sell_Agricultural_Crops_with_Ease": "Buy & Sell Agricultural Crops with Ease",
+  "Find_the_Best_Machinery_&_Equipment": "Find the Best Machinery & Equipment",
+
+
+  "Choose_your_preferred_sign-in_method below": "Choose your preferred sign in method below",
+  "Mobile_OTP": "Mobile OTP",
+  "Login_with_your_phone_number": "Login with your phone number",
+
+
   "verify_phone_number": "Verify your\nphone number",
   "enter_phone_description": "Enter your phone number to send one \ntime password",
   "phone_number_label": "Phone Number",
   "phone_number_hint": "Enter your phone number",
   "error_invalid_phone": "Please enter a valid phone number",
   "get_otp_button": "Get OTP",
+  "Send_OTP": "Send OTP",
 
   "verification_code": "Verification Code",
   "otp_sent_to": "We have sent the OTP to ",
@@ -40,9 +56,15 @@
   "maharashtra": "Maharashtra",
 
 
-
+  
   "Farmer Tech Store": "Farmer Tech Store",
+  "KisanDesk": "KisanDesk",
   "failed_to_load_user_data": "Failed to load user data",
+  "Labours":"Labours",
+  "Fertilizers":"Fertilizers",
+  "Doctors":"Doctors",
+  "Loan/Insurance":"Loan/Insurance",
+  "Govt_Schemes":"Govt_Schemes",
   "Traders": "Traders",
   "Machinery": "Machinery",
   "Land": "Land",
@@ -52,6 +74,17 @@
   "Home": "Home",
   "Buy/Sell": "Buy/Sell",
   "Market": "Market",
+  "Deals_of_the_Day":"Deals of the Day",
+  "Fertilizer_Combo":"Fertilizer Combo",
+  "Bulk_Seeds":"Bulk_Seeds",
+  "Tractor_Tools":"Tractor Tools",
+  "Cow_Feed": "Cow_Feed",
+
+  "Recommended": "Recommended",
+  "Pesticides": "Pesticides",
+  "Seeds": "Seeds",
+  "Harvest_Tools": "Harvest Tools",
+  "Cattle_Feed": "Cattle Feed",
 
   "addMarketPost": "Add Market Post",
   "category": "Category",
@@ -244,7 +277,8 @@
   "add_me_as_labor_title": "Add Me as Labor",
   "name": "Name",
   "phone": "Phone Number",
-  "submit": "Submit"
+  "submit": "Submit",
+  "Skip": "Skip"
 
 
 

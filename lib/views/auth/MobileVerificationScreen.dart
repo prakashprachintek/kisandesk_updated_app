@@ -315,6 +315,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
             GradientAuthButton(
               text: isLoading ? tr("Checking...") : tr("Send OTP"),
               onTap: isLoading ? null : verifyPhoneNumber,
+              textStyle: TextStyle(fontSize: 14),
             ),
             Spacer(),
             Text(tr("Need Help?"), style: TextStyle(color: Colors.grey[700])),

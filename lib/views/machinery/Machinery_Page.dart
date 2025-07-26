@@ -33,10 +33,8 @@ class _MachineryPageState extends State<MachineryPage> {
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "category": "machinery", // Adjust the category for machinery
-          "search": "",
-          "currentPage": "1",
-          "pageSize": "10",
+          "category": "crop", // Adjust the category for machinery
+          "search": ""
         }),
       );
 

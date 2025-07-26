@@ -5,8 +5,11 @@ class GradientAuthButton extends StatelessWidget {
   // final VoidCallback onTap;
   final Future<void> Function()? onTap;
 
-
-  const GradientAuthButton({Key? key, required this.text, required this.onTap})
+  const GradientAuthButton(
+      {Key? key,
+      required this.text,
+      required this.onTap,
+      required TextStyle textStyle})
       : super(key: key);
 
   @override
@@ -15,8 +18,8 @@ class GradientAuthButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       // onTap: onTap,
       onTap: () async {
-      if (onTap != null) await onTap!(); // Await the async callback
-    },
+        if (onTap != null) await onTap!(); // Await the async callback
+      },
       child: Container(
         width: double.infinity,
         height: 48,

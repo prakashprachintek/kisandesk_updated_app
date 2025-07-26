@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/views/laborers/Labors_page.dart';
 
 // Adjust these imports for your actual file structure
 import '../posts/CombinedDashboardPage.dart';
@@ -895,35 +896,49 @@ class _HomePageState extends State<HomePage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             // Combined Text
                             Expanded(
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                                //mainAxisAlignment:
+                                //  MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  Text(
-                                    '${rate.commodity}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF4CAF50),
+                                  Flexible(
+                                    child: Text(
+                                      '${rate.commodity}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF4CAF50),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
-                                  Text(
-                                    '${rate.market}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.black,
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      '${rate.market}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
-                                  Text(
-                                    '₹${rate.maxPrice}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      '₹${rate.maxPrice}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],
@@ -1213,12 +1228,12 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MarketPage(
-            userData: widget.userData ?? {},
-            phoneNumber: widget.phoneNumber ?? '',
-          ),
-        ),
+            //builder: (context) => LabourPage(
+            //userData: widget.userData ?? {},
+            //phoneNumber: widget.phoneNumber ?? '',
+            builder: (context) => LabourPage()),
       );
+      //);
     } else if (index == 1) {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => MachineryPage()));
@@ -1232,10 +1247,10 @@ class _HomePageState extends State<HomePage> {
       );
     } else if (index == 4) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => DoctorPage()));
+          context, MaterialPageRoute(builder: (context) => CropsPage()));
     } else if (index == 5) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => CropsPage()));
+          context, MaterialPageRoute(builder: (context) => LandPage()));
     }
   }
 }
