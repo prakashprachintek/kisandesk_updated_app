@@ -141,6 +141,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             GradientAuthButton(
               text: isLoading ? tr("Verifying...") : tr("Verify OTP"),
               onTap: isLoading ? null : verifyOTP,
+              textStyle: TextStyle(fontSize: 14),
             ),
             Spacer(),
             Text(tr("Wrong number? Go back"),

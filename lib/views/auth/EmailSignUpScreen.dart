@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,7 +29,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
 
     try {
-      final userCred = await _auth.createUserWithEmailAndPassword(email: email, password: pass);
+      final userCred = await _auth.createUserWithEmailAndPassword(
+          email: email, password: pass);
       if (userCred.user != null) {
         await FirebaseFirestore.instance
             .collection('users')
@@ -52,7 +52,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           ),
         ),
       );
-
     } catch (e) {
       _showError("Sign-Up failed: $e");
     }
@@ -75,7 +74,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     return Scaffold(
       // White AppBar
       appBar: AppBar(
-        title: Text("Sign Up with Email", style: TextStyle(color: Colors.grey[700])),
+        title: Text("Sign Up with Email",
+            style: TextStyle(color: Colors.grey[700])),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.grey[700]),
@@ -84,7 +84,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Lottie.asset("assets/animations/email.json", width: 180, height: 180),
+            Lottie.asset("assets/animations/email.json",
+                width: 180, height: 180),
             SizedBox(height: 20),
             Text(
               "Enter your name, valid email, & set a strong password",
@@ -92,7 +93,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 40),
-
             TextField(
               controller: fullNameCtrl,
               decoration: InputDecoration(
@@ -103,7 +103,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
               ),
             ),
             SizedBox(height: 16),
-
             TextField(
               controller: emailCtrl,
               decoration: InputDecoration(
@@ -114,7 +113,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
               ),
             ),
             SizedBox(height: 16),
-
             TextField(
               controller: passCtrl,
               obscureText: true,
@@ -126,16 +124,14 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
               ),
             ),
             SizedBox(height: 24),
-
             GradientAuthButton(
               text: "Create Account",
               onTap: _signUp,
+              textStyle: TextStyle(fontSize: 14),
             ),
           ],
         ),
       ),
     );
   }
-
-
 }

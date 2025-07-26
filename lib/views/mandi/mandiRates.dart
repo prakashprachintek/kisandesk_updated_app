@@ -8,14 +8,18 @@ class MandiRatesPage extends StatefulWidget {
 }
 
 class _MandiRatesPageState extends State<MandiRatesPage> {
-  final String apiUrl =
-      'https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24?format=json&filters%5BArrival_Date%5D=04%2F12%2F2024&api-key=579b464db66ec23bdd00000193cd44da4f644b886d3a756d44d8bbfe&limit=10000';
+  final String apiUrl = 'http://13.233.103.50/api/admin/fetch_mandi_rates';
 
   List<dynamic> mandiData = [];
   List<dynamic> filteredData = [];
   bool isLoading = true;
+
   String selectedCommodity = 'All';
-  TextEditingController searchController = TextEditingController();
+  List<String> commodityOptions = ['All'];
+
+  String selectedMarket = 'All';
+  List<String> marketOptions = ['All'];
+  //TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -23,40 +27,100 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
     fetchMandiRates();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<void> fetchMandiRates() async {
+    setState(() {
+      isLoading = true;
+    });
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await http.post(
+        Uri.parse(apiUrl),
+      );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          mandiData = data['records'];
-          filteredData = mandiData;
+          mandiData = data['results'];
+          Set<String> uniqueCommodities = {};
+          for (var record in mandiData) {
+            if (record['Commodity'] != null) {
+              uniqueCommodities.add(record['Commodity'].toString());
+            }
+          }
+          commodityOptions = ['All'] + uniqueCommodities.toList()
+            ..sort();
+
+          Set<String> uniqueMarkets = {};
+          for (var record in mandiData) {
+            if (record['Market'] != null) {
+              uniqueMarkets.add(record['Market'].toString());
+            }
+          }
+          marketOptions = ['All'] + uniqueMarkets.toList()
+            ..sort();
+          filterData();
           isLoading = false;
         });
       } else {
         print("Failed to fetch mandi rates: ${response.statusCode}");
+        setState(() {
+          isLoading = false;
+        });
       }
     } catch (e) {
       print("Error: $e");
+      setState(() {
+        isLoading = false;
+        mandiData = [];
+        filteredData = [];
+      });
     }
   }
 
   void filterData() {
-    String query = searchController.text.toLowerCase();
+    //String query = searchController.text.toLowerCase();
     setState(() {
       filteredData = mandiData.where((record) {
-        final market = (record['Market'] ?? '').toLowerCase();
-        final commodity = (record['Commodity'] ?? '').toLowerCase();
-        bool matchesQuery = market.contains(query) || commodity.contains(query);
+        final commodity = (record['Commodity'] ?? "").toLowerCase();
+        final market = (record['Market'] ?? "").toLowerCase();
 
-        if (selectedCommodity == 'All') {
-          return matchesQuery;
-        } else {
-          return matchesQuery && commodity == selectedCommodity.toLowerCase();
-        }
+        bool matchesCommodity = selectedCommodity == 'All' ||
+            commodity == selectedCommodity.toLowerCase();
+
+        bool matchesMarket =
+            selectedMarket == 'All' || market == selectedMarket.toLowerCase();
+
+        return matchesCommodity && matchesMarket;
       }).toList();
     });
   }
+  /*if (selectedCommodity == 'All') {
+        filteredData = mandiData;
+      } else {
+        filteredData = mandiData.where((record) {
+          final commodity = (record['Commodity'] ?? '').toLowerCase();
+          return commodity == selectedCommodity.toLowerCase();
+        }).toList();
+      }
+    });
+  }
+    filteredData = mandiData.where((record) {
+        //final market = (record['Market'] ?? '').toLowerCase();
+        final commodity = (record['Commodity'] ?? '').toLowerCase();
+        //bool matchesQuery = market.contains(query) || commodity.contains(query);
+
+        if (selectedCommodity == 'All') {
+          return true;
+        } else {
+          return commodity == selectedCommodity.toLowerCase();
+        }
+      }).toList();
+    });
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +133,9 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          // Search and Filter Section
           children: [
-            // Search and Filter Section
-            Row(
-              children: [
-                /*
-                Expanded(
+            /*Expanded(
                   child: TextField(
                     controller: searchController,
                     decoration: InputDecoration(
@@ -91,29 +152,91 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                     },
                   ),
                 ),
-                */
-                SizedBox(width: 10),
-                DropdownButton<String>(
+
+                SizedBox(width: 10),*/
+            Row(
+              children: [
+                Expanded(
+                  //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //children: [
+                  //Expanded(
+                  child: DropdownButtonFormField<String>(
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: 'Commodity',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    ),
+                    value: selectedCommodity,
+                    dropdownColor: const Color.fromARGB(255, 234, 238, 234),
+                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                    items: commodityOptions
+                        .map((commodity) => DropdownMenuItem(
+                              value: commodity,
+                              child: Flexible(
+                                child: Text(
+                                  commodity,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCommodity = value!;
+                        filterData();
+                      });
+                    },
+                  ),
+                ),
+                SizedBox(width: 5),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: 'Market',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    ),
+                    value: selectedMarket,
+                    dropdownColor: const Color.fromARGB(255, 234, 238, 234),
+                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                    items: marketOptions
+                        .map((market) => DropdownMenuItem(
+                              value: market,
+                              child: Flexible(
+                                child: Text(
+                                  market,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedMarket = value!;
+                        filterData();
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            /*Align(
+              alignment: Alignment.centerRight,
+              child: DropdownButton<String>(
+
                   value: selectedCommodity,
-                  dropdownColor: const Color.fromARGB(255, 32, 231, 45),
+                  dropdownColor: const Color.fromARGB(255, 234, 238, 234),
                   style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                  items: [
-                    'All',
-                    'Arhar (Tur/Red Gram)(Whole)',
-                    'Jowar(Sorghum)',
-                    'Beans',
-                    'Brinjal',
-                    'Bhindi(Ladies Finger)',
-                    'onion',
-                    'soyabean',
-                    'Sesamum(Sesame,Gingelly,Til)',
-                    'Sunflower',
-                    'tomato',
-                    'Wheat',
-                    'Rice',
-                    'Maize',
-                    'Cotton'
-                  ]
+                  items: commodityOptions
                       .map((commodity) => DropdownMenuItem(
                             value: commodity,
                             child: Text(commodity),
@@ -124,10 +247,38 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                       selectedCommodity = value!;
                       filterData();
                     });
-                  },
-                ),
-              ],
-            ),
+                  }
+                  /*[
+                  'All',
+                  'Arhar (Tur/Red Gram)(Whole)',
+                  'Jowar(Sorghum)',
+                  'Beans',
+                  'Brinjal',
+                  'Bhindi(Ladies Finger)',
+                  'onion',
+                  'soyabean',
+                  'Sesamum(Sesame,Gingelly,Til)',
+                  'Sunflower',
+                  'tomato',
+                  'Wheat',
+                  'Rice',
+                  'Maize',
+                  'Cotton'
+                ]
+                    .map((commodity) => DropdownMenuItem(
+                          value: commodity,
+                          child: Text(commodity),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedCommodity = value!;
+                    filterData();
+                  });
+                },*/
+                  ),
+            ),*/
+
             SizedBox(height: 20),
 
             // Mandi Rates List
@@ -153,25 +304,35 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                      //mainAxisAlignment:
+                                      //MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          record['District'] ?? 'N/A',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF00AD83),
+                                        Flexible(
+                                          child: Text(
+                                            record['District'] ?? 'N/A',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF00AD83),
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                        Chip(
-                                          label: Text(
-                                            record['Commodity'] ?? 'N/A',
-                                            style: TextStyle(
-                                              color: Colors.white,
+                                        SizedBox(width: 8),
+                                        Flexible(
+                                          child: Chip(
+                                            label: Text(
+                                              record['Commodity'] ?? 'N/A',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
                                             ),
+                                            backgroundColor: Color(0xFF00AD83),
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
                                           ),
-                                          backgroundColor: Color(0xFF00AD83),
                                         ),
                                       ],
                                     ),

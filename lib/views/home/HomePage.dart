@@ -898,35 +898,49 @@ class _HomePageState extends State<HomePage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             // Combined Text
                             Expanded(
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                                //mainAxisAlignment:
+                                //  MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  Text(
-                                    '${rate.commodity}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF4CAF50),
+                                  Flexible(
+                                    child: Text(
+                                      '${rate.commodity}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF4CAF50),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
-                                  Text(
-                                    '${rate.market}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.black,
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      '${rate.market}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
-                                  Text(
-                                    '₹${rate.maxPrice}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      '₹${rate.maxPrice}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],
@@ -1223,8 +1237,8 @@ class _HomePageState extends State<HomePage> {
               // ),
               builder: (context) => LabourPage()));
     } else if (index == 1) {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => MachineryRentPage()));
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => MachineryRentPage()));
     } else if (index == 2) {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => HomePage()));

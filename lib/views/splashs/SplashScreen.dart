@@ -21,7 +21,6 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +30,15 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Lottie.asset('assets/animations/logo.json', width: 200, height: 200),
+            Lottie.asset('assets/animations/logo.json',
+                width: 200, height: 200),
             SizedBox(height: 16),
             Text(
               "Kisan Desk",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20)),
+              style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B5E20)),
             ),
           ],
         ),

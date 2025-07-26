@@ -35,7 +35,6 @@ class _MachineryPageState extends State<MachineryPage> {
         body: jsonEncode({
           "category": "", // Adjust the category for machinery
           "search": "",
-          
         }),
       );
 
