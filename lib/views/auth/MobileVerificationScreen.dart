@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import '../widgets/api_config.dart';
 import '../../main.dart';
 import '../home/HomePage.dart';
 import '../widgets/GradientAuthButton.dart';
@@ -42,7 +43,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://13.233.103.50/api/admin/generate_otp");
+    final url = Uri.parse("${KD.api}/admin/generate_otp");
 
     try {
       final response = await http.post(
@@ -206,7 +207,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
 
                     try {
                       final url = Uri.parse(
-                          "http://13.233.103.50/api/user/insert_user");
+                          "${KD.api}/user/insert_user");
                       final response = await http.post(
                         url,
                         headers: {"Content-Type": "application/json"},

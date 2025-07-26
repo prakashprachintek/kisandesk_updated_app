@@ -62,7 +62,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mandi Rates"),
+        title: Text("test dev"),
         centerTitle: true,
         backgroundColor: Color(0xFF00AD83),
       ),
@@ -73,6 +73,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
             // Search and Filter Section
             Row(
               children: [
+                /*
                 Expanded(
                   child: TextField(
                     controller: searchController,
@@ -90,6 +91,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                     },
                   ),
                 ),
+                */
                 SizedBox(width: 10),
                 DropdownButton<String>(
                   value: selectedCommodity,

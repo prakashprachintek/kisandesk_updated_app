@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import '../widgets/api_config.dart';
 import '../../main.dart';
 import '../home/HomePage.dart';
 import '../widgets/GradientAuthButton.dart';
@@ -36,7 +36,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://13.233.103.50/api/admin/verify_otp");
+    final url = Uri.parse("${KD.api}/admin/verify_otp");
 
     try {
       final response = await http.post(

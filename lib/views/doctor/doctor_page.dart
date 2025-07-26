@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../widgets/api_config.dart';
 import '../doctor/doctor_detailpage.dart';
 import 'dart:convert';
 import '../doctor/doctor.dart';
@@ -31,7 +32,7 @@ class _DoctorPageState extends State<DoctorPage> {
   Future<void> fetchDoctors() async {
     try {
       final response = await http.post(
-        Uri.parse('http://13.233.103.50/api/app/fetch_doctors_list'),
+        Uri.parse('${KD.api}/app/fetch_doctors_list'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({}),
       );
@@ -40,7 +41,8 @@ class _DoctorPageState extends State<DoctorPage> {
         final Map<String, dynamic> decoded = json.decode(response.body);
         final data = decoded['results'];
 
-        List<Doctor> doctors = [Doctor.fromJson(data)];
+        List<Doctor> doctors = List<Doctor>.from(data.map((item)=>Doctor.fromJson(item)));
+        
         setState(() {
           allDoctors = doctors;
           filteredDoctors = doctors;

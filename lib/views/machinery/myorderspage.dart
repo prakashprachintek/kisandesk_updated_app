@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import '../widgets/api_config.dart';
+import 'order_detail_page.dart';
 
 class MyOrdersPage extends StatefulWidget {
   const MyOrdersPage({super.key});
@@ -14,9 +19,11 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   void initState() {
     super.initState();
     // API call will be here later
-    _loadDummyData();
+    // _loadDummyData();
+    _fetchOrdersFromApi();
   }
 
+/*
   void _loadDummyData() {
     orders = [
       {
@@ -40,12 +47,55 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
     ];
     setState(() {}); // refresh UI
   }
+*/
+
+  Future<void> _fetchOrdersFromApi() async {
+    final url = Uri.parse("${KD.api}/app/get_machinary_orders");
+
+    try {
+      final response = await http.post(url, body: jsonEncode({}), headers: {
+        "Content-Type": "application/json",
+      });
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+
+        if (json['status'] == 'success') {
+          final List results = json['results'];
+          orders = results.map<Map<String, String>>((item) {
+            return {
+              "orderId": item['_id'] ?? '',
+              "owner": item['farmer_name'] ?? 'Unknown',
+              "status": item['status'] ?? '',
+              "total": item['price'] ?? 'N/A',
+              "paid": item['admin_comments'] != null &&
+                      item['admin_comments'].isNotEmpty
+                  ? item['admin_comments'][0]['message'] ?? 'Not available'
+                  : 'Not available',
+              "booked": item['created_at']?.split('T')[0] ?? '',
+              "completed": item['status'] == "Completed"
+                  ? (item['updated_at']?.split('T')[0] ?? '')
+                  : "--",
+              "description": item['description'] ?? 'No Description available',
+            };
+          }).toList();
+
+          setState(() {});
+        }
+      } else {
+        print("Failed to fetch orders. Status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching orders: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Orders", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text("My Orders",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blue.shade800,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -56,25 +106,40 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
               itemBuilder: (context, index) {
                 final order = orders[index];
                 return Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 4,
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Order ID: ${order['orderId']}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        Text("Owner: ${order['owner']}"),
-                        Text("Status: ${order['status']}", style: TextStyle(color: order['status'] == "Completed" ? Colors.green : Colors.orange)),
-                        const SizedBox(height: 8),
-                        Text("Total Amount: ${order['total']}"),
-                        Text("Paid Amount: ${order['paid']}"),
-                        const SizedBox(height: 8),
-                        Text("Booked On: ${order['booked']}"),
-                        Text("Completed On: ${order['completed']}"),
-                      ],
+                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderDetailPage(order: order),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Order ID: ${order['orderId']}",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Booked: ${order['booked']}"),
+                              Text("Status: ${order['status']}",
+                                  style: TextStyle(color: Colors.blue)),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Text("Total Amount: ₹${order['total']}"),
+                          Text("Paid Amount: ₹${order['paid']}"),
+                        ],
+                      ),
                     ),
                   ),
                 );

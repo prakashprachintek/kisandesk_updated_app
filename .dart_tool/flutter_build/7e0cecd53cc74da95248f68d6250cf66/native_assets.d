@@ -1,0 +1,1 @@
+ C:\\prachintek\\kisandesk_updated_app\\.dart_tool\\flutter_build\\7e0cecd53cc74da95248f68d6250cf66\\native_assets.yaml: 
