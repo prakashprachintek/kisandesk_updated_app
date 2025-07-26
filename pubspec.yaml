@@ -163,6 +163,10 @@ flutter:
     - assets/animations/lock.json
     - assets/animations/location.json
     - assets/doctor_placeholder.png 
+    - assets/harvester.jpg
+    - assets/JCB.jpeg
+    - assets/rotavator.jpg
+    - assets/tractor.jpg
 
 
 

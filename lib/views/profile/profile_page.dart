@@ -3,7 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:mainproject1/views/auth/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../marketplace/mandiRates.dart';
+import '../mandi/mandiRates.dart';
 
 
 class ProfilePage extends StatelessWidget {

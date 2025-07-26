@@ -10,17 +10,17 @@ import '../machinery/TraderDetailsPage.dart';
 import '../other/add_page.dart';
 import '../other/tabpage.dart';
 
-class MarketPage extends StatefulWidget {
+class oldMarketPage extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String phoneNumber;
 
-  MarketPage({required this.phoneNumber, required this.userData});
+  oldMarketPage({required this.phoneNumber, required this.userData});
 
   @override
-  _MarketPageState createState() => _MarketPageState();
+  _oldMarketPageState createState() => _oldMarketPageState();
 }
 
-class _MarketPageState extends State<MarketPage> {
+class _oldMarketPageState extends State<oldMarketPage> {
   int _selectedIndex = 0;
   List<dynamic> traders = [];
   bool isLoading = true;
