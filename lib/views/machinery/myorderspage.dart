@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../other/user_session.dart';
 import '../widgets/api_config.dart';
 import 'order_detail_page.dart';
 
@@ -23,39 +24,17 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
     _fetchOrdersFromApi();
   }
 
-/*
-  void _loadDummyData() {
-    orders = [
-      {
-        "orderId": "ORD123456",
-        "owner": "Ramesh Kumar",
-        "status": "Completed",
-        "total": "₹4500",
-        "paid": "₹4500",
-        "booked": "12 July 2025",
-        "completed": "15 July 2025",
-      },
-      {
-        "orderId": "ORD123457",
-        "owner": "Suresh Verma",
-        "status": "Pending",
-        "total": "₹6000",
-        "paid": "₹2000",
-        "booked": "20 July 2025",
-        "completed": "--",
-      },
-    ];
-    setState(() {}); // refresh UI
-  }
-*/
-
   Future<void> _fetchOrdersFromApi() async {
     final url = Uri.parse("${KD.api}/app/get_machinary_orders");
 
     try {
-      final response = await http.post(url, body: jsonEncode({}), headers: {
-        "Content-Type": "application/json",
-      });
+      final response = await http.post(url,
+          body: jsonEncode({
+            "farmer_id": UserSession.userId,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          });
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);

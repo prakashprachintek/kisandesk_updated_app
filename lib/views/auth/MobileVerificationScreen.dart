@@ -67,7 +67,15 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
           );
         } else if (data["status"] == "failed") {
           // If number doesn't exist, show signup popup
-          await _showSignupDialog(context, phone);
+          // await _showSignupDialog(context, phone);
+          try {
+            await _showSignupDialog(context, phone);
+          } catch (e) {
+            print("Signup dialog error: $e");
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Something went wrong. Try again.")),
+            );
+          }
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -85,6 +93,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
   }
 
   Future<void> _showSignupDialog(BuildContext context, String phone) async {
+    print("Dialog loaded");
     final TextEditingController _nameController = TextEditingController();
     _nameController.text = "";
 
@@ -206,8 +215,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                     setState(() => isSubmitting = true);
 
                     try {
-                      final url = Uri.parse(
-                          "${KD.api}/user/insert_user");
+                      final url = Uri.parse("${KD.api}/user/insert_user");
                       final response = await http.post(
                         url,
                         headers: {"Content-Type": "application/json"},

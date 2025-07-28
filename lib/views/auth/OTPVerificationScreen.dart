@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../other/user_session.dart';
 import '../widgets/api_config.dart';
 import '../../main.dart';
 import '../home/HomePage.dart';
@@ -53,11 +54,14 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
       if (response.statusCode == 200) {
         if (data["status"] == "success") {
+          //storing data for later user
+          UserSession.setUser(data["result"]);
           // OTP correct → Navigate to Home
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => HomePage()),
           );
+
         } else if (data["status"] == tr("failed")) {
           // OTP incorrect or not generated → Show error
           ScaffoldMessenger.of(context).showSnackBar(

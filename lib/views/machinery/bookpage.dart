@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import '../other/user_session.dart';
 import '../widgets/api_config.dart';
 
 class BookPage extends StatefulWidget {
@@ -19,12 +19,20 @@ class _BookPageState extends State<BookPage> {
   final TextEditingController areaController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
+  final Map<String, String> machineryImages = {
+    'Tractor': 'assets/tractor.jpg',
+    'Harvester': 'assets/harvester.jpg',
+    'Rotavator': 'assets/rotavator.jpg',
+    'JCB': 'assets/JCB.jpeg',
+  };
+
   final List<String> machineryList = [
-    'Tractor 🚜',
+    'Tractor',
     'Harvester',
     'Rotavator',
     'JCB'
   ];
+
   final List<String> workTypes = [
     'Ploughing',
     'Harvesting',
@@ -53,16 +61,16 @@ class _BookPageState extends State<BookPage> {
         areaController.text.isNotEmpty &&
         bookingDate != null &&
         descriptionController.text.isNotEmpty) {
-      final uri = Uri.parse(
-          "${KD.api}/app/book_machinary"); // Replace with your actual API URL
+      final uri = Uri.parse("${KD.api}/app/book_machinary");
 
       final payload = {
-        "farmer_id": "672c7e4f3dd0774ec0b421a1", // Or get dynamically if needed
+        "farmer_id": UserSession.userId,
         "machineryType": selectedMachinery!,
         "workDate": bookingDate!,
         "workType": selectedWorkType!,
         "workInQuantity": areaController.text,
         "description": descriptionController.text,
+        "village": UserSession.user?['village']
       };
 
       try {
@@ -86,7 +94,7 @@ class _BookPageState extends State<BookPage> {
               ],
             ),
           );
-          // Optionally clear form
+
           setState(() {
             selectedMachinery = null;
             selectedWorkType = null;
@@ -125,7 +133,24 @@ class _BookPageState extends State<BookPage> {
               decoration: InputDecoration(labelText: "Select Machinery"),
               value: selectedMachinery,
               items: machineryList.map((machine) {
-                return DropdownMenuItem(value: machine, child: Text(machine));
+                return DropdownMenuItem(
+                  value: machine,
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.asset(
+                          machineryImages[machine]!,
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Text(machine),
+                    ],
+                  ),
+                );
               }).toList(),
               onChanged: (value) => setState(() => selectedMachinery = value),
             ),
