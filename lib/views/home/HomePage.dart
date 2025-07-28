@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import '../other/coming.dart';
 import 'package:mainproject1/views/laborers/Labors_page.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 
@@ -898,13 +899,13 @@ class _HomePageState extends State<HomePage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Row(
-                          //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             // Combined Text
                             Expanded(
                               child: Row(
-                                //mainAxisAlignment:
-                                //  MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   Flexible(
                                     child: Text(
@@ -1235,22 +1236,23 @@ class _HomePageState extends State<HomePage> {
               //     phoneNumber: widget.phoneNumber ?? '',
               //   ),
               // ),
-              builder: (context) => LabourPage()));
+              builder: (context) => LabourRequestPage(
+                  userData: widget.userData ?? {}, phoneNumber: "")));
     } else if (index == 1) {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => MachineryRentPage()));
     } else if (index == 2) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => HomePage()));
+          context, MaterialPageRoute(builder: (context) => ComingSoonPage()));
     } else if (index == 3) {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => DoctorPage()));
     } else if (index == 4) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => HomePage()));
+          context, MaterialPageRoute(builder: (context) => ComingSoonPage()));
     } else if (index == 5) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => HomePage()));
+          context, MaterialPageRoute(builder: (context) => ComingSoonPage()));
     }
   }
 }

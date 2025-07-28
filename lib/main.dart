@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:easy_localization/easy_localization.dart';
+import './views/other/welcome.dart';
 
 import 'views/splashs/SplashScreen.dart';
 
