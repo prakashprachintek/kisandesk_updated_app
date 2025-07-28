@@ -19,16 +19,22 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
 
   String selectedMarket = 'All';
   List<String> marketOptions = ['All'];
-  //TextEditingController searchController = TextEditingController();
+
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchMandiRates();
+
+    searchController.addListener(() {
+      filterData();
+    });
   }
 
   @override
   void dispose() {
+    searchController.dispose();
     super.dispose();
   }
 
@@ -45,6 +51,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
         final data = json.decode(response.body);
         setState(() {
           mandiData = data['results'];
+
           Set<String> uniqueCommodities = {};
           for (var record in mandiData) {
             if (record['Commodity'] != null) {
@@ -54,6 +61,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
           commodityOptions = ['All'] + uniqueCommodities.toList()
             ..sort();
 
+          // unique market options
           Set<String> uniqueMarkets = {};
           for (var record in mandiData) {
             if (record['Market'] != null) {
@@ -62,6 +70,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
           }
           marketOptions = ['All'] + uniqueMarkets.toList()
             ..sort();
+
           filterData();
           isLoading = false;
         });
@@ -72,7 +81,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
         });
       }
     } catch (e) {
-      print("Error: $e");
+      print("Error fetching mandi rates: $e");
       setState(() {
         isLoading = false;
         mandiData = [];
@@ -82,93 +91,65 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
   }
 
   void filterData() {
-    //String query = searchController.text.toLowerCase();
+    final String query = searchController.text.toLowerCase();
+
     setState(() {
       filteredData = mandiData.where((record) {
         final commodity = (record['Commodity'] ?? "").toLowerCase();
         final market = (record['Market'] ?? "").toLowerCase();
+        final district = (record['District'] ?? "").toLowerCase();
 
-        bool matchesCommodity = selectedCommodity == 'All' ||
+        bool matchesCommodityFilter = selectedCommodity == 'All' ||
             commodity == selectedCommodity.toLowerCase();
 
-        bool matchesMarket =
+        bool matchesMarketFilter =
             selectedMarket == 'All' || market == selectedMarket.toLowerCase();
 
-        return matchesCommodity && matchesMarket;
+        bool matchesSearchQuery = query.isEmpty ||
+            commodity.contains(query) ||
+            market.contains(query) ||
+            district.contains(query);
+
+        return matchesCommodityFilter &&
+            matchesMarketFilter &&
+            matchesSearchQuery;
       }).toList();
     });
   }
-  /*if (selectedCommodity == 'All') {
-        filteredData = mandiData;
-      } else {
-        filteredData = mandiData.where((record) {
-          final commodity = (record['Commodity'] ?? '').toLowerCase();
-          return commodity == selectedCommodity.toLowerCase();
-        }).toList();
-      }
-    });
-  }
-    filteredData = mandiData.where((record) {
-        //final market = (record['Market'] ?? '').toLowerCase();
-        final commodity = (record['Commodity'] ?? '').toLowerCase();
-        //bool matchesQuery = market.contains(query) || commodity.contains(query);
 
-        if (selectedCommodity == 'All') {
-          return true;
-        } else {
-          return commodity == selectedCommodity.toLowerCase();
-        }
-      }).toList();
-    });
-  }*/
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("test dev"),
-        centerTitle: true,
-        backgroundColor: Color(0xFF00AD83),
+  // --- Show Filter at the Bottom ---
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          // Search and Filter Section
-          children: [
-            /*Expanded(
-                  child: TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                      hintText: "Search markets or commodities",
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                            color: Color.fromARGB(255, 249, 253, 252)),
-                      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter modalSetState) {
+            return Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Filter Options",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF00AD83),
                     ),
-                    onChanged: (value) {
-                      filterData();
-                    },
                   ),
-                ),
-
-                SizedBox(width: 10),*/
-            Row(
-              children: [
-                Expanded(
-                  //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //children: [
-                  //Expanded(
-                  child: DropdownButtonFormField<String>(
-                    isExpanded: true,
+                  SizedBox(height: 20),
+                  DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: 'Commodity',
+                      labelText: 'Select Commodity',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     value: selectedCommodity,
                     dropdownColor: const Color.fromARGB(255, 234, 238, 234),
@@ -177,32 +158,26 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                         .map((commodity) => DropdownMenuItem(
                               value: commodity,
                               child: Flexible(
-                                child: Text(
-                                  commodity,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
+                                  child: Text(commodity,
+                                      overflow: TextOverflow.ellipsis)),
                             ))
                         .toList(),
                     onChanged: (value) {
-                      setState(() {
+                      modalSetState(() {
                         selectedCommodity = value!;
-                        filterData();
                       });
+                      filterData();
                     },
                   ),
-                ),
-                SizedBox(width: 5),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    isExpanded: true,
+                  SizedBox(height: 15),
+                  DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: 'Market',
+                      labelText: 'Select Market',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     value: selectedMarket,
                     dropdownColor: const Color.fromARGB(255, 234, 238, 234),
@@ -211,81 +186,102 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                         .map((market) => DropdownMenuItem(
                               value: market,
                               child: Flexible(
-                                child: Text(
-                                  market,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
+                                  child: Text(market,
+                                      overflow: TextOverflow.ellipsis)),
                             ))
                         .toList(),
                     onChanged: (value) {
-                      setState(() {
+                      modalSetState(() {
                         selectedMarket = value!;
-                        filterData();
                       });
+                      filterData();
                     },
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF00AD83),
+                      foregroundColor: Colors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text("Apply Filters"),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Mandi Rates"),
+        centerTitle: true,
+        backgroundColor: Color(0xFF00AD83),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // --- Search Bar and Filter Button ---
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: "Search market, commodity, or district",
+                      prefixIcon: Icon(Icons.search, color: Color(0xFF00AD83)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Color(0xFF00AD83)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide:
+                            BorderSide(color: Color(0xFF00AD83), width: 2),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFF00AD83),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.filter_list, color: Colors.white),
+                    onPressed: _showFilterBottomSheet,
+                    tooltip: "Open Filters",
+                    padding: EdgeInsets.all(12),
                   ),
                 ),
               ],
             ),
             SizedBox(height: 20),
-            /*Align(
-              alignment: Alignment.centerRight,
-              child: DropdownButton<String>(
 
-                  value: selectedCommodity,
-                  dropdownColor: const Color.fromARGB(255, 234, 238, 234),
-                  style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                  items: commodityOptions
-                      .map((commodity) => DropdownMenuItem(
-                            value: commodity,
-                            child: Text(commodity),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedCommodity = value!;
-                      filterData();
-                    });
-                  }
-                  /*[
-                  'All',
-                  'Arhar (Tur/Red Gram)(Whole)',
-                  'Jowar(Sorghum)',
-                  'Beans',
-                  'Brinjal',
-                  'Bhindi(Ladies Finger)',
-                  'onion',
-                  'soyabean',
-                  'Sesamum(Sesame,Gingelly,Til)',
-                  'Sunflower',
-                  'tomato',
-                  'Wheat',
-                  'Rice',
-                  'Maize',
-                  'Cotton'
-                ]
-                    .map((commodity) => DropdownMenuItem(
-                          value: commodity,
-                          child: Text(commodity),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedCommodity = value!;
-                    filterData();
-                  });
-                },*/
-                  ),
-            ),*/
-
-            SizedBox(height: 20),
-
-            // Mandi Rates List
+            // --- Mandi Rates List ---
             isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CircularProgressIndicator(color: Color(0xFF00AD83)))
                 : filteredData.isEmpty
-                    ? Center(child: Text("No data available"))
+                    ? Center(
+                        child:
+                            Text("No data available for the selected filters."))
                     : Expanded(
                         child: ListView.builder(
                           itemCount: filteredData.length,
@@ -297,19 +293,19 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              color: const Color.fromARGB(255, 255, 255, 255),
+                              color: Colors.white,
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      //mainAxisAlignment:
-                                      //MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Flexible(
                                           child: Text(
-                                            record['District'] ?? 'N/A',
+                                            record['Market'] ?? 'N/A',
                                             style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
@@ -320,21 +316,26 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                                         ),
                                         SizedBox(width: 8),
                                         Flexible(
-                                          child: Chip(
-                                            label: Text(
-                                              record['Commodity'] ?? 'N/A',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
+                                          child: Text(
+                                            record['Commodity'] ?? 'N/A',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blueGrey.shade700,
                                             ),
-                                            backgroundColor: Color(0xFF00AD83),
-                                            materialTapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.right,
                                           ),
                                         ),
                                       ],
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text(
+                                      record['District'] ?? 'N/A',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[600],
+                                      ),
                                     ),
                                     SizedBox(height: 10),
                                     Row(
