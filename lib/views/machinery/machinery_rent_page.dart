@@ -139,6 +139,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                 mainAxisSpacing: 16,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: 1.2, //size of those buttons
                 children: [
                   _buildTile(
                     context,

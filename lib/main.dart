@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
 
-      home: SplashScreen(),
+      home: KisanDeskScreen(),
     );
   }
 

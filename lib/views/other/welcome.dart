@@ -4,32 +4,6 @@ import 'package:mainproject1/views/auth/AuthSelectionScreen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:mainproject1/views/splashs/SplashScreen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
-
-  runApp(
-    EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('kn')],
-      path: 'assets/lang',
-      fallbackLocale: const Locale('en'),
-      child: KisanDeskScreen(),
-    ),
-  );
-}
-
-class Welcome extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // This class is still problematic and not used in the main function's runApp.
-    // It's recommended to remove or correct it if it's intended for use.
-    return MaterialApp(
-      home: Welcome(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
 class KisanDeskScreen extends StatefulWidget {
   @override
   _KisanDeskScreenState createState() => _KisanDeskScreenState();
@@ -64,11 +38,15 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    SizedBox(
+                      height: 30,
+                    ),
                     Image.asset(
                       'assets/Logo.jpeg',
                       height: 100,
                     ),
                     SizedBox(height: 24),
+
                     Text(
                       'Welcome To Kisan Desk',
                       style: TextStyle(
@@ -81,94 +59,122 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                     Text(
                       'Select a Language',
                       style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.black87,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.teal[800],
+                        letterSpacing: 1.0,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(0.5, 0.5),
+                            blurRadius: 1.5,
+                            color: Colors.grey.withOpacity(0.4),
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(height: 24),
+
+                    //buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
+                          child: GestureDetector(
+                            onTap: () {
                               setState(() {
                                 _selectedLocale = const Locale('en');
                               });
                               context.setLocale(const Locale('en'));
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _selectedLocale ==
-                                      const Locale('en')
-                                  ? Color(0xFF4CAF50) // Highlight when selected
-                                  : Colors.white,
-                              foregroundColor:
-                                  _selectedLocale == const Locale('en')
-                                      ? Colors.white // Highlight when selected
-                                      : Colors.black,
-                              side: BorderSide(
-                                color: Color(0xFF4CAF50), // Always green border
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 35),
+                              decoration: BoxDecoration(
+                                color: _selectedLocale == const Locale('en')
+                                    ? Color(0xFF4CAF50)
+                                        .withOpacity(0.8) // Highlighted
+                                    : Colors.green.withOpacity(0.1), // Default
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.green),
                               ),
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('English'),
-                                if (_selectedLocale == const Locale('en')) ...[
-                                  SizedBox(width: 8),
-                                  Icon(Icons.check_circle,
-                                      size: 20), // Tick mark for English
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'English',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          _selectedLocale == const Locale('en')
+                                              ? Colors.white
+                                              : Colors.black,
+                                    ),
+                                  ),
+                                  if (_selectedLocale ==
+                                      const Locale('en')) ...[
+                                    SizedBox(width: 8),
+                                    Icon(Icons.check_circle,
+                                        color: Colors.white, size: 20),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         ),
                         SizedBox(width: 16),
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
+                          child: GestureDetector(
+                            onTap: () {
                               setState(() {
                                 _selectedLocale = const Locale('kn');
                               });
                               context.setLocale(const Locale('kn'));
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _selectedLocale ==
-                                      const Locale('kn')
-                                  ? Color(0xFF4CAF50) // Highlight when selected
-                                  : Colors.white,
-                              foregroundColor:
-                                  _selectedLocale == const Locale('kn')
-                                      ? Colors.white // Highlight when selected
-                                      : Colors.black,
-                              side: BorderSide(
-                                color: Color(0xFF4CAF50), // Always green border
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 35),
+                              decoration: BoxDecoration(
+                                color: _selectedLocale == const Locale('kn')
+                                    ? Color(0xFF4CAF50).withOpacity(0.8)
+                                    : Colors.green.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.green),
                               ),
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('ಕನ್ನಡ'),
-                                if (_selectedLocale == const Locale('kn')) ...[
-                                  SizedBox(width: 8),
-                                  Icon(Icons.check_circle,
-                                      size: 20), // Tick mark for Kannada
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'ಕನ್ನಡ',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          _selectedLocale == const Locale('kn')
+                                              ? Colors.white
+                                              : Colors.black,
+                                    ),
+                                  ),
+                                  if (_selectedLocale ==
+                                      const Locale('kn')) ...[
+                                    SizedBox(width: 8),
+                                    Icon(Icons.check_circle,
+                                        color: Colors.white, size: 20),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    Spacer(),
+
+                    SizedBox(
+                      height: 75,
+                    ),
+
+                    //next button
+
                     ElevatedButton(
                       onPressed: _selectedLocale != null
                           ? () {
