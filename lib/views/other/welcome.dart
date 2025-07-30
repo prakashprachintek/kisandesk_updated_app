@@ -87,7 +87,7 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                               context.setLocale(const Locale('en'));
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 35),
+                              padding: EdgeInsets.symmetric(vertical: 40),
                               decoration: BoxDecoration(
                                 color: _selectedLocale == const Locale('en')
                                     ? Color(0xFF4CAF50)
@@ -132,7 +132,7 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                               context.setLocale(const Locale('kn'));
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 35),
+                              padding: EdgeInsets.symmetric(vertical: 40),
                               decoration: BoxDecoration(
                                 color: _selectedLocale == const Locale('kn')
                                     ? Color(0xFF4CAF50).withOpacity(0.8)
@@ -169,9 +169,11 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                       ],
                     ),
 
-                    SizedBox(
-                      height: 75,
-                    ),
+                    // SizedBox(
+                    //   height: 75,
+                    // ),
+
+                    Spacer(),
 
                     //next button
 

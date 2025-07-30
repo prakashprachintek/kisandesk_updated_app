@@ -25,40 +25,49 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   }
 
   Future<void> _fetchOrdersFromApi() async {
+    print("Fetching orders for userId: ${UserSession.userId}");
     final url = Uri.parse("${KD.api}/app/get_machinary_orders");
 
     try {
-      final response = await http.post(url,
-          body: jsonEncode({
-            "farmer_id": UserSession.userId,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          });
+      final response = await http.post(
+        url,
+        body: jsonEncode({
+          "userId": UserSession.userId, // ✅ Corrected here
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
+        print("Orders response: ${response.body}");
 
         if (json['status'] == 'success') {
           final List results = json['results'];
-          orders = results.map<Map<String, String>>((item) {
-            return {
-              "orderId": item['_id'] ?? '',
-              "owner": item['farmer_name'] ?? 'Unknown',
-              "status": item['status'] ?? '',
-              "total": item['price'] ?? 'N/A',
-              "paid": item['admin_comments'] != null &&
-                      item['admin_comments'].isNotEmpty
-                  ? item['admin_comments'][0]['message'] ?? 'Not available'
-                  : 'Not available',
-              "booked": item['created_at']?.split('T')[0] ?? '',
-              "completed": item['status'] == "Completed"
-                  ? (item['updated_at']?.split('T')[0] ?? '')
-                  : "--",
-              "description": item['description'] ?? 'No Description available',
-            };
-          }).toList();
-
+          orders = results.map<Map<String, String>>(
+            (item) {
+              return {
+                "orderId": item['_id'] ?? '',
+                "machinery": item['contact_number'] ??
+                    'Unknown', // or actual machinery name if available
+                "workDate": item['post_name'] ?? '',
+                "workType": item['farmer_name'] ?? '',
+                "quantity": item['price'] ?? '',
+                "total": item['price'] ?? 'N/A',
+                "status": item['status'] ?? '',
+                "paid": item['admin_comments'] != null &&
+                        item['admin_comments'].isNotEmpty
+                    ? item['admin_comments'][0]['message'] ?? 'Not available'
+                    : 'Not available',
+                "booked": item['created_at']?.split('T')[0] ?? '',
+                "completed": item['status'] == "Completed"
+                    ? (item['updated_at']?.split('T')[0] ?? '')
+                    : "--",
+                "description": item['description'] ?? 'No Description available',
+              };
+            },
+          ).toList();
           setState(() {});
         }
       } else {
@@ -78,6 +87,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
         backgroundColor: Colors.blue.shade800,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
+      
       body: orders.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
@@ -115,8 +125,11 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                             ],
                           ),
                           SizedBox(height: 8),
-                          Text("Total Amount: ₹${order['total']}"),
-                          Text("Paid Amount: ₹${order['paid']}"),
+                          Text("Machinery: ${order['machinery']}"),
+                          Text("Work Type: ${order['workType']}"),
+                          Text("Work Date: ${order['workDate']}"),
+                          Text("Quantity: ${order['quantity']}"),
+                          Text("Description: ${order['description']}"),
                         ],
                       ),
                     ),

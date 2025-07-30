@@ -24,6 +24,8 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
 
   List<Map<String, String>> recentOrders = [];
 
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +39,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
       final response = await http.post(
         url,
         body: jsonEncode({
-          "farmer_id": UserSession.userId,
+          "userId": UserSession.userId,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -46,15 +48,12 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-
         if (json['status'] == 'success') {
           final List results = json['results'];
 
-          // Sort by latest created_at
           results.sort((a, b) =>
               b['created_at'].toString().compareTo(a['created_at'].toString()));
 
-          // Take only the first 2
           final recent = results.take(2).map<Map<String, String>>((item) {
             return {
               "orderId": item['_id'] ?? '',
@@ -74,6 +73,10 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
       }
     } catch (e) {
       print("Error fetching recent orders: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -168,40 +171,44 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
 
               // Limited Recent Orders (2 only)
               Expanded(
-                child: ListView.builder(
-                  itemCount: 2,
-                  itemBuilder: (context, index) {
-                    final order = recentOrders[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          )
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("🆔 Order ID: ${order['orderId']}",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 6),
-                          Text("🔧 Work Type: ${order['workType']}"),
-                          Text("📅 Date: ${order['date']}"),
-                          Text("📞 Contact: ${order['contact']}"),
-                          Text("📌 Status: ${order['status']}"),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : recentOrders.isEmpty
+                        ? Center(child: Text("No recent orders found"))
+                        : ListView.builder(
+                            itemCount: recentOrders.length,
+                            itemBuilder: (context, index) {
+                              final order = recentOrders[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    )
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("🆔 Order ID: ${order['orderId']}",
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 6),
+                                    Text("🔧 Work Type: ${order['workType']}"),
+                                    Text("📅 Date: ${order['date']}"),
+                                    Text("📞 Contact: ${order['contact']}"),
+                                    Text("📌 Status: ${order['status']}"),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
               ),
             ],
           ),

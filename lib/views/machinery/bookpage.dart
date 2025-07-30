@@ -50,7 +50,7 @@ class _BookPageState extends State<BookPage> {
 
     if (picked != null) {
       setState(() {
-        bookingDate = DateFormat('dd MMM yyyy').format(picked);
+        bookingDate = DateFormat('yyyy-MM-dd').format(picked);
       });
     }
   }
@@ -64,7 +64,7 @@ class _BookPageState extends State<BookPage> {
       final uri = Uri.parse("${KD.api}/app/book_machinary");
 
       final payload = {
-        "farmer_id": UserSession.userId,
+        "userId": UserSession.userId,
         "machineryType": selectedMachinery!,
         "workDate": bookingDate!,
         "workType": selectedWorkType!,
@@ -79,8 +79,9 @@ class _BookPageState extends State<BookPage> {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(payload),
         );
-
+        print("Booking with payload: $payload");
         final responseData = jsonDecode(res.body);
+        print("Orders response: ${res.body}");
 
         if (responseData["status"] == "success") {
           showDialog(

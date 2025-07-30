@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
+import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
 import 'dart:convert';
 import '../other/user_session.dart';
 import '../widgets/api_config.dart';
 import '../../main.dart';
 import '../home/HomePage.dart';
 import '../widgets/GradientAuthButton.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -24,6 +28,36 @@ class OTPVerificationScreen extends StatefulWidget {
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final TextEditingController otpController = TextEditingController();
   bool isLoading = false;
+
+  int secondsRemaining = 30;
+  bool resendEnabled = false;
+  late Timer timer;
+
+  void startTimer() {
+    setState(() {
+      secondsRemaining = 30;
+      resendEnabled = false;
+    });
+
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (secondsRemaining == 0) {
+        setState(() {
+          resendEnabled = true;
+        });
+        timer.cancel();
+      } else {
+        setState(() {
+          secondsRemaining--;
+        });
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer(); // start countdown on screen load
+  }
 
   Future<void> verifyOTP() async {
     final otp = otpController.text.trim();
@@ -61,7 +95,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             context,
             MaterialPageRoute(builder: (_) => HomePage()),
           );
-
         } else if (data["status"] == tr("failed")) {
           // OTP incorrect or not generated → Show error
           ScaffoldMessenger.of(context).showSnackBar(
@@ -94,6 +127,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   void dispose() {
     otpController.dispose();
     super.dispose();
+    timer.cancel();
+    super.dispose();
   }
 
   @override
@@ -107,51 +142,130 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.grey[700]),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-        child: Column(
-          children: [
-            SizedBox(height: 16),
-            Lottie.asset("assets/animations/lock.json",
-                width: 180, height: 180),
-            SizedBox(height: 20),
-            Text(
-              tr("Enter OTP"),
-              style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1B5E20)),
-            ),
-            SizedBox(height: 12),
-            Text(
-              tr("OTP sent to: ${widget.phoneNumber}"),
-              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 40),
-            TextField(
-              controller: otpController,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: InputDecoration(
-                labelText: tr("6-digit OTP"),
-                counterText: "",
-                prefixIcon: Icon(Icons.password, color: Colors.grey[700]),
-                fillColor: Colors.white,
-                filled: true,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              reverse: true,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 16),
+                      Lottie.asset("assets/animations/lock.json",
+                          width: 180, height: 180),
+                      const SizedBox(height: 20),
+                      Text(
+                        tr("Enter OTP"),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1B5E20),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        tr("OTP sent to: ${widget.phoneNumber}"),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 40),
+                      PinCodeTextField(
+                        appContext: context,
+                        length: 6,
+                        controller: otpController,
+                        keyboardType: TextInputType.number,
+                        showCursor: false,
+                        textStyle: TextStyle(fontSize: 20),
+                        animationType: AnimationType.scale,
+                        cursorColor: Colors.green.shade800,
+                        onChanged: (value) {},
+                        pinTheme: PinTheme(
+                          shape: PinCodeFieldShape.box,
+                          borderRadius: BorderRadius.circular(10),
+                          fieldHeight: 55,
+                          fieldWidth: 45,
+                          activeFillColor: Colors.green.shade50,
+                          selectedFillColor: Colors.green.shade100,
+                          inactiveFillColor: Colors.grey.shade200,
+                          activeColor: Colors.green,
+                          selectedColor: Colors.green.shade800,
+                          inactiveColor: Colors.grey.shade400,
+                        ),
+                        animationDuration: const Duration(milliseconds: 250),
+                        enableActiveFill: true,
+                      ),
+                      // SizedBox(height: 2),
+
+                      const SizedBox(height: 2),
+                      GradientAuthButton(
+                        text: isLoading ? tr("Verifying...") : tr("Verify OTP"),
+                        onTap: isLoading ? null : verifyOTP,
+                        textStyle: TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 0),
+
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        MobileVerificationScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                tr("Wrong number? Go back"),
+                                style: TextStyle(
+                                  color: const Color.fromARGB(255, 32, 90, 40),
+                                  fontSize: 14,
+                                  // decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+
+                            resendEnabled
+                                ? TextButton(
+                                    onPressed: () {
+                                      startTimer(); // restart the timer
+                                    },
+                                    child: Text(
+                                      "Resend OTP",
+                                      style: TextStyle(
+                                        color: Colors.blueAccent,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    "Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}",
+                                    style: TextStyle(
+                                        color: Colors.grey[600], fontSize: 14),
+                                  ),
+                            
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 24),
-            GradientAuthButton(
-              text: isLoading ? tr("Verifying...") : tr("Verify OTP"),
-              onTap: isLoading ? null : verifyOTP,
-              textStyle: TextStyle(fontSize: 14),
-            ),
-            Spacer(),
-            Text(tr("Wrong number? Go back"),
-                style: TextStyle(color: Colors.grey[700])),
-            SizedBox(height: 16),
-          ],
+            );
+          },
         ),
       ),
     );
