@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../widgets/api_config.dart';
 
 class MandiRatesPage extends StatefulWidget {
   @override
@@ -8,7 +9,7 @@ class MandiRatesPage extends StatefulWidget {
 }
 
 class _MandiRatesPageState extends State<MandiRatesPage> {
-  final String apiUrl = 'http://13.233.103.50:6000/api/admin/fetch_mandi_rates';
+  final String apiUrl = ('${KD.api}/admin/fetch_mandi_rates');
 
   List<dynamic> mandiData = [];
   List<dynamic> filteredData = [];

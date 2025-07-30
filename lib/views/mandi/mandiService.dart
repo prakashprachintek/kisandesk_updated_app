@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../widgets/api_config.dart';
 
 class MandiRate {
   final String market;
@@ -27,7 +28,7 @@ class MandiRate {
 Future<List<MandiRate>> fetchTopMandiRates() async {
 
   final String apiUrl =
-      'http://13.233.103.50:6000/api/admin/fetch_mandi_rates';
+      '${KD.api}/admin/fetch_mandi_rates';
 
 
   final response = await http.post(Uri.parse(apiUrl));
