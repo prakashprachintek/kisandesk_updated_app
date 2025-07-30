@@ -165,6 +165,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                           });
                         },
                       ),
+                      Icon(Icons.male, color: Colors.black),
+                      SizedBox(width: 4),
                       Text("Male", style: TextStyle(fontSize: 16)),
                     ],
                   ),
@@ -179,6 +181,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                           });
                         },
                       ),
+                      Icon(Icons.female, color: Colors.black),
+                      SizedBox(width: 4),
                       Text("Female", style: TextStyle(fontSize: 16)),
                     ],
                   ),

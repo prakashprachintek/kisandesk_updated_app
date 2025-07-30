@@ -27,7 +27,7 @@ class MandiRate {
 Future<List<MandiRate>> fetchTopMandiRates() async {
 
   final String apiUrl =
-      'http://13.233.103.50/api/admin/fetch_mandi_rates';
+      'http://13.233.103.50:6000/api/admin/fetch_mandi_rates';
 
 
   final response = await http.post(Uri.parse(apiUrl));
