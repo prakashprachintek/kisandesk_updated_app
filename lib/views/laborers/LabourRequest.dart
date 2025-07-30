@@ -342,7 +342,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
     // This endpoint would be for fetching requests, adjust as per your API
     // Assuming your API has an endpoint like '/labour_requests' or similar for GET requests
     final Uri apiUrl = Uri.parse(
-        '$_apiBaseUrl/labour_requests'); // You might need to adjust this GET endpoint
+        '${KD.api}/admin/labour_requests'); // You might need to adjust this GET endpoint
     try {
       final response = await http.get(apiUrl);
       if (response.statusCode == 200) {
