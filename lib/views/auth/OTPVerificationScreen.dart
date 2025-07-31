@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
+import 'package:mainproject1/views/auth/fcm_helper.dart';
 import 'dart:convert';
 import '../other/user_session.dart';
 import '../widgets/api_config.dart';
@@ -84,12 +86,21 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       );
 
       final data = jsonDecode(response.body);
-      print("API2 Response: $data");
+      print("🔓🔓API2 Response: $data");
 
       if (response.statusCode == 200) {
         if (data["status"] == "success") {
           //storing data for later user
           UserSession.setUser(data["result"]);
+
+          // 🔥 Get FCM token
+          String? token = await FirebaseMessaging.instance.getToken();
+          print("FCM Token: $token");
+          //send token to the backend🔥🔥
+          // if (token != null) {
+          //   await sendFCMTokenToServer(data["result"]["_id"], token);
+          // }
+
           // OTP correct → Navigate to Home
           Navigator.pushReplacement(
             context,
@@ -234,7 +245,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                 ),
                               ),
                             ),
-
                             resendEnabled
                                 ? TextButton(
                                     onPressed: () {
@@ -254,7 +264,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                     style: TextStyle(
                                         color: Colors.grey[600], fontSize: 14),
                                   ),
-                            
                           ],
                         ),
                       ),
