@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../widgets/api_config.dart';
 import 'Postdetailspage.dart';
 
 class MarketPage extends StatefulWidget {
@@ -27,7 +28,7 @@ class _MarketPageState extends State<MarketPage> {
   // Fetch market posts from API
   Future<void> fetchMarketPosts() async {
     const String url =
-        'http://13.233.103.50/api/admin/getAll_market_post'; // Replace with your API endpoint
+        '${KD.api}/admin/getAll_market_post'; // Replace with your API endpoint
     try {
       final response = await http.post(
         Uri.parse(url),
