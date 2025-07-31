@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 
 
 import '../posts/PostDetailsPage.dart';
+import '../widgets/api_config.dart';
 
 /// A combined dashboard page with tabs for Labour Requests and Market Posts.
 class DashboardTabbedPage extends StatefulWidget {
@@ -63,12 +64,13 @@ class _LabourRequestsTabState extends State<LabourRequestsTab> {
   }
 
   Future<void> _fetchDashboardData() async {
-    const String apiUrl = 'http://3.110.121.159/api/admin/get_labours_request';
+    const String apiUrl = '${KD.api}/admin/get_labours_request';
     const Map<String, String> headers = {
       'Content-Type': 'application/json',
     };
     Map<String, String> body = {
-      'farmer_id': widget.userData['farmer_id'],
+      //'userId':userSession.userId
+      'userId': widget.userData['userSession.userId'],
     };
 
     try {

@@ -8,6 +8,7 @@ class Doctor {
   final String village;
   final String gender;
   final String status;
+  final String designation;
 
   Doctor({
     required this.fullname,
@@ -19,6 +20,7 @@ class Doctor {
     required this.village,
     required this.gender,
     required this.status,
+    required this.designation,
   });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class Doctor {
       village: json['village'] ?? '',
       gender: json['gender'] ?? '',
       status: json['status'] ?? '',
+      designation: json['designation'] ?? '',
     );
   }
 }

@@ -45,7 +45,8 @@ class DoctorDetailPage extends StatelessWidget {
           ),
           // Doctor Image
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.25 - 80, // Adjust position for better overlap
+            top: MediaQuery.of(context).size.height * 0.25 -
+                80, // Adjust position for better overlap
             left: 0,
             right: 0,
             child: Center(
@@ -59,7 +60,8 @@ class DoctorDetailPage extends StatelessWidget {
                     BoxShadow(
                         color: Colors.black26,
                         blurRadius: 15, // Increased blur for softer shadow
-                        offset: Offset(0, 8)), // Increased offset for more depth
+                        offset:
+                            Offset(0, 8)), // Increased offset for more depth
                   ],
                 ),
                 child: ClipOval(
@@ -91,7 +93,7 @@ class DoctorDetailPage extends StatelessWidget {
                           fontSize: 28, // Larger font size
                           fontWeight: FontWeight.bold,
                           color: Colors.black87, // Slightly softer black
-                          letterSpacing: 0.5 // Slight letter spacing
+                          letterSpacing: 0.2 // Slight letter spacing
                           ),
                     ),
                   ),
@@ -99,7 +101,8 @@ class DoctorDetailPage extends StatelessWidget {
                   Center(
                     // You might want to add a specialization here if available in Doctor model
                     child: Text(
-                      'General Physician', // Example: Replace with doctor.specialization if you add it
+                      doctor
+                          .designation, // Example: Replace with doctor.specialization if you add it
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.grey[600],
@@ -107,7 +110,11 @@ class DoctorDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Divider(height: 40, thickness: 1.5, indent: 20, endIndent: 20), // Decorative divider
+                  const Divider(
+                      height: 40,
+                      thickness: 1.5,
+                      indent: 20,
+                      endIndent: 20), // Decorative divider
 
                   detailRow("Phone", doctor.phone, Icons.phone),
                   detailRow("Address", doctor.address, Icons.location_on),
@@ -128,9 +135,11 @@ class DoctorDetailPage extends StatelessWidget {
   // Modified detailRow to include an icon
   static Widget detailRow(String label, String value, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0), // Increased vertical padding
+      padding: const EdgeInsets.symmetric(
+          vertical: 8.0, horizontal: 8.0), // Increased vertical padding
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start, // Align text to the top if it wraps
+        crossAxisAlignment:
+            CrossAxisAlignment.start, // Align text to the top if it wraps
         children: [
           Icon(icon, color: Color(0xFF00BF8C), size: 24), // Green icon
           const SizedBox(width: 12), // Space between icon and text
@@ -146,12 +155,14 @@ class DoctorDetailPage extends StatelessWidget {
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 2), // Small space between label and value
+                const SizedBox(
+                    height: 1), // Small space between label and value
                 Text(
                   value,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[800], // Darker grey for better readability
+                    color:
+                        Colors.grey[800], // Darker grey for better readability
                   ),
                 ),
               ],
