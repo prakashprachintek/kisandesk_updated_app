@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../machinery/bookpage.dart';
 import '../machinery/myorderspage.dart';
-import '../other/user_session.dart';
+import '../services/user_session.dart';
 import '../widgets/api_config.dart';
 
 class MachineryRentPage extends StatefulWidget {

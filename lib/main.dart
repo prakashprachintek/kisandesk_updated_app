@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:easy_localization/easy_localization.dart';
-import './views/other/welcome.dart';
 
-import 'views/splashs/SplashScreen.dart';
+import 'views/other/welcome.dart';
+import 'views/home/HomePage.dart';
+import 'views/services/user_session.dart';
+import 'views/services/background_message.dart';
+import 'views/services/push_notification_service.dart';
+import 'views/services/notification_data.dart';
+import 'views/services/notification_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await UserSession.loadUserFromPrefs();
+
   await Firebase.initializeApp();
-  await EasyLocalization.ensureInitialized(); // IMPORTANT!
+  await EasyLocalization.ensureInitialized();
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  await PushNotificationService.initializeLocalNotifications();
+  await PushNotificationService.initializeFCM();
 
   runApp(
     EasyLocalization(
@@ -18,27 +31,66 @@ void main() async {
         Locale('hi'),
         Locale('mr')
       ],
-      path: 'assets/lang', // your JSON files are here
+      path: 'assets/lang',
       fallbackLocale: Locale('en'),
       child: MyApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      PushNotificationService.navigatorContext =
+          MyApp.navigatorKey.currentContext;
+    });
+    _setupNotificationTapHandler();
+  }
+
+  void _setupNotificationTapHandler() async {
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null && initialMessage.data.isNotEmpty) {
+      _navigateToNotificationPage(initialMessage.data);
+    }
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (message.data.isNotEmpty) {
+        _navigateToNotificationPage(message.data);
+      }
+    });
+  }
+
+  void _navigateToNotificationPage(Map<String, dynamic> data) {
+    final notificationData = NotificationData.fromMap(data);
+    MyApp.navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (_) => NotificationPage(notificationData: notificationData),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: MyApp.navigatorKey,
       title: 'Kisan Desk',
       debugShowCheckedModeBanner: false,
       theme: _buildThemeData(),
-
-      // 👇 VERY IMPORTANT for EasyLocalization to work
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
-
-      home: KisanDeskScreen(),
+      home: UserSession.user != null ? HomePage() : KisanDeskScreen(),
     );
   }
 

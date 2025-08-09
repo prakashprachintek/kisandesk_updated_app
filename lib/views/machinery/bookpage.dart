@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../other/user_session.dart';
+import '../services/user_session.dart';
 import '../widgets/api_config.dart';
 
 class BookPage extends StatefulWidget {

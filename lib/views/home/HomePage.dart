@@ -13,12 +13,14 @@ import 'package:mainproject1/views/laborers/Labors_page.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 
 // Adjust these imports for your actual file structure
+import '../other/welcome.dart';
 import '../posts/CombinedDashboardPage.dart';
 import '../posts/MarketTabbedPage.dart';
 import '../profile/profile_page.dart';
 import '../other/favoritePage.dart';
 import '../marketplace/Mraket_page1.dart';
 import '../mandi/mandiRates.dart';
+import '../services/user_session.dart';
 import '../whether/whetherinfo.dart';
 import '../machinery/Machinery_Page_old.dart';
 import '../cattle/Cattle_Page.dart';
@@ -470,11 +472,38 @@ class _HomePageState extends State<HomePage> {
           ListTile(
             leading: Icon(Icons.logout),
             title: Text(tr("Logout")),
-            onTap: () {
-              Navigator.pop(context);
-              // Implement logout functionality.
+            onTap: () async {
+              Navigator.pop(context); // Close the drawer first
+
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text("Are you sure you want to log out?"),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text("Cancel"),
+                      ),
+                      SizedBox(height: 1.5,),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text("Logout"),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (confirm == true) {
+                await UserSession.logout();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => KisanDeskScreen()),
+                  (route) => false,
+                );
+              }
             },
-          ),
+          )
         ],
       ),
     );

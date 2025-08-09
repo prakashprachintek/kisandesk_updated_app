@@ -1,10 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.mainproject1">
 
     <!-- Permissions to access device's location -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
+        
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -13,6 +16,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
 
     <application
         android:label="KisanDesk"
@@ -37,6 +41,16 @@
             </intent-filter>
         </activity>
 
+        <!-- Firebase notification config -->
+            <meta-data
+                android:name="com.google.firebase.messaging.default_notification_icon"
+                android:resource="@mipmap/ic_launcher" />
+
+            <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+                android:value="high_importance_channel" />
+
+
         <!-- Flutter related config -->
         <meta-data
             android:name="flutterEmbedding"
@@ -45,7 +59,34 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD63NwHlVZIzwIiGOFhve0Bs-WBRbB16Bs"/>
+
+        <!-- Firebase Messaging Service: Required to receive FCM messages in background & terminated states -->
+        <service
+            android:name="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService"
+            android:exported="true"
+            tools:replace="android:exported">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Handles YES/NO button taps -->
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.receivers.ActionBroadcastReceiver"
+            android:exported="true" />
+
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+
     </application>
+
+    
 
     <!-- Required to query activities that can process text -->
     <queries>

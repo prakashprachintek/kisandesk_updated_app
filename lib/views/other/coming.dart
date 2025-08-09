@@ -36,7 +36,8 @@ class _ComingSoonPageState extends State<ComingSoonPage> {
   }
 
   void showLocalNotification() async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       'channel_id',
       'channel_name',
       importance: Importance.max,
@@ -49,7 +50,7 @@ class _ComingSoonPageState extends State<ComingSoonPage> {
     await flutterLocalNotificationsPlugin.show(
       0,
       'Test Notification',
-      'You clicked the button!',
+      'description : You clicked the button!',
       platformDetails,
     );
   }
@@ -66,7 +67,6 @@ class _ComingSoonPageState extends State<ComingSoonPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              
               'Coming Soon....!',
               style: TextStyle(
                 fontSize: 30,

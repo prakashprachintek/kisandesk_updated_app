@@ -6,9 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
-import 'package:mainproject1/views/auth/fcm_helper.dart';
 import 'dart:convert';
-import '../other/user_session.dart';
+import '../services/user_session.dart';
 import '../widgets/api_config.dart';
 import '../../main.dart';
 import '../home/HomePage.dart';
@@ -75,6 +74,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
     final url = Uri.parse("${KD.api}/admin/verify_otp");
 
+    //Get FCM token
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("⭐⭐FCM Token: $token");
     try {
       final response = await http.post(
         url,
@@ -82,6 +84,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         body: jsonEncode({
           "phoneNumber": widget.phoneNumber,
           "otp": otp,
+          "token": token
         }),
       );
 
@@ -92,14 +95,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         if (data["status"] == "success") {
           //storing data for later user
           UserSession.setUser(data["result"]);
-
-          // 🔥 Get FCM token
-          String? token = await FirebaseMessaging.instance.getToken();
-          print("FCM Token: $token");
-          //send token to the backend🔥🔥
-          // if (token != null) {
-          //   await sendFCMTokenToServer(data["result"]["_id"], token);
-          // }
 
           // OTP correct → Navigate to Home
           Navigator.pushReplacement(

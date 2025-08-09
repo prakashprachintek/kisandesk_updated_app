@@ -5,7 +5,7 @@ import 'dart:convert'; // For encoding and decoding JSON
 
 // Ensure this file exists and has your "Add Me As Labour" functionality.
 import '../other/AddMeAsLabour_page.dart';
-import '../other/user_session.dart';
+import '../services/user_session.dart';
 import '../widgets/api_config.dart';
 
 class LabourRequestPage extends StatefulWidget {
