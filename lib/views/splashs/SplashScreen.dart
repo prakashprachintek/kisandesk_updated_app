@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -34,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 200, height: 200),
             SizedBox(height: 16),
             Text(
-              "Kisan Desk",
+              "Kisan Desk".tr(),
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

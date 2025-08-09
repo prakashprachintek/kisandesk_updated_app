@@ -20,6 +20,7 @@ void main() async {
       ],
       path: 'assets/lang', // your JSON files are here
       fallbackLocale: Locale('en'),
+      
       child: MyApp(),
     ),
   );
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Kisan Desk',
+      title: 'Kisan Desk'.tr(),
       debugShowCheckedModeBanner: false,
       theme: _buildThemeData(),
 
