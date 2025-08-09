@@ -387,8 +387,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           tabs: [
-            Tab(text: 'Labour Form'),
-            Tab(text: 'Add Me As Labour'),
+            Tab(text: 'Labour Request'),
+            //Tab(text: 'Add Me As Labour'),
             Tab(text: 'Dashboard'),
           ],
         ),
@@ -398,7 +398,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
         children: [
           _buildLabourFormTab(),
           // The Add Me As Labour tab – we use the separate page
-          AddMeAsLabourPage(userData: widget.userData, phoneNumber: widget.phoneNumber),
+          //AddMeAsLabourPage(userData: widget.userData, phoneNumber: widget.phoneNumber),
           _buildLabourDashboardTab(),
         ],
       ),

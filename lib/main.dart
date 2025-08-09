@@ -33,6 +33,7 @@ void main() async {
       ],
       path: 'assets/lang',
       fallbackLocale: Locale('en'),
+      
       child: MyApp(),
     ),
   );
@@ -83,8 +84,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: MyApp.navigatorKey,
-      title: 'Kisan Desk',
+      title: 'Kisan Desk'.tr(),
       debugShowCheckedModeBanner: false,
       theme: _buildThemeData(),
       locale: context.locale,
