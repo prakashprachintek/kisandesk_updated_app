@@ -17,9 +17,12 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   String? actionStatus; // "accepted" or "rejected"
+  bool _isLoading = false; // prevent multiple taps
 
   Future<void> _acceptRequest() async {
-    final url = Uri.parse('${KD.api}/admin/machinery_request_action_play');
+    setState(() => _isLoading = true);
+
+    final url = Uri.parse('${KD.api}/app/machinery_request_action_play');
     final body = {
       "requestId": widget.notificationData.reqId,
       "acceptedBy": UserSession.userId,
@@ -33,18 +36,31 @@ class _NotificationPageState extends State<NotificationPage> {
       );
 
       if (response.statusCode == 200) {
-        setState(() {
-          actionStatus = "accepted";
-        });
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'success') {
+          setState(() {
+            actionStatus = "accepted";
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? 'Request accepted')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? 'Failed to accept request')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to accept request')),
+          SnackBar(content: Text('Server error: ${response.statusCode}')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -75,8 +91,9 @@ class _NotificationPageState extends State<NotificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('🆔🆔🆔${widget.notificationData.reqId}');
-    print('🔔🔔🔔⭐⭐Notification data: ${widget.notificationData.toMap()}');
+    debugPrint('🆔 Request ID: ${widget.notificationData.reqId}');
+    debugPrint('🔔 Notification data: ${widget.notificationData.toMap()}');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Request for machine'),
@@ -112,12 +129,21 @@ class _NotificationPageState extends State<NotificationPage> {
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: _acceptRequest,
-                              icon: const Icon(Icons.check_circle,
-                                  color: Colors.white),
-                              label: const Text(
-                                'Accept',
-                                style: TextStyle(
+                              onPressed: _isLoading ? null : _acceptRequest,
+                              icon: _isLoading
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.check_circle,
+                                      color: Colors.white),
+                              label: Text(
+                                _isLoading ? 'Accepting...' : 'Accept',
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,

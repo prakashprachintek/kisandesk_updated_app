@@ -64,18 +64,6 @@ class AuthSelectionScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 24),
                       /*
-                      TextButton(
-                        onPressed: () => _showSignupDialog(context),
-                        child: Text(
-                          "Don’t have an account? Sign Up",
-                          style: TextStyle(
-                            color: Color(0xFF00AD83),
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      */
-
                       // comment this section before release
                       //added for development purposes only
                       ////////////////////////////////////
@@ -108,6 +96,8 @@ class AuthSelectionScreen extends StatelessWidget {
                       ),
 
                       //////////////////////////////////////
+                      ///
+                      */
                     ],
                   ),
                 ),
@@ -119,153 +109,3 @@ class AuthSelectionScreen extends StatelessWidget {
     );
   }
 }
-  // Future<void> _showSignupDialog(BuildContext context) async {
-  //   final TextEditingController _phoneController = TextEditingController();
-  //   final TextEditingController _nameController = TextEditingController();
-
-  //   String? selectedDistrict;
-  //   String? selectedTaluk;
-  //   String? selectedVillage;
-
-  //   final Map<String, List<String>> districtTaluks = {
-  //     'Bangalore': ['BTM', 'Indiranagar'],
-  //     'Mysore': ['Nazarbad', 'VV Mohalla'],
-  //   };
-
-  //   final Map<String, List<String>> talukVillages = {
-  //     'BTM': ['BTM Layout 1st Stage', 'BTM Layout 2nd Stage'],
-  //     'Indiranagar': ['HAL', 'Domlur'],
-  //     'Nazarbad': ['Ashokpuram', 'Chamundi Hill'],
-  //     'VV Mohalla': ['Gokulam', 'Jayanagar Mysore'],
-  //   };
-
-  //   List<String> districts = districtTaluks.keys.toList();
-  //   List<String> taluks = [];
-  //   List<String> villages = [];
-
-  //   await showDialog(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (_) {
-  //       return StatefulBuilder(
-  //         builder: (context, setState) {
-  //           return AlertDialog(
-  //             title: Text("Sign Up"),
-  //             content: SingleChildScrollView(
-  //               child: Column(
-  //                 mainAxisSize: MainAxisSize.min,
-  //                 children: [
-  //                   TextField(
-  //                     controller: _phoneController,
-  //                     decoration: InputDecoration(labelText: "Phone Number"),
-  //                     keyboardType: TextInputType.phone,
-  //                   ),
-  //                   SizedBox(height: 10),
-  //                   TextField(
-  //                     controller: _nameController,
-  //                     decoration: InputDecoration(labelText: "Full Name"),
-  //                   ),
-  //                   SizedBox(height: 10),
-  //                   DropdownButton<String>(
-  //                     hint: Text("Select District"),
-  //                     value: selectedDistrict,
-  //                     isExpanded: true,
-  //                     items: districts.map((district) {
-  //                       return DropdownMenuItem(
-  //                         value: district,
-  //                         child: Text(district),
-  //                       );
-  //                     }).toList(),
-  //                     onChanged: (value) {
-  //                       setState(() {
-  //                         selectedDistrict = value;
-  //                         taluks = districtTaluks[value!] ?? [];
-  //                         selectedTaluk = null;
-  //                         villages = [];
-  //                         selectedVillage = null;
-  //                       });
-  //                     },
-  //                   ),
-  //                   SizedBox(height: 10),
-  //                   DropdownButton<String>(
-  //                     hint: Text("Select Taluk"),
-  //                     value: selectedTaluk,
-  //                     isExpanded: true,
-  //                     items: taluks.map((taluk) {
-  //                       return DropdownMenuItem(
-  //                         value: taluk,
-  //                         child: Text(taluk),
-  //                       );
-  //                     }).toList(),
-  //                     onChanged: (value) {
-  //                       setState(() {
-  //                         selectedTaluk = value;
-  //                         villages = talukVillages[value!] ?? [];
-  //                         selectedVillage = null;
-  //                       });
-  //                     },
-  //                   ),
-  //                   SizedBox(height: 10),
-  //                   DropdownButton<String>(
-  //                     hint: Text("Select Village"),
-  //                     value: selectedVillage,
-  //                     isExpanded: true,
-  //                     items: villages.map((village) {
-  //                       return DropdownMenuItem(
-  //                         value: village,
-  //                         child: Text(village),
-  //                       );
-  //                     }).toList(),
-  //                     onChanged: (value) {
-  //                       setState(() {
-  //                         selectedVillage = value;
-  //                       });
-  //                     },
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //             actions: [
-  //               TextButton(
-  //                 child: Text("Cancel"),
-  //                 onPressed: () => Navigator.of(context).pop(),
-  //               ),
-  //               ElevatedButton(
-  //                 child: Text("Submit"),
-  //                 onPressed: () async {
-  //                   if (_phoneController.text.isEmpty ||
-  //                       _nameController.text.isEmpty ||
-  //                       selectedDistrict == null ||
-  //                       selectedTaluk == null ||
-  //                       selectedVillage == null) {
-  //                     ScaffoldMessenger.of(context).showSnackBar(
-  //                       SnackBar(content: Text("Please fill all fields")),
-  //                     );
-  //                     return;
-  //                   }
-
-  //                   // ✅ For now, skip API call, just navigate to HomePage
-  //                   Navigator.of(context).pop(); // close the dialog
-  //                   Navigator.of(context).pushReplacement(
-  //                     MaterialPageRoute(
-  //                       builder: (_) => HomePage(
-  //                         phoneNumber: _phoneController.text.trim(),
-  //                         userData: {
-  //                           'fullName': _nameController.text.trim(),
-  //                           'district': selectedDistrict,
-  //                           'taluka': selectedTaluk,
-  //                           'village': selectedVillage,
-  //                         },
-  //                       ),
-  //                     ),
-  //                   );
-  //                 },
-  //               ),
-  //             ],
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
-// }

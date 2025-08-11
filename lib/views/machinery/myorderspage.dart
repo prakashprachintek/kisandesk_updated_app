@@ -49,11 +49,11 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
             (item) {
               return {
                 "orderId": item['_id'] ?? '',
-                "machinery": item['contact_number'] ??
+                "machinery": item['machinery_type'] ??
                     'Unknown', // or actual machinery name if available
-                "workDate": item['post_name'] ?? '',
-                "workType": item['farmer_name'] ?? '',
-                "quantity": item['price'] ?? '',
+                "workDate": item['work_date'] ?? '',
+                "workType": item['work_type'] ?? '',
+                "quantity": item['work_in_quantity'] ?? '',
                 "total": item['price'] ?? 'N/A',
                 "status": item['status'] ?? '',
                 "paid": item['admin_comments'] != null &&

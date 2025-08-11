@@ -50,19 +50,23 @@ class _LabourRequestPageState extends State<LabourRequestPage>
   Future<void> _submitLabourRequest() async {
     if (!_validateForm()) return;
 
+    // Determine labour type based on UI selection
+    String labourType = '';
+    if (_isMaleSelected && !_isFemaleSelected) {
+      labourType = 'male';
+    } else if (!_isMaleSelected && _isFemaleSelected) {
+      labourType = 'female';
+    } else if (_isMaleSelected && _isFemaleSelected) {
+      labourType = 'both';
+    }
+
     Map<String, dynamic> requestBody = {
-      'work': _workDescriptionController.text,
+      'farmer_id': widget.userData['farmer_id']?.toString() ??
+          UserSession.userId.toString(),
+      'labour_type': labourType,
       'work_date_from':
           _fromDate != null ? DateFormat('yyyy-MM-dd').format(_fromDate!) : '',
-      'total_male_labours': _isMaleSelected
-          ? int.tryParse(_maleLabourController.text) ?? 0
-          : 0,
-      'total_female_labours': _isFemaleSelected
-          ? int.tryParse(_femaleLabourController.text) ?? 0
-          : 0,
-      'farmer_id':
-          widget.userData['farmer_id']?.toString() ?? UserSession.userId.toString(),
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      'work': _workDescriptionController.text,
     };
 
     final Uri apiUrl = Uri.parse('${KD.api}/admin/create_labours_request');
@@ -78,7 +82,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Labour request submitted successfully!")),
+          const SnackBar(
+              content: Text("Labour request submitted successfully!")),
         );
         _resetForm();
       } else {
@@ -100,26 +105,16 @@ class _LabourRequestPageState extends State<LabourRequestPage>
       _showError("Please select at least one labour type.");
       return false;
     }
-    if (_isMaleSelected &&
-        (_maleLabourController.text.isEmpty ||
-            int.tryParse(_maleLabourController.text) == null)) {
-      _showError("Please enter a valid number for male labours.");
-      return false;
-    }
-    if (_isFemaleSelected &&
-        (_femaleLabourController.text.isEmpty ||
-            int.tryParse(_femaleLabourController.text) == null)) {
-      _showError("Please enter a valid number for female labours.");
-      return false;
-    }
     if (_fromDate == null) {
       _showError("Please select a date.");
       return false;
     }
+    /*
     if (_workDescriptionController.text.isEmpty) {
       _showError("Please enter a work description.");
       return false;
     }
+    */
     return true;
   }
 
@@ -167,12 +162,18 @@ class _LabourRequestPageState extends State<LabourRequestPage>
             children: [
               const Text(
                 "Create Labour Request",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32)),
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2E7D32)),
               ),
               const SizedBox(height: 24),
               const Text(
                 "Select Labour Type:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
               ),
               const SizedBox(height: 8),
               Row(
@@ -188,9 +189,9 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                             });
                           },
                         ),
-                        const Icon(Icons.male, color: Colors.black),
-                        const SizedBox(width: 4),
-                        const Text("Male", style: TextStyle(fontSize: 16)),
+                        // const Icon(Icons.male, color: Colors.black),
+                        // const SizedBox(width: 2),
+                        const Text("🚹 Male", style: TextStyle(fontSize: 16)),
                       ],
                     ),
                   ),
@@ -205,52 +206,27 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                             });
                           },
                         ),
-                        const Icon(Icons.female, color: Colors.black),
-                        const SizedBox(width: 4),
-                        const Text("Female", style: TextStyle(fontSize: 16)),
+                        // const Icon(Icons.female, color: Colors.black),
+                        // const SizedBox(width: 2),
+                        const Text("🚺 Female", style: TextStyle(fontSize: 16)),
                       ],
                     ),
                   ),
                 ],
               ),
-              if (_isMaleSelected) ...[
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _maleLabourController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Number of Male Labours',
-                    prefixIcon: const Icon(Icons.person, color: Color(0xFF2E7D32)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                ),
-              ],
-              if (_isFemaleSelected) ...[
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _femaleLabourController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Number of Female Labours',
-                    prefixIcon: const Icon(Icons.person, color: Color(0xFF2E7D32)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                ),
-              ],
               const SizedBox(height: 24),
               const Text(
                 "Work Details:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
               ),
               const SizedBox(height: 8),
               ElevatedButton.icon(
                 onPressed: _pickDate,
-                icon: const Icon(Icons.calendar_today, size: 20, color: Colors.white
-                ),
+                icon: const Icon(Icons.calendar_today,
+                    size: 20, color: Colors.white),
                 label: Text(
                   _fromDate != null
                       ? DateFormat('yyyy-MM-dd').format(_fromDate!)
@@ -260,7 +236,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   backgroundColor: Color(0xFF2E7D32),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -273,7 +250,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                     padding: EdgeInsets.symmetric(vertical: 12.0),
                     //child: Icon(Icons.description, color: Color(0xFF2E7D32)),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                   filled: true,
                   fillColor: Colors.grey[100],
                   alignLabelWithHint: true,
@@ -285,14 +263,18 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                   onPressed: _submitLabourRequest,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF2E7D32),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                   child: const Text(
                     "Submit Request",
-                    style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               )
@@ -303,8 +285,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
     );
   }
 
-  // --- The rest of your code remains unchanged ---
-  
+  //main page with tabs
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -352,7 +334,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
   Future<List<Map<String, dynamic>>> _fetchLabourRequests() async {
     final Uri apiUrl = Uri.parse('${KD.api}/admin/get_labours_request');
     Map<String, String> body = {
-      'farmer_id': widget.userData['farmer_id']?.toString() ?? UserSession.userId.toString(),
+      'farmer_id': widget.userData['farmer_id']?.toString() ??
+          UserSession.userId.toString(),
     };
     try {
       final response = await http.post(
@@ -401,52 +384,56 @@ class _LabourRequestPageState extends State<LabourRequestPage>
               onTap: () {
                 Navigator.push(
                   context,
-                MaterialPageRoute(
-                  builder: 
-                (context) => RequestDetailsPage(requestData: item),
-                ),
+                  MaterialPageRoute(
+                    builder: (context) => RequestDetailsPage(requestData: item),
+                  ),
                 );
               },
-            
-            child:  Card(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item['work']?.toString() ?? 'No Work Description',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(children: [
-                      Icon(Icons.calendar_month_outlined, size: 16),
-                      SizedBox(width: 8),
-                    Text('From: ${item['work_date_from']?.toString() ?? 'N/A'}'),
+              child: Card(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item['work']?.toString() ?? 'No Work Description',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_month_outlined, size: 16),
+                          SizedBox(width: 8),
+                          Text(
+                              'From: ${item['work_date_from']?.toString() ?? 'N/A'}'),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.person, size: 16),
+                          SizedBox(width: 8),
+                          Text(
+                              'Gender: ${item['labour_type']?.toString() ?? 'N/A'}'),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline, size: 16),
+                          SizedBox(width: 8),
+                          //Text('To: ${item['work_date_to']?.toString() ?? 'N/A'}'),
+                          Text(
+                              'Status: ${item['status']?.toString() ?? 'N/A'}'),
+                        ],
+                      ),
                     ],
-                    ),
-                    Row(children: [
-                      Icon(Icons.person, size: 16),
-                      SizedBox(width: 8),
-                      Text('Gender: ${item['labour_type']?.toString() ?? 'N/A'}'),
-
-                    ],
-                    ),
-                    Row(children: [
-                      Icon(Icons.info_outline, size: 16),
-                      SizedBox(width: 8),
-                    //Text('To: ${item['work_date_to']?.toString() ?? 'N/A'}'),
-                    Text('Status: ${item['status']?.toString() ?? 'N/A'}'),
-                    ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
             );
           },
         );

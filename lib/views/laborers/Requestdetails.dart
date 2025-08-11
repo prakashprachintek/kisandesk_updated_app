@@ -6,7 +6,8 @@ import 'package:intl/intl.dart';
 class RequestDetailsPage extends StatelessWidget {
   final Map<String, dynamic> requestData;
 
-  const RequestDetailsPage({Key? key, required this.requestData}) : super(key: key);
+  const RequestDetailsPage({Key? key, required this.requestData})
+      : super(key: key);
 
   String _formatDate(String? dateString) {
     if (dateString == null || dateString.isEmpty) {
@@ -25,94 +26,59 @@ class RequestDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Request Details", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text("Request Details",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF2E7D32),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Card(
           elevation: 8,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: ListView(
-              children: [
-                // Display Farmer ID at the top
-                _buildDetailRow(
-                  icon: Icons.person_pin,
-                  label: "Farmer ID",
-                  value: requestData['farmer_id']?.toString() ?? 'N/A',
-                ),
-                const Divider(),
-                _buildDetailRow(
-                  icon: Icons.work_outline,
-                  label: "Work Description",
-                  value: requestData['work']?.toString() ?? 'N/A',
-                ),
-                const Divider(),
-                _buildDetailRow(
-                  icon: Icons.calendar_today,
-                  label: "Work Date",
-                  value: requestData['work_date_from']?.toString() ?? 'N/A',
-                ),
-                const Divider(),
-                _buildDetailRow(
-                  icon: Icons.info_outline,
-                  label: "Status",
-                  value: requestData['status']?.toString() ?? 'N/A',
-                ),
-                const Divider(),
-                _buildDetailRow(
-                  icon: Icons.person_outline,
-                  label: "Labour Type",
-                  value: requestData['labour_type']?.toString() ?? 'N/A',
-                ),
-                const Divider(),
-                _buildDetailRow(
-                  icon: Icons.person,
-                  label: "Captain",
-                  value: requestData['captain']?.toString() ?? 'N/A',
-                ),
-                const Divider(),
-                _buildDetailRow(
-                  icon: Icons.attach_money,
-                  label: "Total Payment",
-                  value: 'Rs. ${requestData['total_payment']?.toString() ?? '0'}',
-                ),
-                const Divider(),
-                _buildDetailRow(
-                  icon: Icons.credit_card,
-                  label: "Payment to Captain",
-                  value: 'Rs. ${requestData['payment_given_to_captain']?.toString() ?? '0'}',
-                ),
-                const Divider(),
-                _buildDetailRow(
-                  icon: Icons.payments,
-                  label: "Payment from Farmer",
-                  value: 'Rs. ${requestData['payment_recieved_by_farmer']?.toString() ?? '0'}',
-                ),
-                const Divider(),
-                if (requestData['admin_comments'] is List && requestData['admin_comments'].isNotEmpty)
-                  _buildNestedList(
-                    icon: Icons.comment,
-                    label: "Admin Comments",
-                    list: requestData['admin_comments'],
-                    itemBuilder: (item) => '• ${item['message']?.toString() ?? 'N/A'}',
-                  ),
-                const Divider(),
-                if (requestData['activity_log'] is List && requestData['activity_log'].isNotEmpty)
-                  _buildNestedList(
-                    icon: Icons.history,
-                    label: "Activity Log",
-                    list: requestData['activity_log'],
-                    itemBuilder: (item) {
-                      final action = item['action']?.toString() ?? 'N/A';
-                      final message = item['message']?.toString() ?? '';
-                      final actionAt = _formatDate(item['action_at']?.toString());
-                      return '• $action - $message\n  (${actionAt})';
-                    },
-                  ),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: ListView.separated(
+              itemCount: 5,
+              separatorBuilder: (_, __) =>
+                  const Divider(thickness: 0.8, height: 24),
+              itemBuilder: (context, index) {
+                switch (index) {
+                  case 0:
+                    return _buildDetailRow(
+                      icon: Icons.person_pin,
+                      label: "Farmer ID",
+                      value: requestData['farmer_id']?.toString() ?? 'N/A',
+                    );
+                  case 1:
+                    return _buildDetailRow(
+                      icon: Icons.work_outline,
+                      label: "Work Description",
+                      value: requestData['work']?.toString() ?? 'N/A',
+                    );
+                  case 2:
+                    return _buildDetailRow(
+                      icon: Icons.calendar_today,
+                      label: "Work Date",
+                      value: _formatDate(
+                          requestData['work_date_from']?.toString()),
+                    );
+                  case 3:
+                    return _buildDetailRow(
+                      icon: Icons.info_outline,
+                      label: "Status",
+                      value: requestData['status']?.toString() ?? 'N/A',
+                    );
+                  case 4:
+                    return _buildDetailRow(
+                      icon: Icons.people_alt,
+                      label: "Labour Type",
+                      value: requestData['labour_type']?.toString() ?? 'N/A',
+                    );
+                  default:
+                    return const SizedBox.shrink();
+                }
+              },
             ),
           ),
         ),
@@ -120,32 +86,41 @@ class RequestDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow({required IconData icon, required String label, required String value}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: const Color(0xFF2E7D32), size: 24),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+  Widget _buildDetailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: const Color(0xFF2E7D32), size: 26),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(fontSize: 18, color: Colors.black87),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -158,7 +133,11 @@ class RequestDetailsPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDetailRow(icon: icon, label: label, value: ""), // Custom row for the list title
+        _buildDetailRow(
+          icon: Icons.calendar_today,
+          label: "Work Date",
+          value: _formatDate(requestData['work_date_from']?.toString()),
+        ), // Custom row for the list title
         Padding(
           padding: const EdgeInsets.only(left: 40.0, top: 4.0),
           child: Column(
