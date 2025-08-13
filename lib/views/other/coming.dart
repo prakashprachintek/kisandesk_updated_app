@@ -50,7 +50,7 @@ class _ComingSoonPageState extends State<ComingSoonPage> {
     await flutterLocalNotificationsPlugin.show(
       0,
       'Test Notification',
-      'description : You clicked the button!',
+      'description : Notification is working',
       platformDetails,
     );
   }
@@ -80,7 +80,7 @@ class _ComingSoonPageState extends State<ComingSoonPage> {
               width: 300,
               child: ElevatedButton(
                 onPressed: showLocalNotification,
-                child: const Text("Send Test Notification"),
+                child: const Text("Test Notifications"),
               ),
             ),
           ],

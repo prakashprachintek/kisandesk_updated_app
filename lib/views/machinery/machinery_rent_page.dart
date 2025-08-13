@@ -57,10 +57,10 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           final recent = results.take(2).map<Map<String, String>>((item) {
             return {
               "orderId": item['_id'] ?? '',
-              "workType": item['farmer_name'] ?? 'Unknown',
+              "workType": item['work_type'] ?? 'Unknown',
               "status": item['status'] ?? '',
               "date": item['created_at']?.split('T')[0] ?? '',
-              "contact": item['contact_number'] ?? '--',
+              "contact": item['contact_number'] ?? '98xxxxx210',
             };
           }).toList();
 

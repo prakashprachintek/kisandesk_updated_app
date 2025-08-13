@@ -16,6 +16,7 @@ class _BookPageState extends State<BookPage> {
   String? selectedMachinery;
   String? selectedWorkType;
   String? bookingDate;
+  String selectedUnit = 'Acres';
   final TextEditingController areaController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
@@ -166,10 +167,28 @@ class _BookPageState extends State<BookPage> {
             ),
             SizedBox(height: 16),
             TextField(
-              controller: areaController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: "No. of Acres / Hours"),
-            ),
+  controller: areaController,
+  keyboardType: TextInputType.number,
+  decoration: InputDecoration(
+    labelText: "No. of Acres / Hours",
+    suffix: DropdownButton<String>(
+      value: selectedUnit,
+      underline: SizedBox.shrink(), // remove underline
+      items: ['Acres', 'Hours'].map((unit) {
+        return DropdownMenuItem(
+          value: unit,
+          child: Text(unit),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          selectedUnit = value!;
+        });
+      },
+    ),
+  ),
+),
+
             SizedBox(height: 16),
             InkWell(
               onTap: _pickDate,

@@ -86,6 +86,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           "otp": otp,
           "token": token
         }),
+        
       );
 
       final data = jsonDecode(response.body);
@@ -262,7 +263,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 16),
                     ],
                   ),

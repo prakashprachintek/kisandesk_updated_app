@@ -1,103 +1,148 @@
-import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter/material.dart';
-
-import '../../main.dart';
-import 'notification_tap_background.dart';
+import './notification_page.dart';
 import 'notification_data.dart';
-import 'notification_page.dart';
+import '../../main.dart';
+
 
 class PushNotificationService {
-  static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
+  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  static BuildContext? navigatorContext;
-
-  static Future<void> initializeFCM() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    await messaging.requestPermission();
-
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
+  // ======================
+  // Initialize push notifications
+  // ======================
+  static Future<void> initialize() async {
+    // Request notification permissions
+    NotificationSettings settings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
     );
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final data = message.data;
-      final title = data['title'] ?? 'KisanDesk';
-      final body = data['body'] ?? '';
+    print("🔔 Notification permission: ${settings.authorizationStatus}");
 
-      showLocalNotification(
-        title: title,
-        body: body,
-        data: data,
-      );
+    // Handle foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      _showLocalNotification(message);
     });
+
+    // Handle taps when app is in background but not killed
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      _handleNotificationTap(message);
+    });
+
+    // Handle taps when app is killed
+    RemoteMessage? initialMessage = await _messaging.getInitialMessage();
+    if (initialMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleNotificationTap(initialMessage);
+      });
+    }
+
   }
 
+  // ======================
+  // Local notifications setup
+  // ======================
   static Future<void> initializeLocalNotifications() async {
-    const AndroidInitializationSettings androidInitSettings =
+    const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings initSettings =
-        InitializationSettings(android: androidInitSettings);
-    await _localNotificationsPlugin.initialize(
+        InitializationSettings(android: androidSettings);
+
+    await _localNotifications.initialize(
       initSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (response.payload != null) {
-          final Map<String, dynamic> data =
-              Map<String, dynamic>.from(json.decode(response.payload!));
-          final notificationData = NotificationData.fromMap(data);
-          // Use navigatorKey here
-          MyApp.navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (_) =>
-                  NotificationPage(notificationData: notificationData),
-            ),
-          );
+          _handlePayloadTap(response.payload!);
         }
       },
-      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
   }
 
-  static Future<void> showLocalNotification({
-    required String title,
-    required String body,
-    required Map<String, dynamic> data,
-  }) async {
+  // ======================
+  // Show local notification for foreground messages
+  // ======================
+  static Future<void> _showLocalNotification(RemoteMessage message) async {
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
-      'channel_id',
-      'channel_name',
+      'default_channel_id',
+      'General Notifications',
+      channelDescription: 'Channel for app notifications',
       importance: Importance.max,
       priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
     );
 
     const NotificationDetails notificationDetails =
         NotificationDetails(android: androidDetails);
 
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'channel_id',
-      'channel_name',
-      importance: Importance.max,
-    );
-
-    await _localNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-    final payload = json.encode(data);
-
-    await _localNotificationsPlugin.show(
-      0,
-      title,
-      body,
+    await _localNotifications.show(
+      message.notification.hashCode,
+      message.notification?.title ?? '',
+      message.notification?.body ?? '',
       notificationDetails,
-      payload: payload,
+      payload: message.data.isNotEmpty ? message.data.toString() : null,
     );
   }
+
+  // ======================
+  // Handle notification tap (background/killed)
+  // ======================
+  static void _handleNotificationTap(RemoteMessage message) {
+    print("📩 Notification tap data: ${message.data}");
+
+    MyApp.navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (_) => NotificationPage(
+          notificationData: NotificationData.fromMap(message.data),
+        ),
+      ),
+    );
+  }
+
+  // ======================
+  // Handle payload tap (foreground local notification)
+  // ======================
+  static void _handlePayloadTap(String payload) {
+    try {
+      final Map<String, dynamic> data = _parsePayload(payload);
+
+      MyApp.navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => NotificationPage(
+            notificationData: NotificationData.fromMap(data),
+          ),
+        ),
+      );
+    } catch (e) {
+      print("❌ Error parsing notification payload: $e");
+    }
+  }
+
+  // ======================
+  // Convert payload string to Map
+  // ======================
+  static Map<String, dynamic> _parsePayload(String payload) {
+    payload = payload.replaceAll(RegExp(r'^\{|}$'), ''); // remove {}
+    final Map<String, dynamic> result = {};
+    for (var part in payload.split(',')) {
+      var keyValue = part.split(':');
+      if (keyValue.length == 2) {
+        result[keyValue[0].trim()] = keyValue[1].trim();
+      }
+    }
+    return result;
+  }
+}
+
+// ======================
+// Background handler
+// ======================
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("📩 Background message: ${message.data}");
 }

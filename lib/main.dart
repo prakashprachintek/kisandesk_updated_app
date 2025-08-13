@@ -6,40 +6,44 @@ import 'package:easy_localization/easy_localization.dart';
 import 'views/other/welcome.dart';
 import 'views/home/HomePage.dart';
 import 'views/services/user_session.dart';
-import 'views/services/background_message.dart';
 import 'views/services/push_notification_service.dart';
-import 'views/services/notification_data.dart';
-import 'views/services/notification_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load stored user session before app starts
   await UserSession.loadUserFromPrefs();
 
   await Firebase.initializeApp();
   await EasyLocalization.ensureInitialized();
 
+  // Set Firebase background message handler (push received when app is killed/background)
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
+  // Initialize Local Notifications (for showing in foreground & tap handling)
   await PushNotificationService.initializeLocalNotifications();
-  await PushNotificationService.initializeFCM();
 
+  // Initialize Push Notification Service (handles foreground, background, killed taps)
+  await PushNotificationService.initialize();
+
+  // Run App
   runApp(
     EasyLocalization(
       supportedLocales: [
         Locale('en'),
         Locale('kn'),
         Locale('hi'),
-        Locale('mr')
+        Locale('mr'),
       ],
       path: 'assets/lang',
       fallbackLocale: Locale('en'),
-      
       child: MyApp(),
     ),
   );
 }
 
 class MyApp extends StatefulWidget {
+  // Global navigator key to allow navigation from notification handlers
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
@@ -51,34 +55,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      PushNotificationService.navigatorContext =
-          MyApp.navigatorKey.currentContext;
-    });
-    _setupNotificationTapHandler();
-  }
-
-  void _setupNotificationTapHandler() async {
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-    if (initialMessage != null && initialMessage.data.isNotEmpty) {
-      _navigateToNotificationPage(initialMessage.data);
-    }
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      if (message.data.isNotEmpty) {
-        _navigateToNotificationPage(message.data);
-      }
-    });
-  }
-
-  void _navigateToNotificationPage(Map<String, dynamic> data) {
-    final notificationData = NotificationData.fromMap(data);
-    MyApp.navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (_) => NotificationPage(notificationData: notificationData),
-      ),
-    );
   }
 
   @override
@@ -87,6 +63,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Kisan Desk'.tr(),
       debugShowCheckedModeBanner: false,
       theme: _buildThemeData(),
+      navigatorKey: MyApp.navigatorKey, // Needed for navigation from service
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,

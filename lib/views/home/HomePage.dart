@@ -4,32 +4,22 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/widgets.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+
 import '../other/coming.dart';
-import 'package:mainproject1/views/laborers/Labors_page.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 
 // Adjust these imports for your actual file structure
 import '../other/welcome.dart';
-import '../posts/CombinedDashboardPage.dart';
-import '../posts/MarketTabbedPage.dart';
 import '../profile/profile_page.dart';
 import '../other/favoritePage.dart';
-import '../marketplace/Mraket_page1.dart';
 import '../mandi/mandiRates.dart';
 import '../services/user_session.dart';
 import '../whether/whetherinfo.dart';
-import '../machinery/Machinery_Page_old.dart';
-import '../cattle/Cattle_Page.dart';
-import '../agriculture/Land_page.dart';
 import '../laborers/LabourRequest.dart';
 import '../other/add_page.dart';
-import '../other/tabpage.dart';
-import '../farmers/FarmerPage.dart';
-import 'DashboardTab_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../mandi/mandiService.dart';
@@ -184,22 +174,56 @@ class _HomePageState extends State<HomePage> {
     _fetchLocation();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showLoginSuccessSnackbar();
+      showToastOverlay(context, 'Login Successful. Welcome to Kisan Desk!');
     });
   }
 
-  void _showLoginSuccessSnackbar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          tr('Login Successful. Welcome to Kisan Desk!'),
-          style: TextStyle(color: Colors.black),
+  void showToastOverlay(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).size.height-200,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 238, 238, 238),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        duration: Duration(seconds: 4), // Auto-dismiss after 3 seconds
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color.fromARGB(255, 238, 238, 238),
       ),
     );
+
+    // Insert overlay
+    overlay.insert(overlayEntry);
+
+    // Remove after delay
+    Future.delayed(const Duration(seconds: 3), () {
+      overlayEntry.remove();
+    });
   }
 
   /// 1) Determine position using geolocator
@@ -485,7 +509,9 @@ class _HomePageState extends State<HomePage> {
                         onPressed: () => Navigator.of(context).pop(false),
                         child: Text("Cancel"),
                       ),
-                      SizedBox(height: 1.5,),
+                      SizedBox(
+                        height: 1.5,
+                      ),
                       ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(true),
                         child: Text("Logout"),
