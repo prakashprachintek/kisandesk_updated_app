@@ -169,6 +169,7 @@ flutter:
     - assets/animations/login.json
     - assets/animations/lock.json
     - assets/animations/location.json
+    - assets/animations/coming_soon.json
     - assets/doctor_placeholder.png 
     - assets/harvester.jpg
     - assets/JCB.jpeg

@@ -227,9 +227,10 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mandi Rates"),
+        title: Text("Mandi Rates",style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
         centerTitle: true,
         backgroundColor: Color(0xFF00AD83),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -403,8 +404,3 @@ class PriceTile extends StatelessWidget {
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: MandiRatesPage(),
-  ));
-}

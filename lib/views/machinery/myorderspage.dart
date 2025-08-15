@@ -84,7 +84,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
       appBar: AppBar(
         title: const Text("My Orders",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blue.shade800,
+        backgroundColor: Color(0xFF00AD83),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       

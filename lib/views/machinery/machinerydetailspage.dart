@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart'; // Import share_plus package
 
@@ -198,3 +199,4 @@ class _MachinerydetailspageState extends State<Machinerydetailspage> {
     );
   }
 }
+*/

@@ -9,7 +9,6 @@ import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
 import 'dart:convert';
 import '../services/user_session.dart';
 import '../widgets/api_config.dart';
-import '../../main.dart';
 import '../home/HomePage.dart';
 import '../widgets/GradientAuthButton.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';

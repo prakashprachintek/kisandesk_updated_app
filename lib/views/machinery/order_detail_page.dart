@@ -10,7 +10,7 @@ class OrderDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Order Details"),
-        backgroundColor: Colors.blue.shade800,
+        backgroundColor: Color(0xFF00AD83),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -26,9 +26,6 @@ class OrderDetailPage extends StatelessWidget {
                 _buildRow("Owner", order['owner'] ?? ''),
                 _buildRow("Booking Date", order['booked'] ?? ''),
                 _buildRow("Status", order['status'] ?? ''),
-                _buildRow("Completion Date", order['completed'] ?? ''),
-                _buildRow("Total Amount", "₹${order['total'] ?? '0'}"),
-                _buildRow("Paid Amount", "₹${order['paid'] ?? '0'}"),
                 const SizedBox(height: 20),
                 const Text(
                   "Description",

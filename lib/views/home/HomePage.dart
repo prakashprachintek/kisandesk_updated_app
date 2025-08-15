@@ -182,7 +182,7 @@ class _HomePageState extends State<HomePage> {
     final overlay = Overlay.of(context);
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: MediaQuery.of(context).size.height-200,
+        top: MediaQuery.of(context).size.height - 200,
         left: 20,
         right: 20,
         child: Material(
@@ -221,7 +221,7 @@ class _HomePageState extends State<HomePage> {
     overlay.insert(overlayEntry);
 
     // Remove after delay
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 2), () {
       overlayEntry.remove();
     });
   }
@@ -300,16 +300,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // removed as per requirement
-/*
-  // Tapping cart => to a CartPage
-  void _handleCartTap() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => CartPage()),
-    );
-  }
-*/
   // Bottom nav
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
@@ -545,8 +535,11 @@ class _HomePageState extends State<HomePage> {
           // 1) Gradient from top to bottom
           Container(
             decoration: BoxDecoration(
+              /*
               gradient: LinearGradient(
                 colors: [
+                  /// Header Color
+                  
                   Color(0xFF1B5E20), // top dark green
                   Color(0xFF4CAF50),
                   Color(0xFFFFD600), // bottom bright yellow
@@ -556,7 +549,10 @@ class _HomePageState extends State<HomePage> {
                 end: Alignment.bottomCenter,
               ),
             ),
-          ),
+            */
+              color: Color(0xFF00AD83),
+            ),
+          ),  //
 
           // 2) Main scrollable content
           SafeArea(
@@ -621,10 +617,10 @@ class _HomePageState extends State<HomePage> {
                                   color: Colors.white,
                                 ),
                                 items: <String>[
-                                  'Kannada',
                                   'English',
-                                  'Hindi',
-                                  'Marathi'
+                                  'ಕನ್ನಡ',
+                                  // 'Hindi',
+                                  // 'Marathi'
                                 ].map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
@@ -635,7 +631,7 @@ class _HomePageState extends State<HomePage> {
                                   if (newValue != null) {
                                     Locale selectedLocale;
                                     switch (newValue.toLowerCase()) {
-                                      case 'kannada':
+                                      case 'ಕನ್ನಡ':
                                         selectedLocale = Locale('kn');
                                         break;
                                       case 'english':
@@ -679,59 +675,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
 
-                  // (b) Title, location, search
-                  /*Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          tr("KisanDesk"), //updated as told
-                          // tr("Farmer Tech Store"),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        // Show location
-                        Row(
-                          children: [
-                            Icon(Icons.location_on,
-                                color: Colors.white, size: 16),
-                            SizedBox(width: 4),
-                            Text(
-                              _locationName ?? "Fetching...",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 11),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        // Search bar
-                        // Search bar removed as per directed
-                        /*
-                        Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: tr('Search products...'),
-                              prefixIcon: Icon(Icons.search, color: Colors.grey),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(vertical: 8),
-                            ),
-                          ),
-                        ),*/
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 16),*/
-
                   // (c) White container for "body" layout
                   Container(
                     // White background with top corners
@@ -770,11 +713,11 @@ class _HomePageState extends State<HomePage> {
                           _buildCategoriesGrid(),
 
                           SizedBox(height: 16),
-                          // 3) Deals of the Day
+                          // 3) Deals of the day ----> Latest Post
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              tr('Deals of the Day'),
+                              tr('Latest Posts'),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -786,6 +729,7 @@ class _HomePageState extends State<HomePage> {
                           _buildDealsOfDay(),
 
                           SizedBox(height: 16),
+                          /*
                           // 4) Recommended
                           Align(
                             alignment: Alignment.centerLeft,
@@ -803,6 +747,7 @@ class _HomePageState extends State<HomePage> {
 
                           // Some bottom padding to avoid overflow behind the bottom nav
                           SizedBox(height: 80),
+                          */
                         ],
                       ),
                     ),
@@ -820,7 +765,13 @@ class _HomePageState extends State<HomePage> {
         children: [
           BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
+
+            ///Footer color
+            // backgroundColor: Color.fromARGB(255, 0, 35, 173)
             backgroundColor: Color(0xFF00AD83),
+
+            
+            
             selectedItemColor: Colors.white,
             unselectedItemColor: Colors.white,
             currentIndex: _selectedIndex,
@@ -938,18 +889,6 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Green Top Bar
-                    /* Container(
-                      height: 4,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Color(0xFF4CAF50),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
-                        ),
-                      ),
-                    ),*/
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -1286,11 +1225,6 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              //   builder: (context) => MarketPage(
-              //     userData: widget.userData ?? {},
-              //     phoneNumber: widget.phoneNumber ?? '',
-              //   ),
-              // ),
               builder: (context) => LabourRequestPage(
                   userData: widget.userData ?? {}, phoneNumber: "")));
     } else if (index == 1) {

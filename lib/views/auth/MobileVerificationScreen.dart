@@ -2,8 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../widgets/api_config.dart';
-import '../../main.dart';
-import '../home/HomePage.dart';
 import '../widgets/GradientAuthButton.dart';
 import 'OTPVerificationScreen.dart';
 import 'package:http/http.dart' as http;
@@ -57,8 +55,6 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
 
       if (response.statusCode == 200) {
         if (data["status"] == "success") {
-          // Only proceed to OTP if the number exists in DB
-          //number in the db 8862457812
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -106,9 +102,25 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
     List<String> villagesList = [];
 
     Map<String, dynamic> locationData = await loadLocationJson();
+
+// Copy the maps
     Map<String, List<dynamic>> talukasMap = Map.from(locationData['talukas']);
     Map<String, List<dynamic>> villagesMap = Map.from(locationData['villages']);
-    districts = List<String>.from(locationData['districts']['Karnataka']);
+
+// Sort the lists inside each map
+    talukasMap.forEach((key, value) {
+      value.sort((a, b) =>
+          a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
+    });
+
+    villagesMap.forEach((key, value) {
+      value.sort((a, b) =>
+          a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
+    });
+
+// Sort the districts list
+    districts = List<String>.from(locationData['districts']['Karnataka'] ?? []);
+    districts.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
     bool isSubmitting = false;
 
