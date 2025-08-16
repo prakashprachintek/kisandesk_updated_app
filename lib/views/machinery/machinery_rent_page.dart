@@ -3,10 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:mainproject1/views/machinery/order_detail_page.dart';
-import '../machinery/bookpage.dart';
 import '../machinery/myorderspage.dart';
 import '../services/user_session.dart';
 import '../widgets/api_config.dart';
+import 'bookpage.dart';
 
 class MachineryRentPage extends StatefulWidget {
   const MachineryRentPage({super.key});
@@ -18,10 +18,10 @@ class MachineryRentPage extends StatefulWidget {
 class _MachineryRentPageState extends State<MachineryRentPage> {
   // List of machinery images for carousel
   final List<String> imagePaths = [
-    'assets/JCB.jpeg',
-    'assets/harvester.jpg',
-    'assets/rotavator.jpg',
-    'assets/tractor.jpg',
+    'assets/machinery/machine_type/JCB.jpeg',
+    'assets/machinery/machine_type/harvester.jpg',
+    'assets/machinery/machine_type/rotavator.jpg',
+    'assets/machinery/machine_type/tractor.jpg',
   ];
 
   // Stores recent orders fetched from backend

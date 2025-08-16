@@ -12,6 +12,7 @@ import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 
 // Adjust these imports for your actual file structure
+import '../other/testingpage.dart';
 import '../other/welcome.dart';
 import '../profile/profile_page.dart';
 import '../other/favoritePage.dart';
@@ -469,11 +470,14 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: Icon(Icons.help),
+            leading: const Icon(Icons.help),
             title: Text(tr("Help")),
             onTap: () {
               Navigator.pop(context);
-              // Navigate to Help page.
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TestPage()),
+              );
             },
           ),
           ListTile(
@@ -550,9 +554,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             */
-              color: Color(0xFF00AD83),
+              color: Color.fromARGB(255, 29, 108, 92),
             ),
-          ),  //
+          ), //
 
           // 2) Main scrollable content
           SafeArea(
@@ -768,10 +772,8 @@ class _HomePageState extends State<HomePage> {
 
             ///Footer color
             // backgroundColor: Color.fromARGB(255, 0, 35, 173)
-            backgroundColor: Color(0xFF00AD83),
+            backgroundColor: Color.fromARGB(255, 29, 108, 92),
 
-            
-            
             selectedItemColor: Colors.white,
             unselectedItemColor: Colors.white,
             currentIndex: _selectedIndex,

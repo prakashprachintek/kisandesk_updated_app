@@ -5,6 +5,8 @@ import 'dart:convert';
 import '../services/user_session.dart';
 import '../widgets/api_config.dart';
 import 'machinery_rent_page.dart';
+import 'machneryImages.dart';
+import 'worktypeImages.dart';
 
 class BookPage extends StatefulWidget {
   const BookPage({super.key});
@@ -199,30 +201,34 @@ class _BookPageState extends State<BookPage> {
                   // ----------------------------
                   // Machinery Dropdown
                   // ----------------------------
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: "Select Machinery",
+                  DropdownMenu<String>(
+                    menuHeight: 400, // Replaces menuMaxHeight
+                    inputDecorationTheme: InputDecorationTheme(
+                      labelStyle: TextStyle(color: Colors.grey[600]),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(
-                            color: fieldErrors['machinery']!
-                                ? Colors.red
-                                : Colors.grey),
+                          color: fieldErrors['machinery']!
+                              ? Colors.red
+                              : Colors.grey,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(
-                            color: fieldErrors['machinery']!
-                                ? Colors.red
-                                : Colors.grey),
+                          color: fieldErrors['machinery']!
+                              ? Colors.red
+                              : Colors.grey,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(
-                            color: fieldErrors['machinery']!
-                                ? Colors.red
-                                : Color(0xFF00AD83),
-                            width: 2),
+                          color: fieldErrors['machinery']!
+                              ? Colors.red
+                              : Color(0xFF00AD83),
+                          width: 2,
+                        ),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -235,15 +241,70 @@ class _BookPageState extends State<BookPage> {
                       contentPadding:
                           EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
-                    value: selectedMachinery,
-                    items:
-                        machineryData.map<DropdownMenuItem<String>>((machine) {
-                      return DropdownMenuItem<String>(
-                        value: machine["name"] as String,
-                        child: Text(machine["name"] as String),
+                    hintText: "Select Machinery",
+                    initialSelection: selectedMachinery,
+                    dropdownMenuEntries: machineryData
+                        .asMap()
+                        .entries
+                        .map<DropdownMenuEntry<String>>((entry) {
+                      final index = entry.key;
+                      final machine = entry.value;
+                      final machineName = machine["name"] as String;
+                      return DropdownMenuEntry<String>(
+                        value: machineName,
+                        label: machineName, // For accessibility
+                        labelWidget: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(vertical: 2),
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.8,
+                                child: Row(
+                                  children: [
+                                    // Enhanced image container
+                                    MachineryImages.getImageWidget(
+                                      machineName,
+                                      size: 60, // Kept at 50
+                                      fit: BoxFit.cover,
+                                      borderRadius: BorderRadius.circular(12),
+                                      showShadow: true,
+                                      borderColor:
+                                          selectedMachinery == machineName
+                                              ? Color(0xFF00AD83)
+                                              : Colors.transparent,
+                                      borderWidth:
+                                          selectedMachinery == machineName
+                                              ? 2
+                                              : 0,
+                                    ),
+                                    SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text(
+                                        machineName,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Add divider except for the last item
+                            if (index < machineryData.length - 1)
+                              Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: Colors.grey.shade400,
+                              ),
+                          ],
+                        ),
                       );
                     }).toList(),
-                    onChanged: (value) {
+                    onSelected: (value) {
                       setState(() {
                         selectedMachinery = value;
                         workTypeList = machineryData
@@ -253,15 +314,17 @@ class _BookPageState extends State<BookPage> {
                         fieldErrors['machinery'] = false;
                       });
                     },
-                    validator: (value) =>
-                        value == null ? 'This field is required' : null,
                   ),
-                  if (fieldErrors['machinery']!)
+                  // Subtitle for selected machinery
+                  if (selectedMachinery != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 4),
+                      padding: const EdgeInsets.only(top: 4, left: 12),
                       child: Text(
-                        "This field is required",
-                        style: TextStyle(color: Colors.red, fontSize: 12),
+                        '${workTypeList.length} work types available',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ),
                   SizedBox(height: 16),
@@ -269,56 +332,190 @@ class _BookPageState extends State<BookPage> {
                   // ----------------------------
                   // Work Type Dropdown
                   // ----------------------------
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: "Select Work Type",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
+                  SizedBox(
+                    width: double
+                        .infinity, // Force full width to match other form fields
+                    child: DropdownMenu<String>(
+                      menuHeight: 400,
+                      inputDecorationTheme: InputDecorationTheme(
+                        labelStyle: TextStyle(color: Colors.grey[600]),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
                             color: fieldErrors['workType']!
                                 ? Colors.red
-                                : Colors.grey),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
+                                : Colors.grey,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
                             color: fieldErrors['workType']!
                                 ? Colors.red
-                                : Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
+                                : Colors.grey,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
                             color: fieldErrors['workType']!
                                 ? Colors.red
                                 : Color(0xFF00AD83),
-                            width: 2),
+                            width: 2,
+                          ),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.red, width: 2),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.red, width: 2),
+                        ),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      hintText: workTypeList.isEmpty
+                          ? "Select machinery first"
+                          : "Select Work Type",
+                      initialSelection: selectedWorkType,
+                      dropdownMenuEntries: workTypeList.isEmpty
+                          ? [
+                              DropdownMenuEntry<String>(
+                                value: '',
+                                label: 'Select machinery first',
+                                enabled: false, // Non-selectable placeholder
+                                labelWidget: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 2),
+                                      child: SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.8,
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 60,
+                                              height: 60,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.2),
+                                                    blurRadius: 6,
+                                                    offset: Offset(0, 3),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                child: Icon(
+                                                  Icons.construction,
+                                                  size: 36,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: 16),
+                                            Expanded(
+                                              child: Text(
+                                                'Select machinery first',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ]
+                          : workTypeList
+                              .asMap()
+                              .entries
+                              .map<DropdownMenuEntry<String>>((entry) {
+                              final index = entry.key;
+                              final workType = entry.value;
+                              return DropdownMenuEntry<String>(
+                                value: workType,
+                                label: workType, // For accessibility
+                                labelWidget: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 2),
+                                      child: SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.8,
+                                        child: Row(
+                                          children: [
+                                            // Image from WorkTypeImages
+                                            WorkTypeImages.getImageWidget(
+                                              workType,
+                                              size: 60,
+                                              fit: BoxFit.cover,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              showShadow: true,
+                                              borderColor:
+                                                  selectedWorkType == workType
+                                                      ? Color(0xFF00AD83)
+                                                      : Colors.transparent,
+                                              borderWidth:
+                                                  selectedWorkType == workType
+                                                      ? 2
+                                                      : 0,
+                                            ),
+                                            SizedBox(width: 16),
+                                            Expanded(
+                                              child: Text(
+                                                workType,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    // Add divider except for the last item
+                                    if (index < workTypeList.length - 1)
+                                      Divider(
+                                        height: 1,
+                                        thickness: 1,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                      onSelected: (value) => setState(() {
+                        if (value != '') {
+                          // Only update if not the placeholder
+                          selectedWorkType = value;
+                          fieldErrors['workType'] = false;
+                        }
+                      }),
                     ),
-                    value: selectedWorkType,
-                    items: workTypeList.map<DropdownMenuItem<String>>((work) {
-                      return DropdownMenuItem<String>(
-                        value: work,
-                        child: Text(work),
-                      );
-                    }).toList(),
-                    onChanged: (value) => setState(() {
-                      selectedWorkType = value;
-                      fieldErrors['workType'] = false;
-                    }),
-                    validator: (value) =>
-                        value == null ? 'This field is required' : null,
                   ),
+                  // Custom error message for validation
                   if (fieldErrors['workType']!)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
@@ -517,18 +714,26 @@ class _BookPageState extends State<BookPage> {
                   // ----------------------------
                   // Submit Button
                   // ----------------------------
-                  ElevatedButton.icon(
-                    onPressed: _submitBooking,
-                    label: Text("Book Machine"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      textStyle: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: _submitBooking,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF2E7D32),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        "Submit Booking",
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
