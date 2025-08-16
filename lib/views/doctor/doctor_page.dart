@@ -172,7 +172,6 @@ class _DoctorPageState extends State<DoctorPage> {
           "Veterinary Doctors",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: isLoading

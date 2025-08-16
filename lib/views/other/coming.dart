@@ -18,7 +18,7 @@ class _ComingSoonPageState extends State<ComingSoonPage> {
           "Coming Soon",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF00AD83),
+        
         iconTheme: const IconThemeData(
           color: Colors.white,
           

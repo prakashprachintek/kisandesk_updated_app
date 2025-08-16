@@ -64,10 +64,12 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           final recent = results.take(2).map<Map<String, String>>((item) {
             return {
               "orderId": item['_id'] ?? '',
+              "machine":item['machinery_type'],
               "workType": item['work_type'] ?? 'Unknown',
               "status": item['status'] ?? '',
               "date": item['created_at']?.split('T')[0] ?? '',
-              "contact": item['contact_number'] ?? '98xxxxx210',
+              "name": item['ownerDetails']?[0]['full_name'] ?? '',
+              "phone": item['ownerDetails']?[0]['phone'] ?? ''
             };
           }).toList();
 
@@ -94,7 +96,6 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
         title: Text("Machinery Rent",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Color(0xFF00AD83),
       ),
       body: Container(
         color: const Color(0xFFEEF3F9),
@@ -215,14 +216,15 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text("🆔 Order ID: ${order['orderId']}",
+                                      Text("Machine Booked: ${order['machine']}",
                                           style: const TextStyle(
                                               fontWeight: FontWeight.bold)),
                                       const SizedBox(height: 6),
                                       Text(
                                           "🔧 Work Type: ${order['workType']}"),
                                       Text("📅 Date: ${order['date']}"),
-                                      Text("📞 Contact: ${order['contact']}"),
+                                      Text("⚒️ Machine Owner: ${order['name']}"),
+                                      Text("📞 Contact: ${order['phone']}"),
                                       Text("📌 Status: ${order['status']}"),
                                     ],
                                   ),

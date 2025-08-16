@@ -91,8 +91,8 @@ class _NotificationPageState extends State<NotificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🆔 Request ID: ${widget.notificationData.reqId}');
-    debugPrint('🔔 Notification data: ${widget.notificationData.toMap()}');
+    print('🆔 Request ID: ${widget.notificationData.reqId}');
+    print('🔔 Notification data: ${widget.notificationData.toMap()}');
 
     return Scaffold(
       appBar: AppBar(

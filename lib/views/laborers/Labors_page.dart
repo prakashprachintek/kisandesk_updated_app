@@ -29,7 +29,7 @@ class _LabourPageState extends State<LabourPage> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF00AD83),
+        backgroundColor: Color.fromARGB(255, 29, 108, 92),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
           child: Container(

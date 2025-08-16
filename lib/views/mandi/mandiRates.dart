@@ -229,7 +229,6 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
       appBar: AppBar(
         title: Text("Mandi Rates",style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
         centerTitle: true,
-        backgroundColor: Color(0xFF00AD83),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Padding(

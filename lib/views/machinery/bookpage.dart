@@ -118,6 +118,8 @@ class _BookPageState extends State<BookPage> {
     final uri = Uri.parse("${KD.api}/app/book_machinary");
     final payload = {
       "userId": UserSession.userId,
+      "full_name": UserSession.user?['full_name'] ?? '',
+      "phone": UserSession.user?['phone'] ?? '',
       "machineryType": selectedMachinery!,
       "workDate": bookingDate!,
       "workType": selectedWorkType!,
@@ -189,7 +191,6 @@ class _BookPageState extends State<BookPage> {
       appBar: AppBar(
         title: Text("Book Machinery",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Color(0xFF00AD83),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: isLoading
