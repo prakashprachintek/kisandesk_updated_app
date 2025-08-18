@@ -136,6 +136,13 @@ flutter:
     - assets/cattle.jpg
     - assets/Logo.jpeg
     - assets/lang.png
+    - assets/machinemm.png
+    - assets/landmm.png
+    - assets/cropmm.png
+    - assets/laboursm.png
+    - assets/labourm.png
+    - assets/tracm.png
+    - assets/cattlemm.png
     - assets/language.png
     - assets/cattle2.webp
     - assets/machinery1.webp
