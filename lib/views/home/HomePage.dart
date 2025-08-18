@@ -1149,6 +1149,7 @@ class _HomePageState extends State<HomePage> {
 
   /// -----------------------------------------
   /// "Recommended" row
+  /*
   Widget _buildRecommendedRow() {
     final List<_SimpleItem> recommendedItems = [
       _SimpleItem(
@@ -1220,6 +1221,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+  */
 
   /// Category Tapped
   void _handleCategoryTap(int index) {
