@@ -41,8 +41,9 @@ class _DoctorPageState extends State<DoctorPage> {
         final Map<String, dynamic> decoded = json.decode(response.body);
         final data = decoded['results'];
 
-        List<Doctor> doctors = List<Doctor>.from(data.map((item)=>Doctor.fromJson(item)));
-        
+        List<Doctor> doctors =
+            List<Doctor>.from(data.map((item) => Doctor.fromJson(item)));
+
         setState(() {
           allDoctors = doctors;
           filteredDoctors = doctors;
@@ -167,8 +168,10 @@ class _DoctorPageState extends State<DoctorPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Veterinary Doctors",style: TextStyle(color: Colors.white, fontWeight:FontWeight.w700),),
-        backgroundColor: Theme.of(context).primaryColor,
+        title: const Text(
+          "Veterinary Doctors",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: isLoading
@@ -208,68 +211,72 @@ class _DoctorPageState extends State<DoctorPage> {
                           itemBuilder: (context, index) {
                             final doctor = filteredDoctors[index];
                             return Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 5),
-  child: GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DoctorDetailPage(doctor: doctor),
-        ),
-      );
-    },
-    child: Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/doctor_placeholder.png',
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    doctor.fullname,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${doctor.district}, ${doctor.taluka}",
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios,
-                size: 14, color: Colors.grey),
-          ],
-        ),
-      ),
-    ),
-  ),
-);
-
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 5),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          DoctorDetailPage(doctor: doctor),
+                                    ),
+                                  );
+                                },
+                                child: Card(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 6),
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Image.asset(
+                                            'assets/doctor_placeholder.png',
+                                            width: 70,
+                                            height: 70,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                doctor.fullname,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                "${doctor.district}, ${doctor.taluka}",
+                                                style: TextStyle(
+                                                  fontSize: 13.5,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Icon(Icons.arrow_forward_ios,
+                                            size: 14, color: Colors.grey),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                         ),
                 ),

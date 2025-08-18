@@ -77,6 +77,11 @@ class _MyAppState extends State<MyApp> {
       colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.teal)
           .copyWith(secondary: Color(0xFFFFA000)),
       scaffoldBackgroundColor: Colors.white,
+      appBarTheme: AppBarTheme(
+        backgroundColor: Color.fromARGB(255, 29, 108, 92), // Your AppBar color
+        foregroundColor: Colors.white, // Optional: for title/icon color
+        elevation: 4, // Optional: adjust elevation if needed
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,

@@ -176,11 +176,17 @@ flutter:
     - assets/animations/login.json
     - assets/animations/lock.json
     - assets/animations/location.json
+    - assets/animations/coming_soon.json
     - assets/doctor_placeholder.png 
-    - assets/harvester.jpg
-    - assets/JCB.jpeg
-    - assets/rotavator.jpg
-    - assets/tractor.jpg
+    # machinery
+    - assets/machinery/machine_type/harvester.jpg
+    - assets/machinery/machine_type/JCB.jpeg
+    - assets/machinery/machine_type/rotavator.jpg
+    - assets/machinery/machine_type/tractor.jpg
+    - assets/machinery/default_image.jpg
+
+    #worktype
+    - assets/machinery/work_type/ploughing.png
 
 
 

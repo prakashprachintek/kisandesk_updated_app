@@ -149,7 +149,6 @@ class _MarketPageState extends State<MarketPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF00AD83),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
           child: Container(

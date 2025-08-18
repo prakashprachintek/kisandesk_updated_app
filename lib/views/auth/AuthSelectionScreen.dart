@@ -1,14 +1,8 @@
-/**/
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
-import '../../main.dart';
 import '../widgets/AuthOptionCard.dart';
 import 'MobileVerificationScreen.dart';
-import '../home/HomePage.dart';
 
 class AuthSelectionScreen extends StatelessWidget {
   const AuthSelectionScreen({Key? key}) : super(key: key);
@@ -63,41 +57,6 @@ class AuthSelectionScreen extends StatelessWidget {
                         },
                       ),
                       SizedBox(height: 24),
-                      /*
-                      // comment this section before release
-                      //added for development purposes only
-                      ////////////////////////////////////
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => HomePage()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF1B5E20), // Greenish-teal
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                            elevation: 4,
-                          ),
-                          child: Text(
-                            tr("🚀 Skip to Home (Dev Only)"),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      //////////////////////////////////////
-                      ///
-                      */
                     ],
                   ),
                 ),
