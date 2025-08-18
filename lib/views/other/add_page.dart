@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:lottie/lottie.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 
 // Replace this with your actual HomePage widget import
@@ -121,7 +120,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   /// Load location data from JSON file (adjust the path as needed)
   Future<void> _loadLocationData() async {
     try {
-      final String response = await rootBundle.loadString('assets/loadLocation_data.json');
+      final String response =
+          await rootBundle.loadString('assets/loadLocation_data.json');
       final data = json.decode(response);
       setState(() {
         _locationData = data;
@@ -180,34 +180,71 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
   }
 
-  /// STEP 0: Category Selection
+  /// STEP 0: Category Selection with Image Cards
   Widget _buildStep0() {
+    final Map<String, String> categoryImages = {
+      'cattle': 'assets/cattlemm.png',
+      'crop': 'assets/cropmm.png',
+      'land': 'assets/landmm.png',
+      'labour': 'assets/labourm.png',
+      'machinery': 'assets/tracm.png',
+    };
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(height: 30),
-        Lottie.asset('assets/animations/onb2.json', height: 200),
-        SizedBox(height: 20),
-        Center(
-          child: Text(
-            "Select a Category",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(height: 20),
-        DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            labelText: "Category",
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          value: _selectedCategory,
-          items: _categoryFieldLabels.keys.map((cat) {
-            return DropdownMenuItem(value: cat, child: Text(cat));
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          physics: NeverScrollableScrollPhysics(),
+          children: _categoryFieldLabels.keys.map((cat) {
+            final String key = cat.toLowerCase();
+            final isSelected = _selectedCategory == key;
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedCategory = key;
+                  _updateFieldLabels(key);
+                });
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.green[100]
+                      : const Color.fromARGB(255, 255, 255, 255),
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.green
+                        : const Color.fromARGB(255, 255, 255, 255),
+                    width: isSelected ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: categoryImages.containsKey(key)
+                          ? Image.asset(
+                              categoryImages[key]!,
+                              fit: BoxFit.contain,
+                            )
+                          : Icon(Icons.image_not_supported, size: 50),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      key[0].toUpperCase() + key.substring(1),
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }).toList(),
-          onChanged: (val) {
-            _selectedCategory = val;
-            _updateFieldLabels(val);
-          },
         ),
         SizedBox(height: 30),
         _GradientButton(
@@ -220,7 +257,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   title: Text("Error"),
                   content: Text("Please select a category."),
                   actions: [
-                    TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK")),
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text("OK")),
                   ],
                 ),
               );
@@ -315,15 +354,15 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 Expanded(
                   child: _base64Image == null
                       ? Text(
-                    "Select Image",
-                    style: TextStyle(color: Colors.black54),
-                    overflow: TextOverflow.ellipsis,
-                  )
+                          "Select Image",
+                          style: TextStyle(color: Colors.black54),
+                          overflow: TextOverflow.ellipsis,
+                        )
                       : Text(
-                    "Image selected (Base64)",
-                    style: TextStyle(color: Colors.black54),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                          "Image selected (Base64)",
+                          style: TextStyle(color: Colors.black54),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                 ),
               ],
             ),
@@ -349,7 +388,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                       title: Text("Error"),
                       content: Text("Please enter product name/description."),
                       actions: [
-                        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK")),
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text("OK")),
                       ],
                     ),
                   );
@@ -465,7 +506,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             ),
             _GradientButton(
               text: "Submit",
-              onPressed: _isSubmitting ? null : _submitMarketPostToFirebase,
+              onPressed: _isSubmitting ? null : _submitMarketPost,
             ),
           ],
         ),
@@ -519,7 +560,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         builder: (_) => AlertDialog(
           title: Text("Location Error"),
           content: Text("Location services are disabled."),
-          actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+          ],
         ),
       );
       return;
@@ -533,7 +577,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           builder: (_) => AlertDialog(
             title: Text("Permission Denied"),
             content: Text("Location permission is denied."),
-            actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))],
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("OK"))
+            ],
           ),
         );
         return;
@@ -545,12 +593,16 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         builder: (_) => AlertDialog(
           title: Text("Permission Error"),
           content: Text("Location permission is permanently denied."),
-          actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+          ],
         ),
       );
       return;
     }
-    Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _latitude = pos.latitude;
       _longitude = pos.longitude;
@@ -560,15 +612,18 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     );
   }
 
-  /// Submit post to Firebase Realtime Database (storing image as Base64)
-  Future<void> _submitMarketPostToFirebase() async {
+  /// Submit post to the specified API
+  Future<void> _submitMarketPost() async {
     if (_selectedCategory == null) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: Text("Submission Error"),
           content: Text("Category is missing."),
-          actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+          ],
         ),
       );
       return;
@@ -580,7 +635,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         builder: (_) => AlertDialog(
           title: Text("Submission Error"),
           content: Text("Title/description is missing."),
-          actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+          ],
         ),
       );
       return;
@@ -591,7 +649,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         builder: (_) => AlertDialog(
           title: Text("Submission Error"),
           content: Text("Please select an image."),
-          actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+          ],
         ),
       );
       return;
@@ -617,7 +678,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           builder: (_) => AlertDialog(
             title: Text("Location Error"),
             content: Text("Unable to fetch current location."),
-            actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))],
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("OK"))
+            ],
           ),
         );
         setState(() => _isSubmitting = false);
@@ -634,22 +699,55 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
 
     try {
-      DatabaseReference ref = FirebaseDatabase.instance.ref("marketPosts");
-      await ref.push().set(postData);
+      final response = await http.post(
+        Uri.parse('http://13.233.103.50:6000/api/admin/insert_market_post'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(postData),
+      );
 
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            title: Text("Submission Successful"),
+            content: Text(
+                "Market post added successfully! Redirecting to HomePage..."),
+          ),
+        );
+        await Future.delayed(Duration(seconds: 2));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HomePage(
+                phoneNumber: widget.phoneNumber, userData: widget.userData),
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text("Submission Error"),
+            content: Text("Failed to add post. Status: ${response.statusCode}"),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+            ],
+          ),
+        );
+      }
+    } on SocketException {
       showDialog(
         context: context,
-        barrierDismissible: false,
         builder: (_) => AlertDialog(
-          title: Text("Submission Successful"),
-          content: Text("Market post added successfully! Redirecting to HomePage..."),
-        ),
-      );
-      await Future.delayed(Duration(seconds: 2));
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => HomePage(phoneNumber: widget.phoneNumber, userData: widget.userData),
+          title: Text("Network Error"),
+          content: Text("Please check your internet connection."),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+          ],
         ),
       );
     } catch (e) {
@@ -658,8 +756,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         context: context,
         builder: (_) => AlertDialog(
           title: Text("Submission Error"),
-          content: Text("Failed to add post to Firebase."),
-          actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))],
+          content: Text("An unexpected error occurred: $e"),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+          ],
         ),
       );
     } finally {
@@ -678,7 +779,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             children: [
               ListTile(
                 leading: Icon(Icons.camera_alt, color: Colors.black54),
-                title: Text('Take Picture', style: TextStyle(color: Colors.black54)),
+                title: Text('Take Picture',
+                    style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -691,7 +793,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: Colors.black54),
-                title: Text('Select from Gallery', style: TextStyle(color: Colors.black54)),
+                title: Text('Select from Gallery',
+                    style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -723,9 +826,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       setState(() {
         _base64Image = base64Str;
       });
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text("Image converte")),
-      // );
     } catch (e) {
       print("Error reading file: $e");
       ScaffoldMessenger.of(context).showSnackBar(

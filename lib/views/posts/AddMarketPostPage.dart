@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import '../widgets/api_config.dart';
 
 class AddMarketPostPage extends StatefulWidget {
   @override
@@ -14,13 +17,14 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   // For simplicity, hardcode userId. In production, fetch the current user's ID.
   String _userId = "testUser";
 
-  final DatabaseReference postsRef = FirebaseDatabase.instance.ref("marketPosts");
-
   void _submitPost() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Create a new post map
-      Map<String, dynamic> post = {
+
+      final url = Uri.parse("${KD.api}/admin/insert_market_post");
+
+      // The data to be sent to the API
+      Map<String, dynamic> postData = {
         "title": _title,
         "description": _description,
         "imageUrl": _imageUrl,
@@ -29,13 +33,26 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       };
 
       try {
-        await postsRef.push().set(post);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Post added successfully!")));
-        Navigator.pop(context);
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(postData),
+        );
+
+        if (response.statusCode == 200) {
+          // Success case
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Post added successfully!")));
+          Navigator.pop(context); // Go back to the previous screen
+        } else {
+          // Handle server-side errors
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Error adding post: ${response.body}")));
+        }
       } catch (error) {
+        // Handle network or other errors
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Error adding post: $error")));
+            .showSnackBar(SnackBar(content: Text("Network error: $error")));
       }
     }
   }
@@ -54,21 +71,24 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             children: [
               TextFormField(
                 decoration: InputDecoration(labelText: "Title"),
-                validator: (value) =>
-                value == null || value.isEmpty ? "Enter title" : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? "Please enter a title."
+                    : null,
                 onSaved: (value) => _title = value ?? "",
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: "Description"),
-                validator: (value) =>
-                value == null || value.isEmpty ? "Enter description" : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? "Please enter a description."
+                    : null,
                 onSaved: (value) => _description = value ?? "",
                 maxLines: 3,
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: "Image URL"),
-                validator: (value) =>
-                value == null || value.isEmpty ? "Enter image URL" : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? "Please enter an image URL."
+                    : null,
                 onSaved: (value) => _imageUrl = value ?? "",
               ),
               SizedBox(height: 20),
