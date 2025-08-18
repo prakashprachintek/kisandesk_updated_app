@@ -4,7 +4,7 @@ class MachineryImages {
   static const String _basePath = 'assets/machinery/machine_type/';
   static const String defaultImage = 'assets/machinery/default_machine.png';
 
-  // Map machinery names to their image paths
+  // Machinery mapped with image path
   static final Map<String, String> _imageMap = {
     'Tractor': '${_basePath}tractor.jpg',
     'Mini Tractor': '${_basePath}rotavator.jpg',
@@ -28,7 +28,7 @@ class MachineryImages {
     return key.isNotEmpty ? _imageMap[key]! : defaultImage;
   }
 
-  // Enhanced image widget with multiple styling options
+  // Image Widget
   static Widget getImageWidget(
     String machineryName, {
     double size = 80,

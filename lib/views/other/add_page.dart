@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:lottie/lottie.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mainproject1/views/widgets/api_config.dart';
 
 // Replace this with your actual HomePage widget import
 import '../home/HomePage.dart';
@@ -700,7 +701,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://13.233.103.50:6000/api/admin/insert_market_post'),
+        Uri.parse('${KD.api}/admin/insert_market_post'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

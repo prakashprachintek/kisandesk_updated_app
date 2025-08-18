@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:url_launcher/url_launcher.dart'; // For phone calls
+import 'package:url_launcher/url_launcher.dart';
 
 import '../services/user_session.dart';
 import '../widgets/api_config.dart';
@@ -71,7 +71,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
     }
   }
 
-  // Helper to launch phone call
+  // Phone call
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(phoneUri)) {

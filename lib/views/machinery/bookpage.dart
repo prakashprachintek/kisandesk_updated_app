@@ -264,10 +264,9 @@ class _BookPageState extends State<BookPage> {
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 child: Row(
                                   children: [
-                                    // Enhanced image container
                                     MachineryImages.getImageWidget(
                                       machineName,
-                                      size: 60, // Kept at 50
+                                      size: 60,
                                       fit: BoxFit.cover,
                                       borderRadius: BorderRadius.circular(12),
                                       showShadow: true,

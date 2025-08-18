@@ -6,13 +6,13 @@ class OrderDetailPage extends StatelessWidget {
 
   const OrderDetailPage({super.key, required this.order});
 
-  // Helper to launch phone call
+  //Phone call
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri);
     } else {
-      // Note: ScaffoldMessenger requires a BuildContext, so we'll handle this in the widget
+      //BuildContext handled in widget
     }
   }
 

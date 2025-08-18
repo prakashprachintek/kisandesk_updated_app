@@ -240,7 +240,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     );
   }
 
-  // Creates a tappable tile with icon & label that navigates to a page
+  // Tappable tile with icon & label that navigates to a page
   Widget _buildTile(BuildContext context,
       {required IconData icon,
       required String label,
