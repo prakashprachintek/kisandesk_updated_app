@@ -674,7 +674,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       "village": _selectedVillage ?? '',
       "pincode": _pincode ?? '',
       "category": _selectedCategory,
-      "fileName": _base64Image,
+      // "image": _base64Image,
     };
 
     if (_useCurrentLocation) {

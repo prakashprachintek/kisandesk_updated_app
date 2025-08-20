@@ -6,6 +6,8 @@ import 'package:easy_localization/easy_localization.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/views/other/myProfile.dart';
+
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
@@ -407,8 +409,14 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text(widget.userData?[tr('name')] ?? tr("Guest")),
-            accountEmail: Text(widget.userData?[tr('email')] ?? tr("")),
+            accountName: Text(
+              UserSession.user?['full_name'] ?? tr('Guest'),
+            ),
+            accountEmail: Text(
+              UserSession.user != null
+                  ? '${tr('Wallet Balance')}: ₹${UserSession.user!['wallet_balance']}'
+                  : tr(''),
+            ),
             currentAccountPicture: Stack(
               children: [
                 CircleAvatar(
@@ -446,7 +454,11 @@ class _HomePageState extends State<HomePage> {
             title: Text(tr("Profile")),
             onTap: () {
               Navigator.pop(context);
-              _showProfileUpdateDialog();
+              // _showProfileUpdateDialog();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Myprofile()),
+              );
             },
           ),
           ListTile(
@@ -470,10 +482,10 @@ class _HomePageState extends State<HomePage> {
             title: Text(tr("Help")),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TestPage()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => const HelpPage()),
+              // );
             },
           ),
           ListTile(
@@ -1096,6 +1108,7 @@ class _HomePageState extends State<HomePage> {
   }
   /// -----------------------------------------
   /// "Recommended" row
+  /*
   Widget _buildRecommendedRow() {
     final List<_SimpleItem> recommendedItems = [
       _SimpleItem(
@@ -1166,6 +1179,11 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+<<<<<<< HEAD
+=======
+  */
+
+>>>>>>> c068370d4b3e4020362e64ee6483e98dbcf8ae9d
   /// Category Tapped
   void _handleCategoryTap(int index) {
     if (index == 0) {

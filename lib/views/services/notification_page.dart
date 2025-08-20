@@ -47,7 +47,8 @@ class _NotificationPageState extends State<NotificationPage> {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'Failed to accept request')),
+            SnackBar(
+                content: Text(data['message'] ?? 'Failed to accept request')),
           );
         }
       } else {
@@ -113,6 +114,9 @@ class _NotificationPageState extends State<NotificationPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildTextRow('Request ID:', widget.notificationData.reqId),
+                    _buildTextRow(
+                        'Requested by:', widget.notificationData.farmername),
+                    _buildTextRow('Contact:', widget.notificationData.phone),
                     _buildTextRow(
                         'Machinery:', widget.notificationData.machineryType),
                     _buildTextRow(
