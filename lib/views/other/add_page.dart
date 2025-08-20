@@ -7,10 +7,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:lottie/lottie.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mainproject1/views/widgets/api_config.dart';
 
 // Replace this with your actual HomePage widget import
 import '../home/HomePage.dart';
-import '../home/home_page2.dart';
+import '../services/user_session.dart';
 
 class AddMarketPostPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -661,14 +662,19 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     setState(() => _isSubmitting = true);
 
     Map<String, dynamic> postData = {
+      "farmer_id": UserSession.userId,
       "phoneNumber": _phoneNumber ?? '',
       "cropName": _cropName ?? '',
       "description": _description ?? '',
       "price": int.tryParse(_price ?? '0') ?? 0,
       "quantity": int.tryParse(_quantity ?? '0') ?? 0,
+      "state": _selectedState ?? '',
+      "district": _selectedDistrict ?? '',
+      "taluka": _selectedTaluka ?? '',
+      "village": _selectedVillage ?? '',
+      "pincode": _pincode ?? '',
       "category": _selectedCategory,
-      "base64Image": _base64Image,
-      "timestamp": DateTime.now().toIso8601String(),
+      "fileName": _base64Image,
     };
 
     if (_useCurrentLocation) {
@@ -699,8 +705,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
 
     try {
+      print('❗❗❗postdata :${postData}');
       final response = await http.post(
-        Uri.parse('http://13.233.103.50:6000/api/admin/insert_market_post'),
+        Uri.parse('${KD.api}/admin/insert_market_post'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -733,7 +740,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             content: Text("Failed to add post. Status: ${response.statusCode}"),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("OK"))
             ],
           ),
         );
@@ -848,7 +856,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Add Market Post (Step ${_currentStep + 1}/3)"),
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFF1B5E20),
       ),
       body: SingleChildScrollView(
         child: Container(

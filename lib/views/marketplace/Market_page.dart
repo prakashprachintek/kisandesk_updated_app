@@ -57,7 +57,7 @@ class _MarketPageState extends State<MarketPage> {
                 'description':
                     item['description'] ?? 'No description available',
                 'location': item['village'] ?? 'Unknown location',
-                'image': item['post_url'] ?? 'assets/market1.webp',
+                'fileName': item['post_url'] ?? 'assets/market1.webp',
                 'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
                 'Phone': farmerDetails?['phone'] ?? 'N/A',
               };
@@ -216,7 +216,7 @@ class _MarketPageState extends State<MarketPage> {
                               builder: (context) => Postdetailspage(
                                 name: marketItem['name'],
                                 price: '₹${marketItem['price']}',
-                                imagePath: marketItem['image'],
+                                imagePath: marketItem['fileName'],
                                 location: marketItem['location'] ??
                                     'Unknown location', // Make sure location is not null
                                 description: marketItem['description'] ??
@@ -232,7 +232,7 @@ class _MarketPageState extends State<MarketPage> {
                         child: MarketCard(
                           name: marketItem['name'],
                           price: '₹${marketItem['price']}',
-                          imagePath: marketItem['image'],
+                          imagePath: marketItem['fileName'],
                           isFavorited: isFavorited,
                           onFavoritePressed: () =>
                               toggleFavorite(marketItem),

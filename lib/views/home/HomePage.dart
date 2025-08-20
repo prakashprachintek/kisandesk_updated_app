@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -7,10 +6,8 @@ import 'package:easy_localization/easy_localization.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
-
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
-
 // Adjust these imports for your actual file structure
 import '../other/testingpage.dart';
 import '../other/welcome.dart';
@@ -26,7 +23,6 @@ import 'dart:io';
 import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
-
 /// A placeholder cart page if you don't have one
 class CartPage extends StatelessWidget {
   @override
@@ -539,21 +535,6 @@ class _HomePageState extends State<HomePage> {
           // 1) Gradient from top to bottom
           Container(
             decoration: BoxDecoration(
-              /*
-              gradient: LinearGradient(
-                colors: [
-                  /// Header Color
-                  
-                  Color(0xFF1B5E20), // top dark green
-                  Color(0xFF4CAF50),
-                  Color(0xFFFFD600), // bottom bright yellow
-                ],
-                stops: [0.0, 0.4, 1.0],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            */
               color: Color.fromARGB(255, 29, 108, 92),
             ),
           ), //
@@ -667,12 +648,7 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                             ),
-                            /*
-                            IconButton(
-                              icon: Icon(Icons.shopping_cart_outlined, color: Colors.white),
-                              onPressed: _handleCartTap,
-                            ),
-                            */
+                      
                           ],
                         ),
                       ],
@@ -733,25 +709,7 @@ class _HomePageState extends State<HomePage> {
                           _buildDealsOfDay(),
 
                           SizedBox(height: 16),
-                          /*
-                          // 4) Recommended
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              tr('Recommended'),
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          _buildRecommendedRow(),
-
-                          // Some bottom padding to avoid overflow behind the bottom nav
-                          SizedBox(height: 80),
-                          */
+                    
                         ],
                       ),
                     ),
@@ -836,7 +794,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
   /// -----------------------------------------
   /// carousel for mandirates
   Widget _buildMandiRatesCarousel() {
@@ -943,14 +900,6 @@ class _HomePageState extends State<HomePage> {
                                 ],
                               ),
                             ),
-
-                            /*
-                        Icon(
-                          Icons.arrow_upward,
-                          color: Color(0xFF00AD83),
-                          size: 20,
-                        ),
-                        */
                           ],
                         ),
                       ),
@@ -965,6 +914,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  
   /// -----------------------------------------
   /// Second Carousel (top slideshow)
   Widget _buildCarouselSlideshow() {
@@ -1030,7 +980,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
   /// -----------------------------------------
   /// 6 Categories Grid
   Widget _buildCategoriesGrid() {
@@ -1070,7 +1019,6 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
   /// -----------------------------------------
   /// "Deals of the Day" horizontal slider
   Widget _buildDealsOfDay() {
@@ -1146,7 +1094,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
   /// -----------------------------------------
   /// "Recommended" row
   Widget _buildRecommendedRow() {
@@ -1164,7 +1111,6 @@ class _HomePageState extends State<HomePage> {
       _SimpleItem(
           title: tr("Cattle Feed"), price: "\$10", image: "assets/cattle.jpg"),
     ];
-
     return Container(
       height: 150,
       child: ListView.builder(
@@ -1220,7 +1166,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
   /// Category Tapped
   void _handleCategoryTap(int index) {
     if (index == 0) {
@@ -1246,8 +1191,7 @@ class _HomePageState extends State<HomePage> {
           context, MaterialPageRoute(builder: (context) => ComingSoonPage()));
     }
   }
-}
-
+} 
 /// A simple card for categories
 class _CategoryCard extends StatelessWidget {
   final String imageUrl;
@@ -1320,7 +1264,6 @@ class _CategoryCard extends StatelessWidget {
     );
   }
 }
-
 /// A small item model for "Deals"/"Recommended"
 class _SimpleItem {
   final String title;
