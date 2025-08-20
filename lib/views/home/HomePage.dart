@@ -1179,11 +1179,8 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-<<<<<<< HEAD
-=======
   */
 
->>>>>>> c068370d4b3e4020362e64ee6483e98dbcf8ae9d
   /// Category Tapped
   void _handleCategoryTap(int index) {
     if (index == 0) {

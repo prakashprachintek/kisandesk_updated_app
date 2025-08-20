@@ -856,7 +856,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Add Market Post (Step ${_currentStep + 1}/3)"),
-        backgroundColor: Color(0xFF1B5E20),
       ),
       body: SingleChildScrollView(
         child: Container(
