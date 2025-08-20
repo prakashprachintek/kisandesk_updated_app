@@ -16,7 +16,6 @@ class MachineryRentPage extends StatefulWidget {
 }
 
 class _MachineryRentPageState extends State<MachineryRentPage> {
-  // List of machinery images for carousel
   final List<String> imagePaths = [
     'assets/machinery/machine_type/JCB.jpeg',
     'assets/machinery/machine_type/harvester.jpg',
@@ -24,68 +23,95 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     'assets/machinery/machine_type/tractor.jpg',
   ];
 
-  // Stores recent orders fetched from backend
   List<Map<String, String>> recentOrders = [];
-
-  // Loading state for recent orders
   bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _fetchRecentOrders(); // Fetch orders when page loads
+    _fetchRecentOrders();
   }
 
-  // Fetches recent machinery orders from API
   Future<void> _fetchRecentOrders() async {
+    if (UserSession.userId == null) {
+      setState(() {
+        isLoading = false;
+        errorMessage = "User not logged in";
+      });
+      print("Error: UserSession.userId is null");
+      return;
+    }
+
     final url = Uri.parse("${KD.api}/app/get_machinary_orders");
 
     try {
+      print("Fetching orders for userId: ${UserSession.userId}");
       final response = await http.post(
         url,
         body: jsonEncode({
-          "userId": UserSession.userId, // Send current user's ID
+          "userId": UserSession.userId,
         }),
         headers: {
           "Content-Type": "application/json",
         },
       );
 
+      print("API Response Status: ${response.statusCode}");
+      print("API Response Body: ${response.body}");
+
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
+        print("Parsed JSON: $json");
+
         if (json['status'] == 'success') {
-          final List results = json['results'];
+          final List results = json['results'] ?? [];
+          print("Results count: ${results.length}");
 
-          // Sort by creation date (latest first)
-          results.sort((a, b) =>
-              b['created_at'].toString().compareTo(a['created_at'].toString()));
+          results.sort((a, b) => b['created_at'].toString().compareTo(a['created_at'].toString()));
 
-          // Take only the 2 most recent orders
           final recent = results.take(2).map<Map<String, String>>((item) {
             return {
-              "orderId": item['_id'] ?? '',
-              "machine":item['machinery_type'],
-              "workType": item['work_type'] ?? 'Unknown',
-              "status": item['status'] ?? '',
-              "date": item['created_at']?.split('T')[0] ?? '',
-              "name": item['ownerDetails']?[0]['full_name'] ?? '',
-              "phone": item['ownerDetails']?[0]['phone'] ?? ''
+              "orderId": item['_id']?.toString() ?? '',
+              "machine": item['machinery_type']?.toString() ?? 'Unknown',
+              "workType": item['work_type']?.toString() ?? 'Unknown',
+              "status": item['status']?.toString() ?? '',
+              "date": item['created_at']?.toString().split('T')[0] ?? '',
+              "name": item['ownerDetails']?.isNotEmpty == true
+                  ? item['ownerDetails'][0]['full_name']?.toString() ?? ''
+                  : 'N/A',
+              "phone": item['ownerDetails']?.isNotEmpty == true
+                  ? item['ownerDetails'][0]['phone']?.toString() ?? ''
+                  : 'N/A',
             };
           }).toList();
 
           setState(() {
             recentOrders = recent;
+            isLoading = false;
+            errorMessage = recent.isEmpty ? "No recent orders found" : null;
           });
+          print("Recent Orders: $recentOrders");
+        } else {
+          setState(() {
+            isLoading = false;
+            errorMessage = json['message'] ?? "Failed to fetch orders";
+          });
+          print("API status not success: ${json['message']}");
         }
       } else {
+        setState(() {
+          isLoading = false;
+          errorMessage = "Server error: ${response.statusCode}";
+        });
         print("Failed to fetch orders: ${response.statusCode}");
       }
     } catch (e) {
-      print("Error fetching recent orders: $e");
-    } finally {
       setState(() {
-        isLoading = false; // Stop loader in all cases
+        isLoading = false;
+        errorMessage = "Error fetching orders: $e";
       });
+      print("Error fetching recent orders: $e");
     }
   }
 
@@ -93,8 +119,10 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Machinery Rent",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          "Machinery Rent",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Container(
@@ -104,7 +132,6 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Machinery image carousel
               CarouselSlider(
                 options: CarouselOptions(
                   height: 150.0,
@@ -140,10 +167,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                   );
                 }).toList(),
               ),
-
               const SizedBox(height: 20),
-
-              // Two main buttons: Book & My Orders
               GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
@@ -168,70 +192,65 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
-              // Section heading
               Text(
                 "Recent Orders",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-
-              // Display 2 recent orders
               Expanded(
                 child: isLoading
                     ? Center(child: CircularProgressIndicator())
-                    : recentOrders.isEmpty
-                        ? Center(child: Text("No recent orders found"))
-                        : ListView.builder(
-                            itemCount: recentOrders.length,
-                            itemBuilder: (context, index) {
-                              final order = recentOrders[index];
-                              return InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          OrderDetailPage(order: order),
+                    : errorMessage != null
+                        ? Center(child: Text(errorMessage!))
+                        : recentOrders.isEmpty
+                            ? Center(child: Text("No recent orders found"))
+                            : ListView.builder(
+                                itemCount: recentOrders.length,
+                                itemBuilder: (context, index) {
+                                  final order = recentOrders[index];
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => OrderDetailPage(order: order),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.05),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
+                                          )
+                                        ],
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Machine Booked: ${order['machine']}",
+                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text("🔧 Work Type: ${order['workType']}"),
+                                          Text("📅 Date: ${order['date']}"),
+                                          Text("⚒️ Machine Owner: ${order['name']}"),
+                                          Text("📞 Contact: ${order['phone']}"),
+                                          Text("📌 Status: ${order['status']}"),
+                                        ],
+                                      ),
                                     ),
                                   );
                                 },
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 3),
-                                      )
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("Machine Booked: ${order['machine']}",
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                          "🔧 Work Type: ${order['workType']}"),
-                                      Text("📅 Date: ${order['date']}"),
-                                      Text("⚒️ Machine Owner: ${order['name']}"),
-                                      Text("📞 Contact: ${order['phone']}"),
-                                      Text("📌 Status: ${order['status']}"),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                              ),
               ),
             ],
           ),
@@ -240,12 +259,8 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     );
   }
 
-  // Tappable tile with icon & label that navigates to a page
   Widget _buildTile(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required Color color,
-      required Widget page}) {
+      {required IconData icon, required String label, required Color color, required Widget page}) {
     return GestureDetector(
       onTap: () {
         Navigator.push(

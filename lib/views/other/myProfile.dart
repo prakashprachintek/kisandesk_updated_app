@@ -3,9 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 
 import '../services/user_session.dart';
 
-
-class TestPage extends StatelessWidget {
-  const TestPage({Key? key}) : super(key: key);
+class Myprofile extends StatelessWidget {
+  const Myprofile({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,8 +13,6 @@ class TestPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('User Profile'.tr()),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
       ),
       body: userData == null
           ? Center(child: Text('No user data available'.tr()))
@@ -34,18 +31,28 @@ class TestPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildSectionTitle(context, 'Location'.tr()),
                   _buildInfoCard(context, {
-                    'Address'.tr(): userData['address']?.isEmpty ?? true ? 'Not provided'.tr() : userData['address'],
+                    'Address'.tr(): userData['address']?.isEmpty ?? true
+                        ? 'Not provided'.tr()
+                        : userData['address'],
                     'Taluka'.tr(): userData['taluka'],
                     'District'.tr(): userData['district'],
                     'Village'.tr(): userData['village'],
-                    'State'.tr(): userData['state']?.isEmpty ?? true ? 'Not provided'.tr() : userData['state'],
-                    'Pincode'.tr(): userData['pincode']?.isEmpty ?? true ? 'Not provided'.tr() : userData['pincode'],
+                    'State'.tr(): userData['state']?.isEmpty ?? true
+                        ? 'Not provided'.tr()
+                        : userData['state'],
+                    'Pincode'.tr(): userData['pincode']?.isEmpty ?? true
+                        ? 'Not provided'.tr()
+                        : userData['pincode'],
                   }),
                   const SizedBox(height: 16),
                   _buildSectionTitle(context, 'Additional Information'.tr()),
                   _buildInfoCard(context, {
-                    'Date of Birth'.tr(): userData['dob']?.isEmpty ?? true ? 'Not provided'.tr() : userData['dob'],
-                    'Gender'.tr(): userData['gender']?.isEmpty ?? true ? 'Not provided'.tr() : userData['gender'],
+                    'Date of Birth'.tr(): userData['dob']?.isEmpty ?? true
+                        ? 'Not provided'.tr()
+                        : userData['dob'],
+                    'Gender'.tr(): userData['gender']?.isEmpty ?? true
+                        ? 'Not provided'.tr()
+                        : userData['gender'],
                     'Status'.tr(): userData['status'],
                     'Wallet Balance'.tr(): '₹${userData['wallet_balance']}',
                   }),
@@ -106,7 +113,8 @@ class TestPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMachineryCard(BuildContext context, Map<String, dynamic> userData) {
+  Widget _buildMachineryCard(
+      BuildContext context, Map<String, dynamic> userData) {
     bool hasMachinery = userData['isHaveMachinery'] ?? false;
     List<dynamic> machineList = userData['machine_list'] ?? [];
 
@@ -119,7 +127,9 @@ class TestPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              hasMachinery ? 'Has Machinery: Yes'.tr() : 'Has Machinery: No'.tr(),
+              hasMachinery
+                  ? 'Has Machinery: Yes'.tr()
+                  : 'Has Machinery: No'.tr(),
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             if (hasMachinery && machineList.isNotEmpty) ...[
@@ -133,7 +143,8 @@ class TestPage extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      'Works: ${(machine['works'] as List<dynamic>).join(', ')}'.tr(),
+                      'Works: ${(machine['works'] as List<dynamic>).join(', ')}'
+                          .tr(),
                     ),
                     const SizedBox(height: 8),
                   ],

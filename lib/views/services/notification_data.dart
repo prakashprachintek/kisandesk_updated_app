@@ -6,16 +6,19 @@ class NotificationData {
   final String workDate;
   final String description;
   final String workInQuantity;
+  final String farmername;
+  final String phone;
 
-  NotificationData({
-    required this.body,
-    required this.reqId,
-    required this.machineryType,
-    required this.workType,
-    required this.workDate,
-    required this.description,
-    required this.workInQuantity,
-  });
+  NotificationData(
+      {required this.body,
+      required this.reqId,
+      required this.machineryType,
+      required this.workType,
+      required this.workDate,
+      required this.description,
+      required this.workInQuantity,
+      required this.farmername,
+      required this.phone});
 
   factory NotificationData.fromMap(Map<String, dynamic> map) {
     return NotificationData(
@@ -26,6 +29,8 @@ class NotificationData {
       workDate: map['workDate'] ?? '',
       description: map['description'] ?? '',
       workInQuantity: map['workInQuantity'] ?? '',
+      farmername: map['farmerName'] ?? '',
+      phone: map['phone'],
     );
   }
 
@@ -38,6 +43,8 @@ class NotificationData {
       'workDate': workDate,
       'description': description,
       'workInQuantity': workInQuantity,
+      'farmername': farmername,
+      'phone': phone
     };
   }
 }

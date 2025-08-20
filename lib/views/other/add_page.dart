@@ -11,7 +11,7 @@ import 'package:mainproject1/views/widgets/api_config.dart';
 
 // Replace this with your actual HomePage widget import
 import '../home/HomePage.dart';
-import '../home/home_page2.dart';
+import '../services/user_session.dart';
 
 class AddMarketPostPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -662,14 +662,19 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     setState(() => _isSubmitting = true);
 
     Map<String, dynamic> postData = {
+      "farmer_id": UserSession.userId,
       "phoneNumber": _phoneNumber ?? '',
       "cropName": _cropName ?? '',
       "description": _description ?? '',
       "price": int.tryParse(_price ?? '0') ?? 0,
       "quantity": int.tryParse(_quantity ?? '0') ?? 0,
+      "state": _selectedState ?? '',
+      "district": _selectedDistrict ?? '',
+      "taluka": _selectedTaluka ?? '',
+      "village": _selectedVillage ?? '',
+      "pincode": _pincode ?? '',
       "category": _selectedCategory,
-      "base64Image": _base64Image,
-      "timestamp": DateTime.now().toIso8601String(),
+      // "image": _base64Image,
     };
 
     if (_useCurrentLocation) {
@@ -700,6 +705,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
 
     try {
+      print('❗❗❗postdata :${postData}');
       final response = await http.post(
         Uri.parse('${KD.api}/admin/insert_market_post'),
         headers: <String, String>{
@@ -734,7 +740,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             content: Text("Failed to add post. Status: ${response.statusCode}"),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("OK"))
             ],
           ),
         );
