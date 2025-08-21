@@ -649,6 +649,18 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             IconButton(
+                              icon: Icon(Icons.notifications_none,
+                                  color: Colors.white),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          FavoritePage(favoriteItems: [])),
+                                );
+                              },
+                            ),
+                            IconButton(
                               icon: Icon(Icons.favorite_border,
                                   color: Colors.white),
                               onPressed: () {

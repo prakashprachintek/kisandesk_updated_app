@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 import '../doctor/doctor_detailpage.dart';
 import 'dart:convert';
 import '../doctor/doctor.dart';

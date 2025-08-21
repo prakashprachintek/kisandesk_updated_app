@@ -7,14 +7,14 @@ import '../services/user_session.dart';
 import '../services/api_config.dart';
 import 'order_detail_page.dart';
 
-class MyOrdersPage extends StatefulWidget {
-  const MyOrdersPage({super.key});
+class MyTransactionsPage extends StatefulWidget {
+  const MyTransactionsPage({super.key});
 
   @override
-  State<MyOrdersPage> createState() => _MyOrdersPageState();
+  State<MyTransactionsPage> createState() => _MyTransactionsPageState();
 }
 
-class _MyOrdersPageState extends State<MyOrdersPage> {
+class _MyTransactionsPageState extends State<MyTransactionsPage> {
   List<Map<String, String>> orders = [];
 
   @override
@@ -32,7 +32,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
         url,
         body: jsonEncode({
           "userId": UserSession.userId,
-          "type":"orders"
+          "type":"transactions"
         }),
         headers: {
           "Content-Type": "application/json",

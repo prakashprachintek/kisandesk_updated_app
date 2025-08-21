@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 
 class MandiRate {
   final String market;

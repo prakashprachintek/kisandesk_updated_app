@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 
 class MandiRatesPage extends StatefulWidget {
   @override

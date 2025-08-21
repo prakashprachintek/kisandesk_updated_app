@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 import 'Postdetailspage.dart';
 
 class MarketPage extends StatefulWidget {

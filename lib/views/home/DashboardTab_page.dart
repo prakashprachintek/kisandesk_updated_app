@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../posts/PostDetailsPage.dart';
 import '../services/user_session.dart';
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 
 /// A dashboard page that exclusively displays Labour Requests.
 class LabourDashboardPage extends StatefulWidget {

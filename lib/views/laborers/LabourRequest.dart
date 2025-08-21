@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/laborers/Requestdetails.dart';
 import 'dart:convert';
 import '../services/user_session.dart';
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 
 class LabourRequestPage extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -294,7 +294,8 @@ class _LabourRequestPageState extends State<LabourRequestPage>
         title: const Text("Labour Management",
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        // backgroundColor: Colors.transparent,
+        /*
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -307,6 +308,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
             ),
           ),
         ),
+        */
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,

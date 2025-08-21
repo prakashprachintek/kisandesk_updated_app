@@ -6,7 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'views/other/welcome.dart';
 import 'views/home/HomePage.dart';
 import 'views/services/user_session.dart';
-import 'views/services/push_notification_service.dart';
+import 'views/notification module/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
