@@ -26,6 +26,7 @@ class _NotificationPageState extends State<NotificationPage> {
     final body = {
       "requestId": widget.notificationData.reqId,
       "acceptedBy": UserSession.userId,
+      "status": "accepted"
     };
 
     try {

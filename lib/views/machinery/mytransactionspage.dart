@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../services/user_session.dart';
 import '../services/api_config.dart';
-import 'order_detail_page.dart';
+import '../transctions/Mytransaction_page.dart';
+
 
 class MyTransactionsPage extends StatefulWidget {
   const MyTransactionsPage({super.key});
@@ -114,7 +116,7 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => OrderDetailPage(order: order),
+                          builder: (context) => TransactionDetailPage(transaction: order),
                         ),
                       );
                     },
