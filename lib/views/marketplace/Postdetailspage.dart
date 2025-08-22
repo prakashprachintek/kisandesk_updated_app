@@ -57,7 +57,6 @@ class _PostdetailspageState extends State<Postdetailspage> {
           'About this post',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Color(0xFF00AD83),
         actions: [
           IconButton(
             icon: Icon(Icons.share, color: Colors.white),

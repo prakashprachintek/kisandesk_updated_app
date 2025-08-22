@@ -742,7 +742,7 @@ class _HomePageState extends State<HomePage> {
                           _buildCategoriesGrid(),
 
                           SizedBox(height: 16),
-                          // 3) Deals of the day ----> Latest Post
+                          // 3) Latest Posts
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -1449,7 +1449,7 @@ class MarketPost {
       location: json['village'] ?? 'Unknown',
       description: json['description'] ?? 'No description',
       review: json['review'] ?? 'N/A',
-      FarmerName: json['Farmer Name'] ?? 'N/A',
+      FarmerName: json['farmer_details']?? 'N/A',
       phone: json['phone'] ?? 'N/A',
     );
   }
