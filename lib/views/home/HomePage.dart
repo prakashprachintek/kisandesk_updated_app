@@ -7,6 +7,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
+import 'package:mainproject1/views/notification%20module/allNotification.dart';
 import 'package:mainproject1/views/other/myProfile.dart';
 //port '../widgets/Market_card.dart';
 import '../other/coming.dart';
@@ -18,6 +19,7 @@ import '../other/welcome.dart';
 import '../profile/profile_page.dart';
 import '../other/favoritePage.dart';
 import '../mandi/mandiRates.dart';
+import '../services/api_config.dart';
 import '../services/user_session.dart';
 import '../whether/whetherinfo.dart';
 import '../laborers/LabourRequest.dart';
@@ -27,7 +29,7 @@ import 'dart:io';
 import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
-import '../widgets/api_config.dart';
+//import '../widgets/api_config.dart';
 
 /// A placeholder cart page if you don't have one
 Future<List<MarketPost>> fetchMarketPosts() async {
@@ -674,6 +676,17 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             IconButton(
+                              icon: Icon(Icons.notifications_none,
+                                  color: Colors.white),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => allNotificationPage()),
+                                );
+                              },
+                            ),
+                            IconButton(
                               icon: Icon(Icons.favorite_border,
                                   color: Colors.white),
                               onPressed: () {
@@ -1219,6 +1232,80 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+  /// -----------------------------------------
+  /// "Recommended" row
+  /*
+  Widget _buildRecommendedRow() {
+    final List<_SimpleItem> recommendedItems = [
+      _SimpleItem(
+          title: tr("Pesticides"),
+          price: "\$15",
+          image: "assets/pesticide.webp"),
+      _SimpleItem(
+          title: tr("Seeds"), price: "\$20", image: "assets/addatiimage3.jpg"),
+      _SimpleItem(
+          title: tr("Harvest Tools"),
+          price: "\$35",
+          image: "assets/machines.webp"),
+      _SimpleItem(
+          title: tr("Cattle Feed"), price: "\$10", image: "assets/cattle.jpg"),
+    ];
+    return Container(
+      height: 150,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: recommendedItems.length,
+        itemBuilder: (context, index) {
+          final item = recommendedItems[index];
+          return GestureDetector(
+            onTap: () {
+              // Open item details or something
+            },
+            child: Container(
+              width: 130,
+              margin: EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 5,
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(12)),
+                    child: Image.asset(
+                      item.image,
+                      height: 80,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    item.title,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    item.price,
+                    style: TextStyle(color: Colors.green[700], fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+  */
 
   /// Category Tapped
   void _handleCategoryTap(int index) {

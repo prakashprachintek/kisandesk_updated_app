@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 import 'notification_data.dart';
-import 'user_session.dart';
+import '../services/user_session.dart';
 
 class NotificationPage extends StatefulWidget {
   final NotificationData notificationData;
@@ -26,6 +26,7 @@ class _NotificationPageState extends State<NotificationPage> {
     final body = {
       "requestId": widget.notificationData.reqId,
       "acceptedBy": UserSession.userId,
+      "status": "accepted"
     };
 
     try {

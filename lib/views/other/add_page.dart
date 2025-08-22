@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:lottie/lottie.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:mainproject1/views/widgets/api_config.dart';
+import 'package:mainproject1/views/services/api_config.dart';
 
 // Replace this with your actual HomePage widget import
 import '../home/HomePage.dart';
@@ -856,7 +856,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Add Market Post (Step ${_currentStep + 1}/3)"),
-        backgroundColor: Color(0xFF1B5E20),
       ),
       body: SingleChildScrollView(
         child: Container(

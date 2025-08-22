@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/user_session.dart';
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 import 'machinery_rent_page.dart';
 import 'machneryImages.dart';
 import 'worktypeImages.dart';

@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '../widgets/api_config.dart';
+import '../services/api_config.dart';
 import '../widgets/GradientAuthButton.dart';
 import 'OTPVerificationScreen.dart';
 import 'package:http/http.dart' as http;
