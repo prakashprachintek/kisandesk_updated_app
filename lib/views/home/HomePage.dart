@@ -6,12 +6,14 @@ import 'package:easy_localization/easy_localization.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/other/myProfile.dart';
-
+//port '../widgets/Market_card.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
 import '../other/testingpage.dart';
+import 'package:http/http.dart' as http;
 import '../other/welcome.dart';
 import '../profile/profile_page.dart';
 import '../other/favoritePage.dart';
@@ -25,7 +27,28 @@ import 'dart:io';
 import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
+import '../widgets/api_config.dart';
+
 /// A placeholder cart page if you don't have one
+Future<List<MarketPost>> fetchMarketPosts() async {
+  try {
+    final response =
+        await http.post(Uri.parse('${KD.api}/admin/getAll_market_post'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> json = jsonDecode(response.body);
+      final List<dynamic> results = json['results'];
+      return results.map((item) => MarketPost.fromJson(item)).toList();
+    } else {
+      print('API Error: ${response.statusCode}');
+      throw Exception('Failed to load market posts');
+    }
+  } catch (e) {
+    print('Exception while fetching : $e');
+    throw e;
+  }
+}
+
 class CartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -58,6 +81,7 @@ class HomePage extends StatefulWidget {
 /// -------------- STATE --------------
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  Future<List<MarketPost>>? marketPostsFuture;
 
   /// The dynamic location name once fetched, e.g. "Bengaluru, KA"
   String? _locationName;
@@ -171,6 +195,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _fetchLocation();
+    marketPostsFuture = fetchMarketPosts();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showToastOverlay(context, 'Login Successful. Welcome to Kisan Desk!');
@@ -660,7 +685,6 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                             ),
-                      
                           ],
                         ),
                       ],
@@ -706,22 +730,109 @@ class _HomePageState extends State<HomePage> {
 
                           SizedBox(height: 16),
                           // 3) Deals of the day ----> Latest Post
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              tr('Latest Posts'),
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                tr('Latest Posts'),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => MarketPage()),
+                                  );
+                                },
+                                child: Text(
+                                  'See More',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 8),
-                          _buildDealsOfDay(),
+                          //SizedBox(height: 8),
+                          FutureBuilder<List<MarketPost>>(
+                            future: marketPostsFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Center(
+                                    child: CircularProgressIndicator());
+                              } else if (snapshot.hasError) {
+                                return Center(
+                                    child: Text('Failed to load market posts'));
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return Center(
+                                    child: Text('No market posts available.'));
+                              }
 
-                          SizedBox(height: 16),
-                    
+                              final posts = snapshot.data!.take(3).toList();
+
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: posts.length,
+                                itemBuilder: (context, index) {
+                                  final post = posts[index];
+                                  return Card(
+                                    elevation: 2,
+                                    margin: EdgeInsets.symmetric(vertical: 8),
+                                    child: ListTile(
+                                      leading: Image.network(
+                                        post.imageUrl,
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Image.asset(
+                                          'assets/land1.jpg',
+                                          width: 60,
+                                          height: 60,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      title: Text(post.title),
+                                      subtitle: Text(
+                                          '₹${post.price} • ${post.location}'),
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    Postdetailspage(
+                                                      name: post.title,
+                                                      price: post.price,
+                                                      imagePath: post.imageUrl,
+                                                      location: post.location,
+                                                      description:
+                                                          post.description,
+                                                      review: post.review,
+                                                      FarmerName:
+                                                          post.FarmerName,
+                                                      Phone: post.phone,
+                                                    )));
+
+                                        // Optional: Navigate to post details
+                                      },
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          )
+
+                          //SizedBox(height: 16),
                         ],
                       ),
                     ),
@@ -806,6 +917,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   /// -----------------------------------------
   /// carousel for mandirates
   Widget _buildMandiRatesCarousel() {
@@ -926,7 +1038,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  
   /// -----------------------------------------
   /// Second Carousel (top slideshow)
   Widget _buildCarouselSlideshow() {
@@ -992,6 +1103,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   /// -----------------------------------------
   /// 6 Categories Grid
   Widget _buildCategoriesGrid() {
@@ -1031,6 +1143,7 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
   /// -----------------------------------------
   /// "Deals of the Day" horizontal slider
   Widget _buildDealsOfDay() {
@@ -1106,84 +1219,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  /// -----------------------------------------
-  /// "Recommended" row
-  /*
-  Widget _buildRecommendedRow() {
-    final List<_SimpleItem> recommendedItems = [
-      _SimpleItem(
-          title: tr("Pesticides"),
-          price: "\$15",
-          image: "assets/pesticide.webp"),
-      _SimpleItem(
-          title: tr("Seeds"), price: "\$20", image: "assets/addatiimage3.jpg"),
-      _SimpleItem(
-          title: tr("Harvest Tools"),
-          price: "\$35",
-          image: "assets/machines.webp"),
-      _SimpleItem(
-          title: tr("Cattle Feed"), price: "\$10", image: "assets/cattle.jpg"),
-    ];
-    return Container(
-      height: 150,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: recommendedItems.length,
-        itemBuilder: (context, index) {
-          final item = recommendedItems[index];
-          return GestureDetector(
-            onTap: () {
-              // Open item details or something
-            },
-            child: Container(
-              width: 130,
-              margin: EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 5,
-                    offset: Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.asset(
-                      item.image,
-                      height: 80,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    item.title,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    item.price,
-                    style: TextStyle(color: Colors.green[700], fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-<<<<<<< HEAD
-=======
-  */
 
->>>>>>> c068370d4b3e4020362e64ee6483e98dbcf8ae9d
   /// Category Tapped
   void _handleCategoryTap(int index) {
     if (index == 0) {
@@ -1209,7 +1245,8 @@ class _HomePageState extends State<HomePage> {
           context, MaterialPageRoute(builder: (context) => ComingSoonPage()));
     }
   }
-} 
+}
+
 /// A simple card for categories
 class _CategoryCard extends StatelessWidget {
   final String imageUrl;
@@ -1282,6 +1319,7 @@ class _CategoryCard extends StatelessWidget {
     );
   }
 }
+
 /// A small item model for "Deals"/"Recommended"
 class _SimpleItem {
   final String title;
@@ -1293,4 +1331,39 @@ class _SimpleItem {
     required this.price,
     required this.image,
   });
+}
+
+class MarketPost {
+  final String title;
+  final String price;
+  final String imageUrl;
+  final String location;
+  final String description;
+  final String review;
+  final String FarmerName;
+  final String phone;
+
+  MarketPost({
+    required this.title,
+    required this.price,
+    required this.imageUrl,
+    required this.location,
+    required this.description,
+    required this.review,
+    required this.FarmerName,
+    required this.phone,
+  });
+
+  factory MarketPost.fromJson(Map<String, dynamic> json) {
+    return MarketPost(
+      title: json['post_name'] ?? 'No Title',
+      price: (json['price'] ?? '0').toString(),
+      imageUrl: json['image'] ?? '',
+      location: json['village'] ?? 'Unknown',
+      description: json['description'] ?? 'No description',
+      review: json['review'] ?? 'N/A',
+      FarmerName: json['Farmer Name'] ?? 'N/A',
+      phone: json['phone'] ?? 'N/A',
+    );
+  }
 }
