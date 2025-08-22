@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/views/notification%20module/allNotification.dart';
 import 'package:mainproject1/views/other/myProfile.dart';
 
 import '../other/coming.dart';
@@ -655,8 +656,7 @@ class _HomePageState extends State<HomePage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          FavoritePage(favoriteItems: [])),
+                                      builder: (context) => allNotificationPage()),
                                 );
                               },
                             ),

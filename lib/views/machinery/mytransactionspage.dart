@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
 import '../transctions/Mytransaction_page.dart';
+import 'order_detail_page.dart';
 
 
 class MyTransactionsPage extends StatefulWidget {
@@ -116,7 +117,8 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TransactionDetailPage(transaction: order),
+                          builder: (context) => OrderDetailPage(order: order), //currently transaction detail and order detial pointing to same page, order details page
+                          // builder: (context) => TransactionDetailPage(transaction: order), 
                         ),
                       );
                     },
