@@ -117,15 +117,15 @@ class _HomePageState extends State<HomePage> {
   void _showProfileUpdateDialog() {
     // Pre-fill controllers with current user details
     TextEditingController nameController =
-        TextEditingController(text: widget.userData?['name'] ?? "");
+        TextEditingController(text: widget.userData?['name'] ?? "".tr());
     TextEditingController emailController =
-        TextEditingController(text: widget.userData?['email'] ?? "");
+        TextEditingController(text: widget.userData?['email'] ?? "".tr());
     TextEditingController dobController =
-        TextEditingController(text: widget.userData?['dob'] ?? "");
+        TextEditingController(text: widget.userData?['dob'] ?? "".tr());
     TextEditingController genderController =
-        TextEditingController(text: widget.userData?['gender'] ?? "");
+        TextEditingController(text: widget.userData?['gender'] ?? "".tr());
     TextEditingController phoneController =
-        TextEditingController(text: widget.userData?['phoneNumber'] ?? "");
+        TextEditingController(text: widget.userData?['phoneNumber'] ?? "".tr());
 
     showDialog(
       context: context,
@@ -200,7 +200,7 @@ class _HomePageState extends State<HomePage> {
     marketPostsFuture = fetchMarketPosts();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      showToastOverlay(context, 'Login Successful. Welcome to Kisan Desk!');
+      showToastOverlay(context, 'Login Successful. Welcome to Kisan Desk!'.tr());
     });
   }
 

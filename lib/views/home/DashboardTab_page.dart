@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -22,7 +23,7 @@ class _LabourDashboardPageState extends State<LabourDashboardPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Labour Dashboard",
+          "Labour Dashboard".tr(),
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
@@ -77,13 +78,13 @@ class _LabourRequestsTabState extends State<LabourRequestsTab> {
             _isLoading = false;
           });
         } else {
-          _handleError('Failed to fetch data: ${data['message']}');
+          _handleError('Failed to fetch data: ${data['message']}'.tr());
         }
       } else {
-        _handleError('Server Error: ${response.statusCode}');
+        _handleError('Server Error: ${response.statusCode}'.tr());
       }
     } catch (e) {
-      _handleError('An error occurred: $e');
+      _handleError('An error occurred: $e'.tr());
     }
   }
 
@@ -103,7 +104,7 @@ class _LabourRequestsTabState extends State<LabourRequestsTab> {
   Widget _buildNoDataMessage() {
     return Center(
       child: Text(
-        'No Labour Requests Available',
+        'No Labour Requests Available'.tr(),
         style: TextStyle(fontSize: 18, color: Colors.grey),
       ),
     );
@@ -119,7 +120,7 @@ class _LabourRequestsTabState extends State<LabourRequestsTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              item['work']?.toString() ?? 'No Work Description',
+              item['work']?.toString() ?? 'No Work Description'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -76,13 +77,13 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
           isLoading = false;
         });
       } else {
-        print("Failed to fetch mandi rates: ${response.statusCode}");
+        print("Failed to fetch mandi rates: ${response.statusCode}".tr());
         setState(() {
           isLoading = false;
         });
       }
     } catch (e) {
-      print("Error fetching mandi rates: $e");
+      print("Error fetching mandi rates: $e".tr());
       setState(() {
         isLoading = false;
         mandiData = [];
@@ -135,7 +136,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Filter Options",
+                    "Filter Options".tr(),
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -145,7 +146,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                   SizedBox(height: 20),
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: 'Select Commodity',
+                      labelText: 'Select Commodity'.tr(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -173,7 +174,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                   SizedBox(height: 15),
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: 'Select Market',
+                      labelText: 'Select Market'.tr(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -212,7 +213,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text("Apply Filters"),
+                    child: Text("Apply Filters".tr()),
                   ),
                 ],
               ),
@@ -227,7 +228,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mandi Rates",style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+        title: Text("Mandi Rates".tr(),style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -242,7 +243,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                   child: TextField(
                     controller: searchController,
                     decoration: InputDecoration(
-                      hintText: "Search market, commodity, or district",
+                      hintText: "Search market, commodity, or district".tr(),
                       prefixIcon: Icon(Icons.search, color: Color(0xFF00AD83)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -267,7 +268,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                   child: IconButton(
                     icon: Icon(Icons.filter_list, color: Colors.white),
                     onPressed: _showFilterBottomSheet,
-                    tooltip: "Open Filters",
+                    tooltip: "Open Filters".tr(),
                     padding: EdgeInsets.all(12),
                   ),
                 ),
@@ -282,7 +283,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                 : filteredData.isEmpty
                     ? Center(
                         child:
-                            Text("No data available for the selected filters."))
+                            Text("No data available for the selected filters.".tr()))
                     : Expanded(
                         child: ListView.builder(
                           itemCount: filteredData.length,
