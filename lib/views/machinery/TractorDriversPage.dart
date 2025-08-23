@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 
 class TractorServicePage extends StatelessWidget {
@@ -83,3 +84,4 @@ class TractorServicePage extends StatelessWidget {
     );
   }
 }
+*/
