@@ -1,8 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:async';
 import '../services/api_config.dart';
 
 class MandiRatesPage extends StatefulWidget {
@@ -10,40 +10,35 @@ class MandiRatesPage extends StatefulWidget {
   _MandiRatesPageState createState() => _MandiRatesPageState();
 }
 
-class _MandiRatesPageState extends State<MandiRatesPage>
-    with AutomaticKeepAliveClientMixin {
-  // final String apiUrl = '${KD.api}/admin/fetch_mandi_rates';
+class _MandiRatesPageState extends State<MandiRatesPage> with AutomaticKeepAliveClientMixin {
+  final String apiUrl = '${KD.api}/admin/fetch_mandi_rates';
   List<dynamic> mandiData = [];
   List<dynamic> filteredData = [];
-  List<dynamic> displayedData = []; // Subset of filteredData for lazy loading
+  List<dynamic> displayedData = [];
   bool isLoading = true;
   bool isLoadingMore = false;
-  final int batchSize = 20; // Number of items to load per batch
-  int currentIndex = 0; // Tracks the current batch index
+  bool isOffline = false;
+  final int batchSize = 20;
+  int currentIndex = 0;
+  String? lastUpdated;
 
   String selectedCommodity = 'All';
   List<String> commodityOptions = ['All'];
-
   String selectedMarket = 'All';
   List<String> marketOptions = ['All'];
 
   TextEditingController searchController = TextEditingController();
   ScrollController _scrollController = ScrollController();
+  late Box cacheBox;
 
   @override
-  bool get wantKeepAlive => true; // Keep state alive for performance
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    fetchMandiRates();
-
-    // Debounce search to prevent excessive filtering
-    searchController.addListener(() {
-      _debounceFilter();
-    });
-
-    // Add scroll listener for lazy loading more items
+    _initHive();
+    searchController.addListener(_debounceFilter);
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent - 200 &&
@@ -54,79 +49,170 @@ class _MandiRatesPageState extends State<MandiRatesPage>
     });
   }
 
+  Future<void> _initHive() async {
+    // Initialize Hive only once with hive_flutter
+    await Hive.initFlutter();
+    cacheBox = await Hive.openBox('mandi_rates_box');
+    await _loadFromCacheOrFetch();
+  }
+
   @override
   void dispose() {
-    _debounce?.cancel();
     searchController.dispose();
     _scrollController.dispose();
+    cacheBox.close();
     super.dispose();
   }
 
-  // Debounce timer for search
   Timer? _debounce;
   void _debounceFilter() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      filterData();
-    });
+    _debounce = Timer(const Duration(milliseconds: 300), filterData);
   }
 
-  Future<void> fetchMandiRates() async {
+  Future<void> _loadFromCacheOrFetch() async {
     setState(() {
       isLoading = true;
     });
+
+    // Try to load from cache
     try {
-      final response =
-          await http.post(Uri.parse('${KD.api}/admin/fetch_mandi_rates'));
+      final cachedData = cacheBox.get('data');
+      final cachedCommodities = cacheBox.get('commodities');
+      final cachedMarkets = cacheBox.get('markets');
+      final cachedTimestamp = cacheBox.get('last_updated');
+
+      if (cachedData != null &&
+          cachedCommodities != null &&
+          cachedMarkets != null &&
+          cachedTimestamp != null &&
+          cachedData is List &&
+          cachedCommodities is List &&
+          cachedMarkets is List &&
+          cachedTimestamp is String) {
+        final lastUpdatedTime = DateTime.tryParse(cachedTimestamp);
+        if (lastUpdatedTime != null) {
+          final now = DateTime.now();
+          const cacheDuration = Duration(hours: 24);
+
+          if (now.difference(lastUpdatedTime) < cacheDuration) {
+            setState(() {
+              mandiData = cachedData;
+              commodityOptions = cachedCommodities.cast<String>();
+              marketOptions = cachedMarkets.cast<String>();
+              lastUpdated = cachedTimestamp;
+              isLoading = false;
+            });
+            filterData();
+            // Fetch fresh data in the background
+            _fetchMandiRates();
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      print("Error reading cache: $e");
+      // Clear corrupted cache to prevent repeated issues
+      await cacheBox.clear();
+    }
+
+    // No valid cache, fetch from API
+    await _fetchMandiRates();
+  }
+
+  Future<void> _fetchMandiRates() async {
+    try {
+      final response = await http.post(Uri.parse(apiUrl)).timeout(Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
           mandiData = data['results'];
 
-          // Populate unique commodity options
           Set<String> uniqueCommodities = {};
           for (var record in mandiData) {
             if (record['Commodity'] != null) {
               uniqueCommodities.add(record['Commodity'].toString());
             }
           }
-          commodityOptions = ['All'] + uniqueCommodities.toList()
-            ..sort();
+          commodityOptions = ['All'] + uniqueCommodities.toList()..sort();
 
-          // Populate unique market options
           Set<String> uniqueMarkets = {};
           for (var record in mandiData) {
             if (record['Market'] != null) {
               uniqueMarkets.add(record['Market'].toString());
             }
           }
-          marketOptions = ['All'] + uniqueMarkets.toList()
-            ..sort();
+          marketOptions = ['All'] + uniqueMarkets.toList()..sort();
 
           isLoading = false;
+          isOffline = false;
+          lastUpdated = DateTime.now().toString();
         });
+
+        // Cache the data
+        await cacheBox.put('data', mandiData);
+        await cacheBox.put('commodities', commodityOptions);
+        await cacheBox.put('markets', marketOptions);
+        await cacheBox.put('last_updated', lastUpdated);
+
         filterData();
       } else {
         print("Failed to fetch mandi rates: ${response.statusCode}");
         setState(() {
           isLoading = false;
+          isOffline = true;
         });
+        _loadCachedDataOnFailure();
       }
     } catch (e) {
       print("Error fetching mandi rates: $e");
       setState(() {
         isLoading = false;
+        isOffline = true;
+      });
+      _loadCachedDataOnFailure();
+    }
+  }
+
+  void _loadCachedDataOnFailure() {
+    try {
+      final cachedData = cacheBox.get('data');
+      final cachedCommodities = cacheBox.get('commodities');
+      final cachedMarkets = cacheBox.get('markets');
+      final cachedTimestamp = cacheBox.get('last_updated');
+
+      if (cachedData != null &&
+          cachedCommodities != null &&
+          cachedMarkets != null &&
+          cachedTimestamp != null &&
+          cachedData is List &&
+          cachedCommodities is List &&
+          cachedMarkets is List &&
+          cachedTimestamp is String) {
+        setState(() {
+          mandiData = cachedData;
+          commodityOptions = cachedCommodities.cast<String>();
+          marketOptions = cachedMarkets.cast<String>();
+          lastUpdated = cachedTimestamp;
+          filterData();
+        });
+      }
+    } catch (e) {
+      print("Error reading cache on failure: $e");
+      setState(() {
         mandiData = [];
         filteredData = [];
         displayedData = [];
+        commodityOptions = ['All'];
+        marketOptions = ['All'];
+        lastUpdated = null;
       });
     }
   }
 
   void filterData() {
     final String query = searchController.text.toLowerCase();
-
     setState(() {
       filteredData = mandiData.where((record) {
         final commodity = (record['Commodity'] ?? "").toLowerCase();
@@ -142,12 +228,9 @@ class _MandiRatesPageState extends State<MandiRatesPage>
             market.contains(query) ||
             district.contains(query);
 
-        return matchesCommodityFilter &&
-            matchesMarketFilter &&
-            matchesSearchQuery;
+        return matchesCommodityFilter && matchesMarketFilter && matchesSearchQuery;
       }).toList();
 
-      // Reset displayed data and load initial batch
       currentIndex = 0;
       displayedData = filteredData.take(batchSize).toList();
       currentIndex = displayedData.length;
@@ -158,17 +241,16 @@ class _MandiRatesPageState extends State<MandiRatesPage>
     setState(() {
       isLoadingMore = true;
     });
-
-    // Simulate loading delay (optional, for UX)
-    Future.delayed(Duration(milliseconds: 25), () {
-      setState(() {
-        final nextBatch =
-            filteredData.skip(currentIndex).take(batchSize).toList();
-        displayedData.addAll(nextBatch);
-        currentIndex += nextBatch.length;
-        isLoadingMore = false;
-      });
+    setState(() {
+      final nextBatch = filteredData.skip(currentIndex).take(batchSize).toList();
+      displayedData.addAll(nextBatch);
+      currentIndex += nextBatch.length;
+      isLoadingMore = false;
     });
+  }
+
+  Future<void> _onRefresh() async {
+    await _fetchMandiRates();
   }
 
   void _showFilterBottomSheet() {
@@ -277,7 +359,7 @@ class _MandiRatesPageState extends State<MandiRatesPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -287,157 +369,185 @@ class _MandiRatesPageState extends State<MandiRatesPage>
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // --- Search Bar and Filter Button ---
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                      hintText: "Search market, commodity, or district",
-                      prefixIcon: Icon(Icons.search, color: Color(0xFF00AD83)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Color(0xFF00AD83)),
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: Color(0xFF00AD83),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // --- Search Bar and Filter Button ---
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: "Search market, commodity, or district",
+                        prefixIcon: Icon(Icons.search, color: Color(0xFF00AD83)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Color(0xFF00AD83)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: Color(0xFF00AD83), width: 2),
+                        ),
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            BorderSide(color: Color(0xFF00AD83), width: 2),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFF00AD83),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.filter_list, color: Colors.white),
+                      onPressed: _showFilterBottomSheet,
+                      tooltip: "Open Filters",
+                      padding: EdgeInsets.all(12),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              // --- Last Updated Info ---
+              if (lastUpdated != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    isOffline
+                        ? "Showing cached data (Last updated: $lastUpdated)"
+                        : "Last updated: $lastUpdated",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isOffline ? Colors.red : Colors.grey[600],
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFF00AD83),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.filter_list, color: Colors.white),
-                    onPressed: _showFilterBottomSheet,
-                    tooltip: "Open Filters",
-                    padding: EdgeInsets.all(12),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
+              SizedBox(height: 10),
+              // --- Mandi Rates List ---
+              isLoading
+                  ? Center(child: CircularProgressIndicator(color: Color(0xFF00AD83)))
+                  : filteredData.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("No data available for the selected filters."),
+                              if (isOffline)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16.0),
+                                  child: ElevatedButton(
+                                    onPressed: _fetchMandiRates,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xFF00AD83),
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: Text("Retry"),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        )
+                      : Expanded(
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: displayedData.length + (isLoadingMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == displayedData.length && isLoadingMore) {
+                                return Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: CircularProgressIndicator(color: Color(0xFF00AD83)),
+                                  ),
+                                );
+                              }
 
-            // --- Mandi Rates List ---
-            isLoading
-                ? Center(
-                    child: CircularProgressIndicator(color: Color(0xFF00AD83)))
-                : filteredData.isEmpty
-                    ? Center(
-                        child:
-                            Text("No data available for the selected filters."))
-                    : Expanded(
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          itemCount:
-                              displayedData.length + (isLoadingMore ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            // Show loading indicator at the bottom when loading more
-                            if (index == displayedData.length &&
-                                isLoadingMore) {
-                              return Center(
+                              final record = displayedData[index];
+                              return Card(
+                                margin: EdgeInsets.only(bottom: 10),
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                color: Colors.white,
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
-                                  child: CircularProgressIndicator(
-                                      color: Color(0xFF00AD83)),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              record['Market'] ?? 'N/A',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF00AD83),
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          Flexible(
+                                            child: Text(
+                                              record['Commodity'] ?? 'N/A',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.blueGrey.shade700,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.right,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 5),
+                                      Text(
+                                        record['District'] ?? 'N/A',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          PriceTile(
+                                            label: "Min Price",
+                                            value: record['Min_Price'] ?? 'N/A',
+                                            color: Colors.black87,
+                                          ),
+                                          PriceTile(
+                                            label: "Max Price",
+                                            value: record['Max_Price'] ?? 'N/A',
+                                            color: Colors.red.shade700,
+                                          ),
+                                          PriceTile(
+                                            label: "Modal Price",
+                                            value: record['Modal_Price'] ?? 'N/A',
+                                            color: Colors.orange.shade700,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
-                            }
-
-                            final record = displayedData[index];
-                            return Card(
-                              margin: EdgeInsets.only(bottom: 10),
-                              elevation: 5,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            record['Market'] ?? 'N/A',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF00AD83),
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        SizedBox(width: 8),
-                                        Flexible(
-                                          child: Text(
-                                            record['Commodity'] ?? 'N/A',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blueGrey.shade700,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.right,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      record['District'] ?? 'N/A',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        PriceTile(
-                                          label: "Min Price",
-                                          value: record['Min_Price'] ?? 'N/A',
-                                          color: Colors.black87,
-                                        ),
-                                        PriceTile(
-                                          label: "Max Price",
-                                          value: record['Max_Price'] ?? 'N/A',
-                                          color: Colors.red.shade700,
-                                        ),
-                                        PriceTile(
-                                          label: "Modal Price",
-                                          value: record['Modal_Price'] ?? 'N/A',
-                                          color: Colors.orange.shade700,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                            },
+                          ),
                         ),
-                      ),
-          ],
+            ],
+          ),
         ),
       ),
     );
