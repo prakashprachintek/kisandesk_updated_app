@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
@@ -66,35 +67,35 @@ class _LabourRequestPageState extends State<LabourRequestPage>
     try {
       await requestsRef.push().set(request);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Labour request submitted successfully!")),
+        SnackBar(content: Text("Labour request submitted successfully!".tr())),
       );
       _resetForm();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to submit request: $e")),
+        SnackBar(content: Text("Failed to submit request: $e".tr())),
       );
     }
   }
 
   bool _validateForm() {
     if (!_isMaleSelected && !_isFemaleSelected) {
-      _showError("Please select at least one labour type.");
+      _showError("Please select at least one labour type.".tr());
       return false;
     }
     if (_isMaleSelected && _maleLabourController.text.isEmpty) {
-      _showError("Please enter the number of male labours.");
+      _showError("Please enter the number of male labours.".tr());
       return false;
     }
     if (_isFemaleSelected && _femaleLabourController.text.isEmpty) {
-      _showError("Please enter the number of female labours.");
+      _showError("Please enter the number of female labours.".tr());
       return false;
     }
     if (_fromDate == null || _toDate == null) {
-      _showError("Please select both start and end dates.");
+      _showError("Please select both start and end dates.".tr());
       return false;
     }
     if (_workDescriptionController.text.isEmpty) {
-      _showError("Please enter a work description.");
+      _showError("Please enter a work description.".tr());
       return false;
     }
     return true;
@@ -149,11 +150,11 @@ class _LabourRequestPageState extends State<LabourRequestPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Text("Create Labour Request",
+                child: Text("Create Labour Request".tr(),
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               ),
               SizedBox(height: 20),
-              Text("Select Labour Type:", style: TextStyle(fontSize: 18)),
+              Text("Select Labour Type:".tr(), style: TextStyle(fontSize: 18)),
               SizedBox(height: 8),
               Row(
                 children: [
@@ -167,7 +168,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                           });
                         },
                       ),
-                      Text("Male", style: TextStyle(fontSize: 16)),
+                      Text("Male".tr(), style: TextStyle(fontSize: 16)),
                     ],
                   ),
                   SizedBox(width: 30),
@@ -181,7 +182,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                           });
                         },
                       ),
-                      Text("Female", style: TextStyle(fontSize: 16)),
+                      Text("Female".tr(), style: TextStyle(fontSize: 16)),
                     ],
                   ),
                 ],
@@ -193,7 +194,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                     controller: _maleLabourController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Number of Male Labours',
+                      labelText: 'Number of Male Labours'.tr(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -209,7 +210,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                     controller: _femaleLabourController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Number of Female Labours',
+                      labelText: 'Number of Female Labours'.tr(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -226,7 +227,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "From Date: ${_fromDate != null ? DateFormat('yyyy-MM-dd').format(_fromDate!) : 'Not selected'}",
+                          "From Date: ${_fromDate != null ? DateFormat('yyyy-MM-dd').format(_fromDate!) : 'Not selected'.tr()}",
                           style: TextStyle(fontSize: 16),
                         ),
                         SizedBox(height: 8),
@@ -238,7 +239,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: Text("Select From Date"),
+                          child: Text("Select From Date".tr()),
                         ),
                       ],
                     ),
@@ -249,7 +250,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "To Date: ${_toDate != null ? DateFormat('yyyy-MM-dd').format(_toDate!) : 'Not selected'}",
+                          "To Date: ${_toDate != null ? DateFormat('yyyy-MM-dd').format(_toDate!) : 'Not selected'}".tr(),
                           style: TextStyle(fontSize: 16),
                         ),
                         SizedBox(height: 8),
@@ -261,7 +262,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: Text("Select To Date"),
+                          child: Text("Select To Date".tr()),
                         ),
                       ],
                     ),
@@ -273,7 +274,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                 controller: _workDescriptionController,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  labelText: 'Work Description',
+                  labelText: 'Work Description'.tr(),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -292,7 +293,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: Text("Submit Request",
+                  child: Text("Submit Request".tr(),
                       style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
@@ -311,7 +312,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
       builder: (context, AsyncSnapshot snapshot) {
         if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
         Map<dynamic, dynamic>? data = snapshot.data.snapshot.value as Map?;
-        if (data == null) return Center(child: Text("No Labour Requests Available"));
+        if (data == null) return Center(child: Text("No Labour Requests Available".tr()));
         List<Map<String, dynamic>> requests = data.values.map((e) => Map<String, dynamic>.from(e)).toList();
         return ListView.builder(
           padding: EdgeInsets.all(16),
@@ -328,7 +329,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item['work'] ?? 'No Work Description',
+                      item['work'] ?? 'No Work Description'.tr(),
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
@@ -337,21 +338,21 @@ class _LabourRequestPageState extends State<LabourRequestPage>
                         Icon(Icons.calendar_today, size: 16, color: Colors.grey[700]),
                         SizedBox(width: 4),
                         Text(
-                          "From: ${item['work_date_from'] ?? 'N/A'}",
+                          "From: ${item['work_date_from'] ?? 'N/A'}".tr(),
                           style: TextStyle(fontSize: 16),
                         ),
                         SizedBox(width: 16),
                         Icon(Icons.calendar_today, size: 16, color: Colors.grey[700]),
                         SizedBox(width: 4),
                         Text(
-                          "To: ${item['work_date_to'] ?? 'N/A'}",
+                          "To: ${item['work_date_to'] ?? 'N/A'}".tr(),
                           style: TextStyle(fontSize: 16),
                         ),
                       ],
                     ),
                     SizedBox(height: 8),
                     Text(
-                      "Male: ${item['total_male_labours'] ?? 0}   Female: ${item['total_female_labours'] ?? 0}",
+                      "Male: ${item['total_male_labours'] ?? 0}   Female: ${item['total_female_labours'] ?? 0}".tr(),
                       style: TextStyle(fontSize: 16),
                     ),
                   ],
@@ -369,7 +370,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Labour Management", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text("Labour Management".tr(), style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         flexibleSpace: Container(
@@ -387,9 +388,9 @@ class _LabourRequestPageState extends State<LabourRequestPage>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           tabs: [
-            Tab(text: 'Labour Request'),
+            Tab(text: 'Labour Request'.tr()),
             //Tab(text: 'Add Me As Labour'),
-            Tab(text: 'Dashboard'),
+            Tab(text: 'Dashboard'.tr()),
           ],
         ),
       ),

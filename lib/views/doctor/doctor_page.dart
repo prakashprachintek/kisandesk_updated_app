@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../services/api_config.dart';
@@ -50,13 +51,13 @@ class _DoctorPageState extends State<DoctorPage> {
           isLoading = false;
         });
       } else {
-        throw Exception('Failed to load doctors');
+        throw Exception('Failed to load doctors'.tr());
       }
     } catch (e) {
       setState(() {
         isLoading = false;
       });
-      print('Error fetching doctors: $e');
+      print('Error fetching doctors: $e'.tr());
     }
   }
 
@@ -88,13 +89,13 @@ class _DoctorPageState extends State<DoctorPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Filter Doctors"),
+        title: const Text("Filter Doctors").tr(),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButton<String>(
               isExpanded: true,
-              hint: const Text("District"),
+              hint: const Text("District").tr(),
               value: tempDistrict.isEmpty ? null : tempDistrict,
               items: allDoctors
                   .map((d) => d.district)
@@ -110,7 +111,7 @@ class _DoctorPageState extends State<DoctorPage> {
             ),
             DropdownButton<String>(
               isExpanded: true,
-              hint: const Text("Taluka"),
+              hint: const Text("Taluka").tr(),
               value: tempTaluka.isEmpty ? null : tempTaluka,
               items: allDoctors
                   .map((d) => d.taluka)
@@ -126,7 +127,7 @@ class _DoctorPageState extends State<DoctorPage> {
             ),
             DropdownButton<String>(
               isExpanded: true,
-              hint: const Text("Village"),
+              hint: const Text("Village").tr(),
               value: tempVillage.isEmpty ? null : tempVillage,
               items: allDoctors
                   .map((d) => d.village)
@@ -145,7 +146,7 @@ class _DoctorPageState extends State<DoctorPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: const Text("Cancel").tr(),
           ),
           ElevatedButton(
             onPressed: () {
@@ -157,7 +158,7 @@ class _DoctorPageState extends State<DoctorPage> {
               applyFilters();
               Navigator.pop(context);
             },
-            child: const Text("Apply"),
+            child: const Text("Apply").tr(),
           ),
         ],
       ),
