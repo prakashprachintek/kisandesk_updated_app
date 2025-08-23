@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -8,12 +10,16 @@ class MandiRatesPage extends StatefulWidget {
   _MandiRatesPageState createState() => _MandiRatesPageState();
 }
 
-class _MandiRatesPageState extends State<MandiRatesPage> {
-  final String apiUrl = ('${KD.api}/admin/fetch_mandi_rates');
-
+class _MandiRatesPageState extends State<MandiRatesPage>
+    with AutomaticKeepAliveClientMixin {
+  // final String apiUrl = '${KD.api}/admin/fetch_mandi_rates';
   List<dynamic> mandiData = [];
   List<dynamic> filteredData = [];
+  List<dynamic> displayedData = []; // Subset of filteredData for lazy loading
   bool isLoading = true;
+  bool isLoadingMore = false;
+  final int batchSize = 20; // Number of items to load per batch
+  int currentIndex = 0; // Tracks the current batch index
 
   String selectedCommodity = 'All';
   List<String> commodityOptions = ['All'];
@@ -22,21 +28,47 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
   List<String> marketOptions = ['All'];
 
   TextEditingController searchController = TextEditingController();
+  ScrollController _scrollController = ScrollController();
+
+  @override
+  bool get wantKeepAlive => true; // Keep state alive for performance
 
   @override
   void initState() {
     super.initState();
     fetchMandiRates();
 
+    // Debounce search to prevent excessive filtering
     searchController.addListener(() {
-      filterData();
+      _debounceFilter();
+    });
+
+    // Add scroll listener for lazy loading more items
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
+          !isLoadingMore &&
+          displayedData.length < filteredData.length) {
+        loadMoreData();
+      }
     });
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  // Debounce timer for search
+  Timer? _debounce;
+  void _debounceFilter() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      filterData();
+    });
   }
 
   Future<void> fetchMandiRates() async {
@@ -44,15 +76,15 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
       isLoading = true;
     });
     try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-      );
+      final response =
+          await http.post(Uri.parse('${KD.api}/admin/fetch_mandi_rates'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
           mandiData = data['results'];
 
+          // Populate unique commodity options
           Set<String> uniqueCommodities = {};
           for (var record in mandiData) {
             if (record['Commodity'] != null) {
@@ -62,7 +94,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
           commodityOptions = ['All'] + uniqueCommodities.toList()
             ..sort();
 
-          // unique market options
+          // Populate unique market options
           Set<String> uniqueMarkets = {};
           for (var record in mandiData) {
             if (record['Market'] != null) {
@@ -72,9 +104,9 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
           marketOptions = ['All'] + uniqueMarkets.toList()
             ..sort();
 
-          filterData();
           isLoading = false;
         });
+        filterData();
       } else {
         print("Failed to fetch mandi rates: ${response.statusCode}");
         setState(() {
@@ -87,6 +119,7 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
         isLoading = false;
         mandiData = [];
         filteredData = [];
+        displayedData = [];
       });
     }
   }
@@ -102,10 +135,8 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
 
         bool matchesCommodityFilter = selectedCommodity == 'All' ||
             commodity == selectedCommodity.toLowerCase();
-
         bool matchesMarketFilter =
             selectedMarket == 'All' || market == selectedMarket.toLowerCase();
-
         bool matchesSearchQuery = query.isEmpty ||
             commodity.contains(query) ||
             market.contains(query) ||
@@ -115,10 +146,31 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
             matchesMarketFilter &&
             matchesSearchQuery;
       }).toList();
+
+      // Reset displayed data and load initial batch
+      currentIndex = 0;
+      displayedData = filteredData.take(batchSize).toList();
+      currentIndex = displayedData.length;
     });
   }
 
-  // --- Show Filter at the Bottom ---
+  void loadMoreData() {
+    setState(() {
+      isLoadingMore = true;
+    });
+
+    // Simulate loading delay (optional, for UX)
+    Future.delayed(Duration(milliseconds: 25), () {
+      setState(() {
+        final nextBatch =
+            filteredData.skip(currentIndex).take(batchSize).toList();
+        displayedData.addAll(nextBatch);
+        currentIndex += nextBatch.length;
+        isLoadingMore = false;
+      });
+    });
+  }
+
   void _showFilterBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -225,9 +277,13 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mandi Rates",style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+        title: Text(
+          "Mandi Rates",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -285,9 +341,23 @@ class _MandiRatesPageState extends State<MandiRatesPage> {
                             Text("No data available for the selected filters."))
                     : Expanded(
                         child: ListView.builder(
-                          itemCount: filteredData.length,
+                          controller: _scrollController,
+                          itemCount:
+                              displayedData.length + (isLoadingMore ? 1 : 0),
                           itemBuilder: (context, index) {
-                            final record = filteredData[index];
+                            // Show loading indicator at the bottom when loading more
+                            if (index == displayedData.length &&
+                                isLoadingMore) {
+                              return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: CircularProgressIndicator(
+                                      color: Color(0xFF00AD83)),
+                                ),
+                              );
+                            }
+
+                            final record = displayedData[index];
                             return Card(
                               margin: EdgeInsets.only(bottom: 10),
                               elevation: 5,
@@ -402,4 +472,3 @@ class PriceTile extends StatelessWidget {
     );
   }
 }
-
