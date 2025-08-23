@@ -1442,6 +1442,9 @@ class MarketPost {
   });
 
   factory MarketPost.fromJson(Map<String, dynamic> json) {
+    var farmer = (json['farmerDetails'] != null && json['farmerDetails'].isNotEmpty) 
+      ? json['farmerDetails'][0] 
+      : null;
     return MarketPost(
       title: json['post_name'] ?? 'No Title',
       price: (json['price'] ?? '0').toString(),
@@ -1449,8 +1452,9 @@ class MarketPost {
       location: json['village'] ?? 'Unknown',
       description: json['description'] ?? 'No description',
       review: json['review'] ?? 'N/A',
-      FarmerName: json['farmer_details']?? 'N/A',
-      phone: json['phone'] ?? 'N/A',
+      FarmerName: farmer != null ? farmer['full_name'] ?? 'N/A' : 'N/A',
+      phone: farmer != null ? farmer['phone'] ?? 'N/A' : 'N/A',
+
     );
   }
 }
