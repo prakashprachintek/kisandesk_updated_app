@@ -29,7 +29,7 @@ class Myprofile extends StatelessWidget {
                     'Phone'.tr(): userData['phone'],
                   }),
                   const SizedBox(height: 16),
-                  _buildSectionTitle(context, 'Location'.tr()),
+                  _buildSectionTitle(context, 'Address Details'.tr()),
                   _buildInfoCard(context, {
                     'Address'.tr(): userData['address']?.isEmpty ?? true
                         ? 'Not provided'.tr()

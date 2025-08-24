@@ -13,6 +13,8 @@ import 'package:mainproject1/views/other/myProfile.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
+import '../other/privacyPolicyPage.dart';
+import '../other/termsNconditionsPage.dart';
 import '../other/testingpage.dart';
 import 'package:http/http.dart' as http;
 import '../other/welcome.dart';
@@ -200,7 +202,8 @@ class _HomePageState extends State<HomePage> {
     marketPostsFuture = fetchMarketPosts();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      showToastOverlay(context, 'Login Successful. Welcome to Kisan Desk!'.tr());
+      showToastOverlay(
+          context, 'Login Successful. Welcome to Kisan Desk!'.tr());
     });
   }
 
@@ -470,7 +473,10 @@ class _HomePageState extends State<HomePage> {
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF1B5E20), Color(0xFF4CAF50)],
+                colors: [
+                  Color.fromARGB(255, 29, 108, 92),
+                  Color.fromARGB(255, 29, 108, 92)
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -490,20 +496,29 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.settings),
-            title: Text(tr("Settings")),
+            title: Text(tr("Privacy Policy")),
             onTap: () {
               Navigator.pop(context);
-              // Navigate to Settings page if available.
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const PrivacyPolicyPage()),
+              );
             },
           ),
           ListTile(
             leading: Icon(Icons.contact_phone),
-            title: Text(tr("Inquire")),
+            title: Text(tr("Terms & Conditions")),
             onTap: () {
               Navigator.pop(context);
-              // Navigate to an inquiry page or show inquiry dialog.
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const TermsAndConditionsPage()),
+              );
             },
           ),
+          /*
           ListTile(
             leading: const Icon(Icons.help),
             title: Text(tr("Help")),
@@ -515,6 +530,7 @@ class _HomePageState extends State<HomePage> {
               // );
             },
           ),
+          */
           ListTile(
             leading: Icon(Icons.info),
             title: Text(tr("Version")),
@@ -532,7 +548,7 @@ class _HomePageState extends State<HomePage> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text("Are you sure you want to log out?"),
+                    title: Text("Are you sure you want to log out?", style: TextStyle(fontSize: 18),),
                     actions: [
                       ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(false),
@@ -676,17 +692,6 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.notifications_none,
-                                  color: Colors.white),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => allNotificationPage()),
-                                );
-                              },
-                            ),
-                            IconButton(
                               icon: Icon(Icons.favorite_border,
                                   color: Colors.white),
                               onPressed: () {
@@ -695,6 +700,18 @@ class _HomePageState extends State<HomePage> {
                                   MaterialPageRoute(
                                       builder: (context) =>
                                           FavoritePage(favoriteItems: [])),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.notifications_none,
+                                  color: Colors.white),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          allNotificationPage()),
                                 );
                               },
                             ),
@@ -1232,6 +1249,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   /// -----------------------------------------
   /// "Recommended" row
   /*
@@ -1442,9 +1460,10 @@ class MarketPost {
   });
 
   factory MarketPost.fromJson(Map<String, dynamic> json) {
-    var farmer = (json['farmerDetails'] != null && json['farmerDetails'].isNotEmpty) 
-      ? json['farmerDetails'][0] 
-      : null;
+    var farmer =
+        (json['farmerDetails'] != null && json['farmerDetails'].isNotEmpty)
+            ? json['farmerDetails'][0]
+            : null;
     return MarketPost(
       title: json['post_name'] ?? 'No Title',
       price: (json['price'] ?? '0').toString(),
@@ -1454,7 +1473,6 @@ class MarketPost {
       review: json['review'] ?? 'N/A',
       FarmerName: farmer != null ? farmer['full_name'] ?? 'N/A' : 'N/A',
       phone: farmer != null ? farmer['phone'] ?? 'N/A' : 'N/A',
-
     );
   }
 }
