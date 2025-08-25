@@ -518,19 +518,6 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
-          /*
-          ListTile(
-            leading: const Icon(Icons.help),
-            title: Text(tr("Help")),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => const HelpPage()),
-              // );
-            },
-          ),
-          */
           ListTile(
             leading: Icon(Icons.info),
             title: Text(tr("Version")),
@@ -550,19 +537,32 @@ class _HomePageState extends State<HomePage> {
                   return AlertDialog(
                     title: Text(
                       "Are you sure you want to log out?",
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize:20,fontWeight: FontWeight.w500)
                     ),
+                    actionsAlignment:
+                        MainAxisAlignment.spaceBetween,
                     actions: [
-                      ElevatedButton(
+                      TextButton(
                         onPressed: () => Navigator.of(context).pop(false),
-                        child: Text("Cancel"),
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
                       ),
-                      SizedBox(
-                        height: 1.5,
-                      ),
-                      ElevatedButton(
+                      TextButton(
                         onPressed: () => Navigator.of(context).pop(true),
-                        child: Text("Logout"),
+                        child: Text(
+                          "Logout",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            color: Colors.grey, 
+                            
+                          ),
+                        ),
                       ),
                     ],
                   );
@@ -577,7 +577,7 @@ class _HomePageState extends State<HomePage> {
                 );
               }
             },
-          )
+          ),
         ],
       ),
     );
