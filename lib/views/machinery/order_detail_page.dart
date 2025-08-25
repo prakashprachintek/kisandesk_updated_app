@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
-
 class OrderDetailPage extends StatefulWidget {
   final Map<String, String> order;
 
@@ -38,7 +37,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

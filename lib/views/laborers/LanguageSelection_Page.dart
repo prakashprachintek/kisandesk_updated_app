@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../auth/login_page.dart';
+import '../redundant files/login_page.dart';
 
 
 class LanguageSelectionPage extends StatelessWidget {
