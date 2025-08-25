@@ -50,7 +50,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
             final ownerDetails = item['ownerDetails'] as List<dynamic>?;
             final hasOwnerDetails = ownerDetails != null && ownerDetails.isNotEmpty;
             return {
-              "orderId": item['_id'] ?? '',
+              "orderId": item['order_id'] ?? '',
               "machinery": item['machinery_type'] ?? 'Unknown',
               "workDate": item['work_date'] ?? '',
               "workType": item['work_type'] ?? '',
