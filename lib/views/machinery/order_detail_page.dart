@@ -1,11 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
-import '../services/api_config.dart';
-import '../services/user_session.dart';
 
 class OrderDetailPage extends StatefulWidget {
   final Map<String, String> order;
@@ -17,63 +13,32 @@ class OrderDetailPage extends StatefulWidget {
 }
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
-  bool _isLoading = false;
+  bool _isCalling = false;
 
   // Phone call
   Future<void> _makePhoneCall(String phoneNumber) async {
+    setState(() {
+      _isCalling = true;
+    });
+
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri);
     } else {
-      // BuildContext handled in widget
-    }
-  }
-
-  // API request function
-  Future<void> _orderComplete() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await http.post(
-        Uri.parse('${KD.api}/app/machinery_request_action_play'),
-        body: {
-          "requestId": widget.order['orderId'],
-          "acceptedBy": UserSession.userId,
-          "status": "Completed"
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        // Success
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(responseData['message']),
-          ),
-        );
-      } else {
-        final responseData = json.decode(response.body);
-        // Error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(responseData['message']),
-          ),
+          SnackBar(content: Text("Cannot make call to $phoneNumber")),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Request failed: $e'),
-        ),
-      );
-    } finally {
+    }
+
+    if (mounted) {
       setState(() {
-        _isLoading = false;
+        _isCalling = false; // Reset state after call attempt
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -133,31 +98,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 Text(
                   widget.order['description'] ?? 'No description available.',
                   style: const TextStyle(fontSize: 15, color: Colors.black87),
-                ),
-                const SizedBox(height: 24),
-                // Added API request button
-                Center(
-                  child: _isLoading
-                      ? const CircularProgressIndicator()
-                      : ElevatedButton(
-                          onPressed: _orderComplete,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 29, 108, 92),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 32, vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Mark as Completed',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
                 ),
               ],
             ),

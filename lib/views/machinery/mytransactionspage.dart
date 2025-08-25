@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../services/user_session.dart';
 import '../services/api_config.dart';
-import '../transctions/Mytransaction_page.dart';
-import 'order_detail_page.dart';
-
+import 'transaction_detail_page.dart';
 
 class MyTransactionsPage extends StatefulWidget {
   const MyTransactionsPage({super.key});
@@ -19,6 +15,7 @@ class MyTransactionsPage extends StatefulWidget {
 
 class _MyTransactionsPageState extends State<MyTransactionsPage> {
   List<Map<String, String>> orders = [];
+  bool _isLoading = true; // Track initial loading state
 
   @override
   void initState() {
@@ -27,6 +24,10 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
   }
 
   Future<void> _fetchOrdersFromApi() async {
+    setState(() {
+      _isLoading = true; // Show loading only for initial fetch
+    });
+
     print("Fetching orders for userId: ${UserSession.userId}");
     final url = Uri.parse("${KD.api}/app/get_machinary_orders");
 
@@ -35,7 +36,7 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
         url,
         body: jsonEncode({
           "userId": UserSession.userId,
-          "type":"transactions"
+          "type": "transactions"
         }),
         headers: {
           "Content-Type": "application/json",
@@ -53,7 +54,8 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
             final ownerDetails = item['ownerDetails'] as List<dynamic>?;
             final hasOwnerDetails = ownerDetails != null && ownerDetails.isNotEmpty;
             return {
-              "orderId": item['_id'] ?? '',
+              "requestId": item['_id'] ?? '',
+              "orderId": item['order_id'] ?? '',
               "machinery": item['machinery_type'] ?? 'Unknown',
               "workDate": item['work_date'] ?? '',
               "workType": item['work_type'] ?? '',
@@ -65,13 +67,34 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
               "phone": hasOwnerDetails ? ownerDetails[0]['phone'] ?? 'Not Available' : 'Not Available'
             };
           }).toList();
-          setState(() {});
+          setState(() {
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Failed to fetch orders")),
+          );
         }
       } else {
         print("Failed to fetch orders. Status code: ${response.statusCode}");
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to fetch orders")),
+        );
       }
     } catch (e) {
       print("Error fetching orders: $e");
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching orders: $e")),
+      );
     }
   }
 
@@ -90,96 +113,97 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      /*
-      appBar: AppBar(
-        automaticallyImplyLeading: false, //backbutton removed
-        title: const Text(
-          "My Orders",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        // iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      */
-      body: orders.isEmpty
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: orders.length,
-              itemBuilder: (context, index) {
-                final order = orders[index];
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 4,
-                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => OrderDetailPage(order: order), //currently transaction detail and order detial pointing to same page, order details page
-                          // builder: (context) => TransactionDetailPage(transaction: order), 
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Order ID: ${order['orderId']}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Booked: ${order['booked']}"),
-                              Text(
-                                "Status: ${order['status']}",
-                                style: TextStyle(color: Colors.blue),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Text("Owner: ${order['full_name']}"),
-                          GestureDetector(
-                            onTap: order['phone'] != 'Not Available'
-                                ? () => _makePhoneCall(order['phone']!)
-                                : null,
-                            child: Row(
-                              children: [
-                                Icon(Icons.phone, size: 20, color: Colors.grey[600]),
-                                SizedBox(width: 8),
-                                Text(
-                                  "${order['phone']}",
-                                  style: TextStyle(
-                                    color: order['phone'] != 'Not Available'
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                    decoration: order['phone'] != 'Not Available'
-                                        ? TextDecoration.underline
-                                        : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text("Machinery: ${order['machinery']}"),
-                          Text("Work Type: ${order['workType']}"),
-                          Text("Work Date: ${order['workDate']}"),
-                          Text("Quantity: ${order['quantity']}"),
-                          Text("Description: ${order['description']}"),
-                        ],
+          : RefreshIndicator(
+              onRefresh: _fetchOrdersFromApi,
+              color: const Color.fromARGB(255, 29, 108, 92), 
+              backgroundColor: Colors.white,
+              child: orders.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "No transactions found",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
+                    )
+                  : ListView.builder(
+                      itemCount: orders.length,
+                      itemBuilder: (context, index) {
+                        final order = orders[index];
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 4,
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TransactionDetailPage(transaction: order),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Order ID: ${order['orderId']}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text("Booked: ${order['booked']}"),
+                                      Text(
+                                        "Status: ${order['status']}",
+                                        style: const TextStyle(color: Colors.blue),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text("Owner: ${order['full_name']}"),
+                                  GestureDetector(
+                                    onTap: order['phone'] != 'Not Available'
+                                        ? () => _makePhoneCall(order['phone']!)
+                                        : null,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.phone, size: 20, color: Colors.grey[600]),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "${order['phone']}",
+                                          style: TextStyle(
+                                            color: order['phone'] != 'Not Available'
+                                                ? Colors.blue
+                                                : Colors.grey,
+                                            decoration: order['phone'] != 'Not Available'
+                                                ? TextDecoration.underline
+                                                : null,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text("Machinery: ${order['machinery']}"),
+                                  Text("Work Type: ${order['workType']}"),
+                                  Text("Work Date: ${order['workDate']}"),
+                                  Text("Quantity: ${order['quantity']}"),
+                                  Text("Description: ${order['description']}"),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
             ),
     );
   }
