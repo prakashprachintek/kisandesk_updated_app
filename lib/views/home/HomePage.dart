@@ -988,7 +988,15 @@ class _HomePageState extends State<HomePage> {
               child: Container(
                 margin: EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFFE8F5E9),
+                      Color(0xFFFFF9C4),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  //color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: Colors.green,
