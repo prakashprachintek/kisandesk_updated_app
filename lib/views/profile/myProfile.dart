@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:mainproject1/views/profile/profileUpdateDialog.dart';
 
 import '../services/user_session.dart';
 
@@ -81,9 +82,8 @@ class Myprofile extends StatelessWidget {
                   // Edit Personal Details Button
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implement navigation to edit profile screen
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+                      onPressed: () async{
+                        await profileUpdateDialog(context,  UserSession.user?['phone']);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color.fromARGB(255, 29, 108, 92),

@@ -19,7 +19,7 @@ import '../other/termsNconditionsPage.dart';
 import '../other/testingpage.dart';
 import 'package:http/http.dart' as http;
 import '../other/welcome.dart';
-import '../profile/profile_page.dart';
+import '../redundant files/profile_page.dart';
 import '../other/favoritePage.dart';
 import '../mandi/mandiRates.dart';
 import '../services/api_config.dart';
