@@ -45,7 +45,7 @@ class LabourRequestOrdersPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Labour Requests Dashboard", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         centerTitle: true,
-        backgroundColor: Colors.lightGreen, // Example color
+        
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchLabourRequests(),

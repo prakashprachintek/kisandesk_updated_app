@@ -234,7 +234,6 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
       appBar: AppBar(
         title: const Text("Labour Request", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         centerTitle: true,
-        backgroundColor: Colors.lightGreen, // Example color
       ),
       body: _buildLabourForm(),
     );

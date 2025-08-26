@@ -81,7 +81,6 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Colors.lightGreen,
       ),
       body: Container(
         color: const Color(0xFFEEF3F9),

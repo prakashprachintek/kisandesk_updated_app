@@ -28,7 +28,7 @@ class RequestDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Request Details",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF2E7D32),
+        
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
