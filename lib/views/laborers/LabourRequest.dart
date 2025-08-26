@@ -7,13 +7,10 @@ import '../services/user_session.dart';
 import '../services/api_config.dart';
 
 class LabourRequestPage extends StatefulWidget {
-  final Map<String, dynamic> userData;
-  final String phoneNumber;
+  
 
   const LabourRequestPage({
     Key? key,
-    required this.userData,
-    required this.phoneNumber,
   }) : super(key: key);
 
   @override
@@ -61,7 +58,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
     }
 
     Map<String, dynamic> requestBody = {
-      'farmer_id': widget.userData['farmer_id']?.toString() ??
+      'farmer_id': UserSession.userId?.toString() ??
           UserSession.userId.toString(),
       'labour_type': labourType,
       'work_date_from':
@@ -336,7 +333,7 @@ class _LabourRequestPageState extends State<LabourRequestPage>
   Future<List<Map<String, dynamic>>> _fetchLabourRequests() async {
     final Uri apiUrl = Uri.parse('${KD.api}/admin/get_labours_request');
     Map<String, String> body = {
-      'farmer_id': widget.userData['farmer_id']?.toString() ??
+      'farmer_id': UserSession.userId?.toString() ??
           UserSession.userId.toString(),
     };
     try {

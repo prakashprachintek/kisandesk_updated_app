@@ -8,7 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
-import 'package:mainproject1/views/other/myProfile.dart';
+import 'package:mainproject1/views/profile/myProfile.dart';
 //port '../widgets/Market_card.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
@@ -535,12 +535,10 @@ class _HomePageState extends State<HomePage> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text(
-                      "Are you sure you want to log out?",
-                      style: TextStyle(fontSize:20,fontWeight: FontWeight.w500)
-                    ),
-                    actionsAlignment:
-                        MainAxisAlignment.spaceBetween,
+                    title: Text("Are you sure you want to log out?",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w500)),
+                    actionsAlignment: MainAxisAlignment.spaceBetween,
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(false),
@@ -559,8 +557,7 @@ class _HomePageState extends State<HomePage> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 17,
-                            color: Colors.grey, 
-                            
+                            color: Colors.grey,
                           ),
                         ),
                       ),
@@ -1339,11 +1336,8 @@ class _HomePageState extends State<HomePage> {
   /// Category Tapped
   void _handleCategoryTap(int index) {
     if (index == 0) {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => LabourRequestPage(
-                  userData: widget.userData ?? {}, phoneNumber: "")));
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => LabourRequestPage()));
     } else if (index == 1) {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => MachineryRentPage()));

@@ -21,6 +21,24 @@ class Myprofile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Circular Avatar
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Color.fromARGB(255, 29, 108, 92),
+                        child: Text(
+                          _getInitials(userData['full_name'] ?? 'User'),
+                          style: const TextStyle(
+                            fontSize: 32,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   _buildSectionTitle(context, 'Personal Details'.tr()),
                   _buildInfoCard(context, {
                     'User ID'.tr(): userData['_id'],
@@ -59,10 +77,45 @@ class Myprofile extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildSectionTitle(context, 'Machinery'.tr()),
                   _buildMachineryCard(context, userData),
+                  const SizedBox(height: 24),
+                  // Edit Personal Details Button
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // TODO: Implement navigation to edit profile screen
+                        // Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color.fromARGB(255, 29, 108, 92),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Edit Personal Details'.tr(),
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
     );
+  }
+
+  // Helper method to get initials from full name
+  String _getInitials(String fullName) {
+    final names = fullName.trim().split(' ');
+    String initials = '';
+    for (var name in names) {
+      if (name.isNotEmpty) {
+        initials += name[0].toUpperCase();
+        if (initials.length >= 2) break;
+      }
+    }
+    return initials.isEmpty ? 'U' : initials;
   }
 
   Widget _buildSectionTitle(BuildContext context, String title) {
