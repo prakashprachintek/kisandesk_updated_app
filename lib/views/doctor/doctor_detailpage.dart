@@ -66,7 +66,7 @@ class DoctorDetailPage extends StatelessWidget {
                 ),
                 child: ClipOval(
                   child: Image.asset(
-                    'assets/doctor_placeholder.png',
+                    'assets/doctor_default.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -84,7 +84,7 @@ class DoctorDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 24), // More vertical space
+                  const SizedBox(height: 20), // More vertical space
                   Center(
                     child: Text(
                       doctor.fullname,
@@ -97,7 +97,7 @@ class DoctorDetailPage extends StatelessWidget {
                           ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 2),
                   Center(
                     // You might want to add a specialization here if available in Doctor model
                     child: Text(
@@ -141,7 +141,7 @@ class DoctorDetailPage extends StatelessWidget {
         crossAxisAlignment:
             CrossAxisAlignment.start, // Align text to the top if it wraps
         children: [
-          Icon(icon, color: Color(0xFF00BF8C), size: 24), // Green icon
+          Icon(icon, color: Color.fromARGB(255, 0, 0, 0), size: 24), // Green icon
           const SizedBox(width: 12), // Space between icon and text
           Expanded(
             child: Column(

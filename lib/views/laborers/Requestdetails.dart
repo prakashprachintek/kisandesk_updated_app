@@ -94,7 +94,7 @@ class RequestDetailsPage extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: const Color(0xFF2E7D32), size: 26),
+        Icon(icon, size: 26),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -108,7 +108,6 @@ class RequestDetailsPage extends StatelessWidget {
                   color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 4),
               Text(
                 value,
                 style: const TextStyle(
