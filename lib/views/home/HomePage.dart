@@ -9,7 +9,7 @@ import 'package:geocoding/geocoding.dart' as geocod;
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
-import 'package:mainproject1/views/other/myProfile.dart';
+import 'package:mainproject1/views/profile/myProfile.dart';
 //port '../widgets/Market_card.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
