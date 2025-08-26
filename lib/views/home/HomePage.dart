@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
 import 'package:mainproject1/views/profile/myProfile.dart';
@@ -1337,7 +1338,8 @@ class _HomePageState extends State<HomePage> {
   void _handleCategoryTap(int index) {
     if (index == 0) {
       Navigator.push(context,
-          MaterialPageRoute(builder: (context) => LabourRequestPage()));
+          MaterialPageRoute(builder: (context) => LabourBookingPage()));
+      //userData: widget.userData ?? {}, phoneNumber: "")));
     } else if (index == 1) {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => MachineryRentPage()));
