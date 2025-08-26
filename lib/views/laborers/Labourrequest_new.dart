@@ -235,20 +235,6 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
         title: const Text("Labour Request", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         centerTitle: true,
         backgroundColor: Colors.lightGreen, // Example color
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.dashboard, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LabourRequestOrdersPage(),
-                ),
-              );
-            },
-            tooltip: 'View Dashboard',
-          ),
-        ],
       ),
       body: _buildLabourForm(),
     );
