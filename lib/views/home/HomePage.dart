@@ -19,6 +19,7 @@ import '../other/termsNconditionsPage.dart';
 import '../other/testingpage.dart';
 import 'package:http/http.dart' as http;
 import '../other/welcome.dart';
+import '../profile/personalDetailsPage.dart';
 import '../redundant files/profile_page.dart';
 import '../other/favoritePage.dart';
 import '../mandi/mandiRates.dart';
@@ -491,7 +492,8 @@ class _HomePageState extends State<HomePage> {
               // _showProfileUpdateDialog();
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const Myprofile()),
+                // MaterialPageRoute(builder: (context) => const Myprofile()),
+                MaterialPageRoute(builder: (context) => PersonalDetailsScreen()),
               );
             },
           ),

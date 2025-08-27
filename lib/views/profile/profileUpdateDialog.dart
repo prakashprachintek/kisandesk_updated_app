@@ -109,7 +109,7 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
           bool _dobError = false;
 
           return AlertDialog(
-            title: Text(tr("Edit Personal Information")),
+            title: Text(tr("Edit Personal Information"),style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -337,10 +337,13 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
             ),
             actions: [
               TextButton(
-                child: Text(tr("Cancel")),
+                child: Text(tr("Cancel"), style: TextStyle(color: Color.fromARGB(255, 35, 140, 110)),),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromARGB(255, 29, 108, 92),
+                ),
                 child: isSubmitting
                     ? CircularProgressIndicator()
                     : Text(tr("Update Details")),
