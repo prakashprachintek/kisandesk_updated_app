@@ -4,8 +4,8 @@ import 'package:mainproject1/views/profile/profileUpdateDialog.dart';
 
 import '../services/user_session.dart';
 
-class Myprofile extends StatelessWidget {
-  const Myprofile({Key? key}) : super(key: key);
+class userDetailFull extends StatelessWidget {
+  const userDetailFull({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
