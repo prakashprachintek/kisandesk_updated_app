@@ -1,3 +1,6 @@
+////////////////////////////
+/// This code is not being used currently, uncertainty of future, it stays in profile folder
+////////////////////////////
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:mainproject1/views/profile/profileUpdateDialog.dart';
