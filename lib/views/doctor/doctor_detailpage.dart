@@ -1,7 +1,7 @@
-// doctor_detail_page.dart
+
 import 'package:flutter/material.dart';
-// Import the Doctor class from its single, definitive location
 import 'package:mainproject1/views/doctor/doctor.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DoctorDetailPage extends StatefulWidget {
   final Doctor doctor;
@@ -13,7 +13,6 @@ class DoctorDetailPage extends StatefulWidget {
 }
 
 class _DoctorDetailPageState extends State<DoctorDetailPage> {
-  // 0 for personal, 1 for professional
   int _selectedTabIndex = 0;
 
   @override
@@ -32,7 +31,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
       ),
       body: Stack(
         children: [
-          // Gradient Background
           Positioned(
             top: 0,
             left: 0,
@@ -43,7 +41,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF00BF8C), Color.fromARGB(255, 13, 148, 46)],
+                  colors: [Color.fromARGB(255, 19, 77, 61), Color.fromARGB(255, 29, 108, 92)],
                 ),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
@@ -52,7 +50,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
               ),
             ),
           ),
-          // Doctor Image
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25 - 80,
             left: 0,
@@ -81,7 +78,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
               ),
             ),
           ),
-          // Doctor Details Section
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25 + 80,
             left: 0,
@@ -93,7 +89,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  // Name and Designation
                   Center(
                     child: Text(
                       widget.doctor.fullname,
@@ -116,7 +111,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                       ),
                     ),
                   ),
-                  // Tabs for switching details
+
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -127,7 +122,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                   ),
                   const Divider(
                       height: 20, thickness: 1.5, indent: 20, endIndent: 20),
-                  // Display details based on selected tab
+
                   _selectedTabIndex == 0
                       ? _buildPersonalDetails()
                       : _buildProfessionalDetails(),
@@ -140,7 +135,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     );
   }
 
-  // Helper method to build a single tab button
+
   Widget _buildTabButton(String text, int index) {
     final bool isSelected = _selectedTabIndex == index;
     return TextButton(
@@ -154,13 +149,13 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
         style: TextStyle(
           fontSize: 18,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? const Color(0xFF00BF8C) : Colors.black54,
+          color: isSelected ? const Color.fromARGB(255, 29, 108, 92) : Colors.black54,
         ),
       ),
     );
   }
 
-  // Helper method to build the personal details section
+
   Widget _buildPersonalDetails() {
     return Column(
       children: [
@@ -175,7 +170,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     );
   }
 
-  // Helper method to build the professional details section
+
   Widget _buildProfessionalDetails() {
     return Column(
       children: [
@@ -186,14 +181,14 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     );
   }
 
-  // Helper method to build a detail row with an icon
+
   static Widget _detailRow(String label, String value, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: const Color(0xFF00BF8C), size: 24),
+          Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 23),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -208,7 +203,19 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 1),
-                Text(
+                label == "Phone"
+                ? InkWell(
+                  onTap: () => _launchPhone(value),
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue,
+                      //decoration: TextDecoration.underline,
+                    ),
+                  ),
+                )
+                : Text(
                   value,
                   style: TextStyle(
                     fontSize: 16,
@@ -221,5 +228,15 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
         ],
       ),
     );
+  }
+}
+
+Future<void> _launchPhone(String phoneNumber) async {
+  final Uri launchUri = Uri(
+    scheme: 'tel',
+    path: phoneNumber,
+  );
+  if (!await launchUrl(launchUri)) {
+    print('Could not launch $launchUri');
   }
 }
