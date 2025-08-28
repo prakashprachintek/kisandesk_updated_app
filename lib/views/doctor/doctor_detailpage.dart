@@ -1,11 +1,20 @@
 // doctor_detail_page.dart
 import 'package:flutter/material.dart';
-import 'doctor.dart';
+// Import the Doctor class from its single, definitive location
+import 'package:mainproject1/views/doctor/doctor.dart';
 
-class DoctorDetailPage extends StatelessWidget {
+class DoctorDetailPage extends StatefulWidget {
   final Doctor doctor;
 
   const DoctorDetailPage({super.key, required this.doctor});
+
+  @override
+  _DoctorDetailPageState createState() => _DoctorDetailPageState();
+}
+
+class _DoctorDetailPageState extends State<DoctorDetailPage> {
+  // 0 for personal, 1 for professional
+  int _selectedTabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +39,7 @@ class DoctorDetailPage extends StatelessWidget {
             right: 0,
             height: MediaQuery.of(context).size.height * 0.25,
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -45,8 +54,7 @@ class DoctorDetailPage extends StatelessWidget {
           ),
           // Doctor Image
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.25 -
-                80, // Adjust position for better overlap
+            top: MediaQuery.of(context).size.height * 0.25 - 80,
             left: 0,
             right: 0,
             child: Center(
@@ -58,10 +66,10 @@ class DoctorDetailPage extends StatelessWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 15, // Increased blur for softer shadow
-                        offset:
-                            Offset(0, 8)), // Increased offset for more depth
+                      color: Colors.black26,
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
                   ],
                 ),
                 child: ClipOval(
@@ -73,36 +81,34 @@ class DoctorDetailPage extends StatelessWidget {
               ),
             ),
           ),
-          // Doctor Details
+          // Doctor Details Section
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25 + 80,
             left: 0,
             right: 0,
             bottom: 0,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0), // Increased padding
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20), // More vertical space
+                  const SizedBox(height: 20),
+                  // Name and Designation
                   Center(
                     child: Text(
-                      doctor.fullname,
+                      widget.doctor.fullname,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontSize: 28, // Larger font size
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87, // Slightly softer black
-                          letterSpacing: 0.2 // Slight letter spacing
-                          ),
+                          color: Colors.black87,
+                          letterSpacing: 0.2),
                     ),
                   ),
                   const SizedBox(height: 2),
                   Center(
-                    // You might want to add a specialization here if available in Doctor model
                     child: Text(
-                      doctor
-                          .designation, // Example: Replace with doctor.specialization if you add it
+                      widget.doctor.designation,
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.grey[600],
@@ -110,19 +116,21 @@ class DoctorDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Tabs for switching details
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildTabButton("Personal Details", 0),
+                      _buildTabButton("Professional Details", 1),
+                    ],
+                  ),
                   const Divider(
-                      height: 40,
-                      thickness: 1.5,
-                      indent: 20,
-                      endIndent: 20), // Decorative divider
-
-                  detailRow("Phone", doctor.phone, Icons.phone),
-                  detailRow("Address", doctor.address, Icons.location_on),
-                  detailRow("District", doctor.district, Icons.map),
-                  detailRow("Taluka", doctor.taluka, Icons.location_city),
-                  detailRow("Village", doctor.village, Icons.home),
-                  detailRow("Gender", doctor.gender, Icons.person),
-                  detailRow("Status", doctor.status, Icons.info_outline),
+                      height: 20, thickness: 1.5, indent: 20, endIndent: 20),
+                  // Display details based on selected tab
+                  _selectedTabIndex == 0
+                      ? _buildPersonalDetails()
+                      : _buildProfessionalDetails(),
                 ],
               ),
             ),
@@ -132,17 +140,61 @@ class DoctorDetailPage extends StatelessWidget {
     );
   }
 
-  // Modified detailRow to include an icon
-  static Widget detailRow(String label, String value, IconData icon) {
+  // Helper method to build a single tab button
+  Widget _buildTabButton(String text, int index) {
+    final bool isSelected = _selectedTabIndex == index;
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          _selectedTabIndex = index;
+        });
+      },
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? const Color(0xFF00BF8C) : Colors.black54,
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build the personal details section
+  Widget _buildPersonalDetails() {
+    return Column(
+      children: [
+        _detailRow("Phone", widget.doctor.phone, Icons.phone),
+        _detailRow("Address", widget.doctor.address, Icons.location_on),
+        _detailRow("District", widget.doctor.district, Icons.map),
+        _detailRow("Taluka", widget.doctor.taluka, Icons.location_city),
+        _detailRow("Village", widget.doctor.village, Icons.home),
+        _detailRow("Gender", widget.doctor.gender, Icons.person),
+       // _detailRow("Status", widget.doctor.status, Icons.info_outline),
+      ],
+    );
+  }
+
+  // Helper method to build the professional details section
+  Widget _buildProfessionalDetails() {
+    return Column(
+      children: [
+        _detailRow("Specialization", widget.doctor.designation, Icons.medical_services),
+        _detailRow("Status", widget.doctor.status, Icons.info_outline),
+        //_detailRow("Experience", "${widget.doctor.experience} years", Icons.star),
+      ],
+    );
+  }
+
+  // Helper method to build a detail row with an icon
+  static Widget _detailRow(String label, String value, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          vertical: 8.0, horizontal: 8.0), // Increased vertical padding
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start, // Align text to the top if it wraps
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Color.fromARGB(255, 0, 0, 0), size: 24), // Green icon
-          const SizedBox(width: 12), // Space between icon and text
+          Icon(icon, color: const Color(0xFF00BF8C), size: 24),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,18 +203,16 @@ class DoctorDetailPage extends StatelessWidget {
                   "$label:",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16, // Slightly larger label
+                    fontSize: 16,
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(
-                    height: 1), // Small space between label and value
+                const SizedBox(height: 1),
                 Text(
                   value,
                   style: TextStyle(
                     fontSize: 16,
-                    color:
-                        Colors.grey[800], // Darker grey for better readability
+                    color: Colors.grey[800],
                   ),
                 ),
               ],
