@@ -62,7 +62,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   Future<void> verifyOTP() async {
     final otp = otpController.text.trim();
 
-    if (otp.length != 6 || !RegExp(r'^\d{6}$').hasMatch(otp)) {
+    if (otp.length != 4 || !RegExp(r'^\d{4}$').hasMatch(otp)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(tr("Enter a valid 6-digit OTP"))),
       );
@@ -80,12 +80,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "phoneNumber": widget.phoneNumber,
-          "otp": otp,
-          "token": token
-        }),
-        
+        body: jsonEncode(
+            {"phoneNumber": widget.phoneNumber, "otp": otp, "token": token}),
       );
 
       final data = jsonDecode(response.body);
@@ -183,7 +179,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                       const SizedBox(height: 40),
                       PinCodeTextField(
                         appContext: context,
-                        length: 6,
+                        length: 4,
                         controller: otpController,
                         keyboardType: TextInputType.number,
                         showCursor: false,
