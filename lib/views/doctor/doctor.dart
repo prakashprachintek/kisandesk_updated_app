@@ -1,6 +1,6 @@
 class Doctor {
   final String fullname;
-  final String imageUrl;
+  final String image;
   final String phone;
   final String address;
   final String taluka;
@@ -12,7 +12,7 @@ class Doctor {
 
   Doctor({
     required this.fullname,
-    required this.imageUrl,
+    required this.image,
     required this.phone,
     required this.address,
     required this.taluka,
@@ -26,7 +26,7 @@ class Doctor {
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
       fullname: json['full_name'] ?? '',
-      imageUrl: json['image'] ?? '', // your placeholder
+      image: json['image'] ?? '', // your placeholder
       phone: json['phone'] ?? '',
       address: json['address'] ?? '',
       taluka: json['taluka'] ?? '',

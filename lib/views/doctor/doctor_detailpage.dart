@@ -1,4 +1,5 @@
-
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/doctor/doctor.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,8 +16,30 @@ class DoctorDetailPage extends StatefulWidget {
 class _DoctorDetailPageState extends State<DoctorDetailPage> {
   int _selectedTabIndex = 0;
 
+  // This function decodes the base64 string and returns a Uint8List.
+  Uint8List? _decodeBase64Image(String? base64String) {
+    if (base64String == null || base64String.isEmpty) {
+      return null;
+    }
+
+    final commaIndex = base64String.indexOf(',');
+
+    if (commaIndex != -1) {
+      base64String = base64String.substring(commaIndex + 1);
+    }
+    try {
+      return base64Decode(base64String);
+    } catch (e) {
+      print('Error decoding base64 image: $e');
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Decode the base64 image data once here
+    final Uint8List? imageData = _decodeBase64Image(widget.doctor.image);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -41,7 +64,10 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color.fromARGB(255, 19, 77, 61), Color.fromARGB(255, 29, 108, 92)],
+                  colors: [
+                    Color.fromARGB(255, 19, 77, 61),
+                    Color.fromARGB(255, 29, 108, 92)
+                  ],
                 ),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
@@ -70,10 +96,15 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                   ],
                 ),
                 child: ClipOval(
-                  child: Image.asset(
-                    'assets/doctor_default.jpg',
-                    fit: BoxFit.cover,
-                  ),
+                  child: imageData != null
+                      ? Image.memory(
+                          imageData,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          'assets/doctor_default.jpg',
+                          fit: BoxFit.cover,
+                        ),
                 ),
               ),
             ),
@@ -111,7 +142,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -122,7 +152,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                   ),
                   const Divider(
                       height: 20, thickness: 1.5, indent: 20, endIndent: 20),
-
                   _selectedTabIndex == 0
                       ? _buildPersonalDetails()
                       : _buildProfessionalDetails(),
@@ -134,7 +163,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
       ),
     );
   }
-
 
   Widget _buildTabButton(String text, int index) {
     final bool isSelected = _selectedTabIndex == index;
@@ -149,12 +177,13 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
         style: TextStyle(
           fontSize: 18,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? const Color.fromARGB(255, 29, 108, 92) : Colors.black54,
+          color: isSelected
+              ? const Color.fromARGB(255, 29, 108, 92)
+              : Colors.black54,
         ),
       ),
     );
   }
-
 
   Widget _buildPersonalDetails() {
     return Column(
@@ -165,22 +194,19 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
         _detailRow("Taluka", widget.doctor.taluka, Icons.location_city),
         _detailRow("Village", widget.doctor.village, Icons.home),
         _detailRow("Gender", widget.doctor.gender, Icons.person),
-       // _detailRow("Status", widget.doctor.status, Icons.info_outline),
       ],
     );
   }
-
 
   Widget _buildProfessionalDetails() {
     return Column(
       children: [
-        _detailRow("Specialization", widget.doctor.designation, Icons.medical_services),
+        _detailRow("Specialization", widget.doctor.designation,
+            Icons.medical_services),
         _detailRow("Status", widget.doctor.status, Icons.info_outline),
-        //_detailRow("Experience", "${widget.doctor.experience} years", Icons.star),
       ],
     );
   }
-
 
   static Widget _detailRow(String label, String value, IconData icon) {
     return Padding(
@@ -204,24 +230,23 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                 ),
                 const SizedBox(height: 1),
                 label == "Phone"
-                ? InkWell(
-                  onTap: () => _launchPhone(value),
-                  child: Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.blue,
-                      //decoration: TextDecoration.underline,
-                    ),
-                  ),
-                )
-                : Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[800],
-                  ),
-                ),
+                    ? InkWell(
+                        onTap: () => _launchPhone(value),
+                        child: Text(
+                          value,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[800],
+                        ),
+                      ),
               ],
             ),
           ),
