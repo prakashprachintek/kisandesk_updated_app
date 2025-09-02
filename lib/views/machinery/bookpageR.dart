@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -37,7 +38,7 @@ class _BookPageState extends State<BookPage> {
 
   // Data lists
   List<Map<String, dynamic>> machineryData = [];
-  List<Map<String, dynamic>> workTypeList = [];
+  List<String> workTypeList = [];
 
   // Loading state
   bool isLoading = false;
@@ -75,31 +76,6 @@ class _BookPageState extends State<BookPage> {
       );
     }
     setState(() => isLoading = false);
-  }
-
-  Widget _buildBase64Image(String? base64Str, {double size = 60}) {
-    if (base64Str == null || base64Str.isEmpty) {
-      return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.image_not_supported,
-            size: size * 0.6, color: Colors.grey),
-      );
-    }
-    try {
-      final bytes = base64Decode(base64Str.split(',').last);
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child:
-            Image.memory(bytes, width: size, height: size, fit: BoxFit.cover),
-      );
-    } catch (e) {
-      return Icon(Icons.broken_image, size: size, color: Colors.red);
-    }
   }
 
   // Open date picker dialog
@@ -289,8 +265,21 @@ class _BookPageState extends State<BookPage> {
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 child: Row(
                                   children: [
-                                    _buildBase64Image(machine["image"],
-                                        size: 60),
+                                    MachineryImages.getImageWidget(
+                                      machineName,
+                                      size: 60,
+                                      fit: BoxFit.cover,
+                                      borderRadius: BorderRadius.circular(12),
+                                      showShadow: true,
+                                      borderColor:
+                                          selectedMachinery == machineName
+                                              ? Color(0xFF00AD83)
+                                              : Colors.transparent,
+                                      borderWidth:
+                                          selectedMachinery == machineName
+                                              ? 2
+                                              : 0,
+                                    ),
                                     SizedBox(width: 16),
                                     Expanded(
                                       child: Text(
@@ -317,15 +306,15 @@ class _BookPageState extends State<BookPage> {
                       );
                     }).toList(),
                     onSelected: (value) {
-  setState(() {
-    selectedMachinery = value;
-    workTypeList = List<Map<String, dynamic>>.from(
-        machineryData.firstWhere((m) => m["name"] == value)["work_types"]);
-    selectedWorkType = null; // ✅ Reset here when machinery changes
-    fieldErrors['machinery'] = false;
-  });
-},
-
+                      setState(() {
+                        selectedMachinery = value;
+                        workTypeList = machineryData
+                            .firstWhere((m) => m["name"] == value)["work_types"]
+                            .cast<String>();
+                        selectedWorkType = null;
+                        fieldErrors['machinery'] = false;
+                      });
+                    },
                   ),
                   // Subtitle for selected machinery
                   if (selectedMachinery != null)
@@ -460,10 +449,9 @@ class _BookPageState extends State<BookPage> {
                               .map<DropdownMenuEntry<String>>((entry) {
                               final index = entry.key;
                               final workType = entry.value;
-                              final workName = workType["type"] as String;
                               return DropdownMenuEntry<String>(
-                                value: workName,
-                                label: workName,
+                                value: workType,
+                                label: workType, // For accessibility
                                 labelWidget: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
@@ -477,27 +465,44 @@ class _BookPageState extends State<BookPage> {
                                                 0.8,
                                         child: Row(
                                           children: [
-                                            _buildBase64Image(workType["image"],
-                                                size: 60),
+                                            // Image from WorkTypeImages
+                                            WorkTypeImages.getImageWidget(
+                                              workType,
+                                              size: 60,
+                                              fit: BoxFit.cover,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              showShadow: true,
+                                              borderColor:
+                                                  selectedWorkType == workType
+                                                      ? Color(0xFF00AD83)
+                                                      : Colors.transparent,
+                                              borderWidth:
+                                                  selectedWorkType == workType
+                                                      ? 2
+                                                      : 0,
+                                            ),
                                             SizedBox(width: 16),
                                             Expanded(
                                               child: Text(
-                                                workName,
+                                                workType,
                                                 style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight:
-                                                        FontWeight.w500),
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
                                     ),
+                                    // Add divider except for the last item
                                     if (index < workTypeList.length - 1)
                                       Divider(
-                                          height: 1,
-                                          thickness: 1,
-                                          color: Colors.grey.shade400),
+                                        height: 1,
+                                        thickness: 1,
+                                        color: Colors.grey.shade400,
+                                      ),
                                   ],
                                 ),
                               );
@@ -735,4 +740,4 @@ class _BookPageState extends State<BookPage> {
             ),
     );
   }
-}
+}*/
