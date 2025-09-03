@@ -29,7 +29,8 @@ class _BookPageState extends State<BookPage> {
   String? selectedMachinery;
   String? selectedWorkType;
   String? bookingDate;
-  String selectedUnit = 'Acres';
+  String selectedUnit = 'Acres'; //default
+  String selectedQuantity = "1"; // default
 
   // Controllers
   final TextEditingController areaController = TextEditingController();
@@ -77,28 +78,34 @@ class _BookPageState extends State<BookPage> {
     setState(() => isLoading = false);
   }
 
-  Widget _buildBase64Image(String? base64Str, {double size = 60}) {
+  Widget _buildBase64Image(String? base64Str,
+      {double width = 60, double height = 60}) {
     if (base64Str == null || base64Str.isEmpty) {
       return Container(
-        width: size,
-        height: size,
+        width: width,
+        height: height,
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(Icons.image_not_supported,
-            size: size * 0.6, color: Colors.grey),
+            size: width * 0.6, color: Colors.grey),
       );
     }
     try {
       final bytes = base64Decode(base64Str.split(',').last);
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child:
-            Image.memory(bytes, width: size, height: size, fit: BoxFit.cover),
+        child: Image.memory(
+          bytes,
+          width: width,
+          height: height,
+          fit: BoxFit
+              .cover, // Adjust fit as needed (e.g., BoxFit.contain, BoxFit.cover)
+        ),
       );
     } catch (e) {
-      return Icon(Icons.broken_image, size: size, color: Colors.red);
+      return Icon(Icons.broken_image, size: width * 0.6, color: Colors.red);
     }
   }
 
@@ -284,19 +291,19 @@ class _BookPageState extends State<BookPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(vertical: 2),
+                              padding: EdgeInsets.symmetric(vertical: 8),
                               child: SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 child: Row(
                                   children: [
                                     _buildBase64Image(machine["image"],
-                                        size: 60),
-                                    SizedBox(width: 16),
+                                        width: 150, height: 120),
+                                    SizedBox(width: 20),
                                     Expanded(
                                       child: Text(
                                         machineName,
                                         style: TextStyle(
-                                          fontSize: 18,
+                                          fontSize: 20,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -317,15 +324,15 @@ class _BookPageState extends State<BookPage> {
                       );
                     }).toList(),
                     onSelected: (value) {
-  setState(() {
-    selectedMachinery = value;
-    workTypeList = List<Map<String, dynamic>>.from(
-        machineryData.firstWhere((m) => m["name"] == value)["work_types"]);
-    selectedWorkType = null; // ✅ Reset here when machinery changes
-    fieldErrors['machinery'] = false;
-  });
-},
-
+                      setState(() {
+                        selectedMachinery = value;
+                        workTypeList = List<Map<String, dynamic>>.from(
+                            machineryData.firstWhere(
+                                (m) => m["name"] == value)["work_types"]);
+                        selectedWorkType = null;
+                        fieldErrors['machinery'] = false;
+                      });
+                    },
                   ),
                   // Subtitle for selected machinery
                   if (selectedMachinery != null)
@@ -470,7 +477,7 @@ class _BookPageState extends State<BookPage> {
                                   children: [
                                     Container(
                                       padding:
-                                          EdgeInsets.symmetric(vertical: 2),
+                                          EdgeInsets.symmetric(vertical: 8),
                                       child: SizedBox(
                                         width:
                                             MediaQuery.of(context).size.width *
@@ -478,13 +485,13 @@ class _BookPageState extends State<BookPage> {
                                         child: Row(
                                           children: [
                                             _buildBase64Image(workType["image"],
-                                                size: 60),
-                                            SizedBox(width: 16),
+                                                width: 150, height: 120),
+                                            SizedBox(width: 20),
                                             Expanded(
                                               child: Text(
                                                 workName,
                                                 style: TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 20,
                                                     fontWeight:
                                                         FontWeight.w500),
                                               ),
@@ -523,65 +530,88 @@ class _BookPageState extends State<BookPage> {
                   SizedBox(height: 16),
 
                   // ----------------------------
-                  // Area/Quantity Input
+                  // Area/Quantity Selection (Bordered)
                   // ----------------------------
-                  TextField(
-                    controller: areaController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: "No. of Acres / Hours",
-                      border: OutlineInputBorder(
+                  SizedBox(
+                    width: double.infinity,
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color:
+                              fieldErrors['area']! ? Colors.red : Colors.grey,
+                          width: fieldErrors['area']! ? 2 : 1,
+                        ),
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                            color: fieldErrors['area']!
-                                ? Colors.red
-                                : Colors.grey),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                            color: fieldErrors['area']!
-                                ? Colors.red
-                                : Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                            color: fieldErrors['area']!
-                                ? Colors.red
-                                : Color(0xFF00AD83),
-                            width: 2),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      suffix: DropdownButton<String>(
-                        value: selectedUnit,
-                        underline: SizedBox.shrink(),
-                        items: ['Acres', 'Hours'].map((unit) {
-                          return DropdownMenuItem(
-                            value: unit,
-                            child: Text(unit),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedUnit = value!;
-                          });
-                        },
+                      child: Row(
+                        children: [
+                          // Radio Buttons
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Radio<String>(
+                                  value: "Acres",
+                                  groupValue: selectedUnit,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedUnit = value!;
+                                    });
+                                  },
+                                  activeColor: Color(0xFF00AD83),
+                                ),
+                                Text("Acres"),
+                                SizedBox(width: 12),
+                                Radio<String>(
+                                  value: "Hours",
+                                  groupValue: selectedUnit,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedUnit = value!;
+                                    });
+                                  },
+                                  activeColor: Color(0xFF00AD83),
+                                ),
+                                Text("Hours"),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(width: 12),
+
+                          // Dropdown for quantity
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: selectedQuantity,
+                              decoration: InputDecoration(
+                                border: InputBorder
+                                    .none, // we already added outer border
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                              ),
+                              items: [
+                                ...List.generate(20, (i) => (i + 1).toString()),
+                                "20+"
+                              ].map((qty) {
+                                return DropdownMenuItem(
+                                  value: qty,
+                                  child: Text(qty),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedQuantity = value!;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    onChanged: (value) => setState(() {
-                      fieldErrors['area'] = value.isEmpty;
-                    }),
                   ),
+
+                  // Error message below
                   if (fieldErrors['area']!)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
@@ -590,7 +620,10 @@ class _BookPageState extends State<BookPage> {
                         style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
-                  SizedBox(height: 16),
+
+                  SizedBox(
+                    height: 16,
+                  ),
 
                   // ----------------------------
                   // Date Picker
@@ -714,7 +747,7 @@ class _BookPageState extends State<BookPage> {
                     child: ElevatedButton(
                       onPressed: _submitBooking,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF2E7D32),
+                        backgroundColor: Color.fromARGB(255, 29, 108, 92),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 40, vertical: 16),
                         shape: RoundedRectangleBorder(

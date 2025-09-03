@@ -1,5 +1,5 @@
 ////////////////////////////
-/// This code is not being used currently, uncertainty of future, it stays in profile folder
+/// This code is not being used currently, uncertain of future, it stays in profile folder
 ////////////////////////////
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
