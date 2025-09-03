@@ -53,7 +53,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        elevation: 0, // Remove shadow for a cleaner look
+        elevation: 0,
       ),
       body: Stack(
         children: [
@@ -129,28 +129,60 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Your Information",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 29, 108, 92),
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .spaceBetween, // Spreads children across available space
+                          children: [
+                            Text(
+                              "Your Information",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 29, 108, 92),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                color: Color.fromARGB(255, 29, 108, 92),
+                                size: 24,
+                              ),
+                              tooltip: "Edit Profile",
+                              onPressed: () async {
+                                await profileUpdateDialog(
+                                    context, UserSession.user?['phone']);
+                              },
+                            ),
+                          ],
                         ),
                         SizedBox(height: 20),
 
                         // Reusable Info Item Widget
-                        _buildInfoItem(
-                            "Your Name", UserSession.user?['full_name']),
+                        _buildInfoItem("Name", UserSession.user?['full_name']),
                         SizedBox(height: 15),
-                        _buildInfoItem(
-                            "Mobile Number", UserSession.user?['phone']),
+                        _buildInfoItem("Number", UserSession.user?['phone']),
+                        SizedBox(height: 15),
+                        _buildInfoItem("DOB", UserSession.user?['dob']),
+                        SizedBox(height: 15),
+                        _buildInfoItem("Gender", UserSession.user?['gender']),
+                        SizedBox(height: 15),
+                        _buildInfoItem("Taluq", UserSession.user?['taluka']),
                         SizedBox(height: 15),
                         _buildInfoItem("Village", UserSession.user?['village']),
+                        SizedBox(height: 15),
+                        _buildInfoItem(
+                            "District", UserSession.user?['district']),
+                        SizedBox(height: 15),
+                        _buildInfoItem("State", UserSession.user?['state']),
+                        SizedBox(height: 15),
+                        _buildInfoItem("Pincode", UserSession.user?['pincode']),
+                        SizedBox(height: 15),
+                        _buildInfoItem("Address", UserSession.user?['address']),
                       ],
                     ),
                   ),
                 ),
+                /*
                 SizedBox(height: 15),
                 //Edit button
                 Center(
@@ -173,14 +205,12 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                     ),
                   ),
                 ),
-                
+                */
               ],
             ),
           ),
         ],
-        
       ),
-      
     );
   }
 }

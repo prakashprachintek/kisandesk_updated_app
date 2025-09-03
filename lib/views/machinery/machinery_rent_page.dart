@@ -52,6 +52,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
         url,
         body: jsonEncode({
           "userId": UserSession.userId,
+          "type": "orders"
         }),
         headers: {
           "Content-Type": "application/json",
@@ -73,7 +74,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
 
           final recent = results.take(2).map<Map<String, String>>((item) {
             return {
-              "orderId": item['_id']?.toString() ?? '',
+              "orderId": item['order_id']?.toString() ?? '',
               "machine": item['machinery_type']?.toString() ?? 'Unknown',
               "workType": item['work_type']?.toString() ?? 'Unknown',
               "status": item['status']?.toString() ?? '',
@@ -194,6 +195,9 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                 ],
               ),
               const SizedBox(height: 20),
+              ///////////////
+              //Recent orders
+              ///////////////
               Text(
                 "Recent Orders",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -237,11 +241,11 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            "Machine Booked: ${order['machine']}",
+                                            "${order['orderId']}",
                                             style: const TextStyle(fontWeight: FontWeight.bold),
                                           ),
                                           const SizedBox(height: 6),
-                                          Text("🔧 Work Type: ${order['workType']}"),
+                                          Text("🔧 Machine Booked: ${order['machine']}"),
                                           Text("📅 Date: ${order['date']}"),
                                           Text("⚒️ Machine Owner: ${order['name']}"),
                                           Text("📞 Contact: ${order['phone']}"),

@@ -136,11 +136,12 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
   }
 
   Future<void> _pickDate() async {
+    DateTime today = DateTime.now();
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
+      initialDate: today,
+      firstDate: today,
+      lastDate: DateTime(2026),
     );
     if (picked != null) {
       setState(() {

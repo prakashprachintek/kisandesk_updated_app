@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -29,8 +30,7 @@ class _BookPageState extends State<BookPage> {
   String? selectedMachinery;
   String? selectedWorkType;
   String? bookingDate;
-  String selectedUnit = 'Acres'; //default
-  String selectedQuantity = "1"; // default
+  String selectedUnit = 'Acres';
 
   // Controllers
   final TextEditingController areaController = TextEditingController();
@@ -38,7 +38,7 @@ class _BookPageState extends State<BookPage> {
 
   // Data lists
   List<Map<String, dynamic>> machineryData = [];
-  List<Map<String, dynamic>> workTypeList = [];
+  List<String> workTypeList = [];
 
   // Loading state
   bool isLoading = false;
@@ -76,37 +76,6 @@ class _BookPageState extends State<BookPage> {
       );
     }
     setState(() => isLoading = false);
-  }
-
-  Widget _buildBase64Image(String? base64Str,
-      {double width = 60, double height = 60}) {
-    if (base64Str == null || base64Str.isEmpty) {
-      return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.image_not_supported,
-            size: width * 0.6, color: Colors.grey),
-      );
-    }
-    try {
-      final bytes = base64Decode(base64Str.split(',').last);
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.memory(
-          bytes,
-          width: width,
-          height: height,
-          fit: BoxFit
-              .cover, // Adjust fit as needed (e.g., BoxFit.contain, BoxFit.cover)
-        ),
-      );
-    } catch (e) {
-      return Icon(Icons.broken_image, size: width * 0.6, color: Colors.red);
-    }
   }
 
   // Open date picker dialog
@@ -291,19 +260,32 @@ class _BookPageState extends State<BookPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(vertical: 8),
+                              padding: EdgeInsets.symmetric(vertical: 2),
                               child: SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 child: Row(
                                   children: [
-                                    _buildBase64Image(machine["image"],
-                                        width: 150, height: 120),
-                                    SizedBox(width: 20),
+                                    MachineryImages.getImageWidget(
+                                      machineName,
+                                      size: 60,
+                                      fit: BoxFit.cover,
+                                      borderRadius: BorderRadius.circular(12),
+                                      showShadow: true,
+                                      borderColor:
+                                          selectedMachinery == machineName
+                                              ? Color(0xFF00AD83)
+                                              : Colors.transparent,
+                                      borderWidth:
+                                          selectedMachinery == machineName
+                                              ? 2
+                                              : 0,
+                                    ),
+                                    SizedBox(width: 16),
                                     Expanded(
                                       child: Text(
                                         machineName,
                                         style: TextStyle(
-                                          fontSize: 20,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -326,9 +308,9 @@ class _BookPageState extends State<BookPage> {
                     onSelected: (value) {
                       setState(() {
                         selectedMachinery = value;
-                        workTypeList = List<Map<String, dynamic>>.from(
-                            machineryData.firstWhere(
-                                (m) => m["name"] == value)["work_types"]);
+                        workTypeList = machineryData
+                            .firstWhere((m) => m["name"] == value)["work_types"]
+                            .cast<String>();
                         selectedWorkType = null;
                         fieldErrors['machinery'] = false;
                       });
@@ -467,44 +449,60 @@ class _BookPageState extends State<BookPage> {
                               .map<DropdownMenuEntry<String>>((entry) {
                               final index = entry.key;
                               final workType = entry.value;
-                              final workName = workType["type"] as String;
                               return DropdownMenuEntry<String>(
-                                value: workName,
-                                label: workName,
+                                value: workType,
+                                label: workType, // For accessibility
                                 labelWidget: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Container(
                                       padding:
-                                          EdgeInsets.symmetric(vertical: 8),
+                                          EdgeInsets.symmetric(vertical: 2),
                                       child: SizedBox(
                                         width:
                                             MediaQuery.of(context).size.width *
                                                 0.8,
                                         child: Row(
                                           children: [
-                                            _buildBase64Image(workType["image"],
-                                                width: 150, height: 120),
-                                            SizedBox(width: 20),
+                                            // Image from WorkTypeImages
+                                            WorkTypeImages.getImageWidget(
+                                              workType,
+                                              size: 60,
+                                              fit: BoxFit.cover,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              showShadow: true,
+                                              borderColor:
+                                                  selectedWorkType == workType
+                                                      ? Color(0xFF00AD83)
+                                                      : Colors.transparent,
+                                              borderWidth:
+                                                  selectedWorkType == workType
+                                                      ? 2
+                                                      : 0,
+                                            ),
+                                            SizedBox(width: 16),
                                             Expanded(
                                               child: Text(
-                                                workName,
+                                                workType,
                                                 style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                        FontWeight.w500),
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
                                     ),
+                                    // Add divider except for the last item
                                     if (index < workTypeList.length - 1)
                                       Divider(
-                                          height: 1,
-                                          thickness: 1,
-                                          color: Colors.grey.shade400),
+                                        height: 1,
+                                        thickness: 1,
+                                        color: Colors.grey.shade400,
+                                      ),
                                   ],
                                 ),
                               );
@@ -530,88 +528,65 @@ class _BookPageState extends State<BookPage> {
                   SizedBox(height: 16),
 
                   // ----------------------------
-                  // Area/Quantity Selection (Bordered)
+                  // Area/Quantity Input
                   // ----------------------------
-                  SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color:
-                              fieldErrors['area']! ? Colors.red : Colors.grey,
-                          width: fieldErrors['area']! ? 2 : 1,
-                        ),
+                  TextField(
+                    controller: areaController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: "No. of Acres / Hours",
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: fieldErrors['area']!
+                                ? Colors.red
+                                : Colors.grey),
                       ),
-                      child: Row(
-                        children: [
-                          // Radio Buttons
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Radio<String>(
-                                  value: "Acres",
-                                  groupValue: selectedUnit,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedUnit = value!;
-                                    });
-                                  },
-                                  activeColor: Color(0xFF00AD83),
-                                ),
-                                Text("Acres"),
-                                SizedBox(width: 12),
-                                Radio<String>(
-                                  value: "Hours",
-                                  groupValue: selectedUnit,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedUnit = value!;
-                                    });
-                                  },
-                                  activeColor: Color(0xFF00AD83),
-                                ),
-                                Text("Hours"),
-                              ],
-                            ),
-                          ),
-
-                          SizedBox(width: 12),
-
-                          // Dropdown for quantity
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              value: selectedQuantity,
-                              decoration: InputDecoration(
-                                border: InputBorder
-                                    .none, // we already added outer border
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                              ),
-                              items: [
-                                ...List.generate(20, (i) => (i + 1).toString()),
-                                "20+"
-                              ].map((qty) {
-                                return DropdownMenuItem(
-                                  value: qty,
-                                  child: Text(qty),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedQuantity = value!;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: fieldErrors['area']!
+                                ? Colors.red
+                                : Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: fieldErrors['area']!
+                                ? Colors.red
+                                : Color(0xFF00AD83),
+                            width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      suffix: DropdownButton<String>(
+                        value: selectedUnit,
+                        underline: SizedBox.shrink(),
+                        items: ['Acres', 'Hours'].map((unit) {
+                          return DropdownMenuItem(
+                            value: unit,
+                            child: Text(unit),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedUnit = value!;
+                          });
+                        },
                       ),
                     ),
+                    onChanged: (value) => setState(() {
+                      fieldErrors['area'] = value.isEmpty;
+                    }),
                   ),
-
-                  // Error message below
                   if (fieldErrors['area']!)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
@@ -620,10 +595,7 @@ class _BookPageState extends State<BookPage> {
                         style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
-
-                  SizedBox(
-                    height: 16,
-                  ),
+                  SizedBox(height: 16),
 
                   // ----------------------------
                   // Date Picker
@@ -747,7 +719,7 @@ class _BookPageState extends State<BookPage> {
                     child: ElevatedButton(
                       onPressed: _submitBooking,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 29, 108, 92),
+                        backgroundColor: Color(0xFF2E7D32),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 40, vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -768,4 +740,4 @@ class _BookPageState extends State<BookPage> {
             ),
     );
   }
-}
+}*/

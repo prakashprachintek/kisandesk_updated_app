@@ -603,7 +603,7 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // (a) Top row: user avatar, language dropdown, favorites, cart
+                  // (a) Top row: user avatar, language dropdown, favorites, notifications
                   Padding(
                     padding: const EdgeInsets.only(
                         left: 12, right: 12, top: 8, bottom: 8),
@@ -694,6 +694,7 @@ class _HomePageState extends State<HomePage> {
                                 },
                               ),
                             ),
+                            /*
                             IconButton(
                               icon: Icon(Icons.favorite_border,
                                   color: Colors.white),
@@ -706,6 +707,7 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                             ),
+                            */
                             IconButton(
                               icon: Icon(Icons.notifications_none,
                                   color: Colors.white),
