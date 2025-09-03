@@ -155,6 +155,8 @@ flutter:
     - assets/paddy1.png
     - assets/paddy2.jpg
     - assets/paddy3.jpg
+    - assets/Female.png
+    - assets/Male.png
     - assets/paddy4.jpg
     - assets/doctor_default.jpg
     - assets/govtschemes.png

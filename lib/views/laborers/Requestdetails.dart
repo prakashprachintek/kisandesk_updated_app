@@ -16,7 +16,7 @@ class RequestDetailsPage extends StatelessWidget {
     // Parse the date string and format it for better readability
     try {
       final dateTime = DateTime.parse(dateString);
-      return DateFormat('yyyy-MM-dd – kk:mm').format(dateTime.toLocal());
+      return DateFormat('yyy-MM-dd – kk:mm').format(dateTime.toLocal());
     } catch (e) {
       return dateString; // Return original if parsing fails
     }

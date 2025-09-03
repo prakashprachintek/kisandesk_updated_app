@@ -494,7 +494,7 @@ class _HomePageState extends State<HomePage> {
                 context,
                 // MaterialPageRoute(builder: (context) => const Myprofile()),
                 MaterialPageRoute(builder: (context) => PersonalDetailsScreen()),
-              );
+               );
             },
           ),
           ListTile(

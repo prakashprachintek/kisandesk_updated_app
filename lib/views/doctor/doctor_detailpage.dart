@@ -188,12 +188,27 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
   Widget _buildPersonalDetails() {
     return Column(
       children: [
-        _detailRow("Phone", widget.doctor.phone, Icons.phone),
-        _detailRow("Address", widget.doctor.address, Icons.location_on),
-        _detailRow("District", widget.doctor.district, Icons.map),
-        _detailRow("Taluka", widget.doctor.taluka, Icons.location_city),
-        _detailRow("Village", widget.doctor.village, Icons.home),
-        _detailRow("Gender", widget.doctor.gender, Icons.person),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _detailColumn("Phone", widget.doctor.phone, Icons.phone)),
+            Expanded(child: _detailColumn("Address", widget.doctor.address, Icons.location_on)),
+          ],
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _detailColumn("District", widget.doctor.district, Icons.map)),
+            Expanded(child: _detailColumn("Taluka", widget.doctor.taluka, Icons.location_city)),
+          ],
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _detailColumn("Village", widget.doctor.village, Icons.home)),
+            Expanded(child: _detailColumn("Gender", widget.doctor.gender, Icons.person)),
+          ],
+        ),
       ],
     );
   }
@@ -208,6 +223,51 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     );
   }
 
+  Widget _detailColumn(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 23),
+              const SizedBox(width: 8),
+              Text(
+                "$label:",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          label == "Phone"
+              ? InkWell(
+                  onTap: () => _launchPhone(value),
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue,
+                    ),
+                  ),
+                )
+              : Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[800],
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+  
+  // Existing _detailRow method from original code
   static Widget _detailRow(String label, String value, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
@@ -254,14 +314,14 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
       ),
     );
   }
-}
 
-Future<void> _launchPhone(String phoneNumber) async {
-  final Uri launchUri = Uri(
-    scheme: 'tel',
-    path: phoneNumber,
-  );
-  if (!await launchUrl(launchUri)) {
-    print('Could not launch $launchUri');
+  static Future<void> _launchPhone(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (!await launchUrl(launchUri)) {
+      print('Could not launch $launchUri');
+    }
   }
 }
