@@ -109,12 +109,15 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   @override
   void initState() {
     super.initState();
-    _phoneNumber = widget.userData['phone'] ?? widget.phoneNumber;
-    _pincode = (widget.userData['pincode'] ?? '').toString();
-    _selectedState = widget.userData['state'];
-    _selectedDistrict = widget.userData['district'];
-    _selectedTaluka = widget.userData['taluka'];
-    _selectedVillage = widget.userData['village'];
+
+    final user = UserSession.user ?? {};
+
+    _phoneNumber = user['phone'] ?? widget.phoneNumber;
+    _pincode = (user['pincode'] ?? '').toString();
+    _selectedState = user['state'];
+    _selectedDistrict = user['district'];
+    _selectedTaluka = user['taluka'];
+    _selectedVillage = user['village'];
     _loadLocationData();
   }
 
@@ -644,6 +647,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       );
       return;
     }
+    
     if (_base64Image == null || _base64Image!.isEmpty) {
       showDialog(
         context: context,
@@ -658,6 +662,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       );
       return;
     }
+    
 
     setState(() => _isSubmitting = true);
 
@@ -883,7 +888,6 @@ class _GradientButton extends StatelessWidget {
     this.gradientColors = const [
       Color.fromARGB(255, 29, 108, 92),
       Color.fromARGB(255, 29, 108, 92),
-      
     ],
   }) : super(key: key);
 
