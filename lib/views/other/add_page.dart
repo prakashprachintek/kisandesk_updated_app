@@ -109,12 +109,15 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   @override
   void initState() {
     super.initState();
-    _phoneNumber = widget.userData['phone'] ?? widget.phoneNumber;
-    _pincode = (widget.userData['pincode'] ?? '').toString();
-    _selectedState = widget.userData['state'];
-    _selectedDistrict = widget.userData['district'];
-    _selectedTaluka = widget.userData['taluka'];
-    _selectedVillage = widget.userData['village'];
+
+    final user = UserSession.user ?? {};
+
+    _phoneNumber = user['phone'] ?? widget.phoneNumber;
+    _pincode = (user['pincode'] ?? '').toString();
+    _selectedState = user['state'];
+    _selectedDistrict = user['district'];
+    _selectedTaluka = user['taluka'];
+    _selectedVillage = user['village'];
     _loadLocationData();
   }
 
@@ -278,8 +281,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(height: 30),
-        Lottie.asset('assets/animations/onb3.json', height: 200),
+        // SizedBox(height: 30),
+        // Lottie.asset('assets/animations/onb3.json', height: 200),
         SizedBox(height: 20),
         Center(
           child: Text(
@@ -355,7 +358,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 Expanded(
                   child: _base64Image == null
                       ? Text(
-                          "Select Image",
+                          "Upload Image",
                           style: TextStyle(color: Colors.black54),
                           overflow: TextOverflow.ellipsis,
                         )
@@ -644,6 +647,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       );
       return;
     }
+    
     if (_base64Image == null || _base64Image!.isEmpty) {
       showDialog(
         context: context,
@@ -658,6 +662,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       );
       return;
     }
+    
 
     setState(() => _isSubmitting = true);
 
@@ -881,8 +886,8 @@ class _GradientButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.gradientColors = const [
-      Color(0xFF1B5E20),
-      Color(0xFFFFD600),
+      Color.fromARGB(255, 29, 108, 92),
+      Color.fromARGB(255, 29, 108, 92),
     ],
   }) : super(key: key);
 

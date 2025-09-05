@@ -109,7 +109,10 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
           bool _dobError = false;
 
           return AlertDialog(
-            title: Text(tr("Edit Personal Information"),style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),),
+            title: Text(
+              tr("Edit Personal Information"),
+              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -335,99 +338,120 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
                 ],
               ),
             ),
+
+            //buttons
             actions: [
-              TextButton(
-                child: Text(tr("Cancel"), style: TextStyle(color: Color.fromARGB(255, 35, 140, 110)),),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 29, 108, 92),
-                ),
-                child: isSubmitting
-                    ? CircularProgressIndicator()
-                    : Text(tr("Update Details")),
-                onPressed: () async {
-                  setState(() {
-                    isSubmitting = true;
-                    _nameError = _nameController.text.isEmpty;
-                    _stateError = _stateController.text.isEmpty;
-                    _addressError = _addressController.text.isEmpty;
-                    _pincodeError = _pincodeController.text.length != 6;
-                    _districtError = selectedDistrict == null;
-                    _talukError = selectedTaluk == null;
-                    _villageError = selectedVillage == null;
-                    _genderError = selectedGender == null;
-                    _dobError = selectedDateOfBirth == null;
-                  });
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    child: Text(
+                      tr("Cancel"),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                            color: Colors.grey,
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color.fromARGB(255, 29, 108, 92),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            tr("Update Details"),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                    onPressed: () async {
+                      setState(() {
+                        isSubmitting = true;
+                        _nameError = _nameController.text.isEmpty;
+                        _stateError = _stateController.text.isEmpty;
+                        _addressError = _addressController.text.isEmpty;
+                        _pincodeError = _pincodeController.text.length != 6;
+                        _districtError = selectedDistrict == null;
+                        _talukError = selectedTaluk == null;
+                        _villageError = selectedVillage == null;
+                        _genderError = selectedGender == null;
+                        _dobError = selectedDateOfBirth == null;
+                      });
 
-                  if (_nameController.text.isEmpty ||
-                      _stateController.text.isEmpty ||
-                      _addressController.text.isEmpty ||
-                      selectedDistrict == null ||
-                      selectedTaluk == null ||
-                      selectedVillage == null ||
-                      _pincodeController.text.length != 6 ||
-                      selectedDateOfBirth == null ||
-                      selectedGender == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(tr("Please fill all fields"))),
-                    );
-                    setState(() => isSubmitting = false);
-                    return;
-                  }
+                      if (_nameController.text.isEmpty ||
+                          _stateController.text.isEmpty ||
+                          _addressController.text.isEmpty ||
+                          selectedDistrict == null ||
+                          selectedTaluk == null ||
+                          selectedVillage == null ||
+                          _pincodeController.text.length != 6 ||
+                          selectedDateOfBirth == null ||
+                          selectedGender == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(tr("Please fill all fields"))),
+                        );
+                        setState(() => isSubmitting = false);
+                        return;
+                      }
 
-                  try {
-                    final url = Uri.parse("${KD.api}/user/insert_user");
-                    final response = await http.post(
-                      url,
-                      headers: {"Content-Type": "application/json"},
-                      body: jsonEncode({
-                        "phoneNumber": phone,
-                        "fullName": _nameController.text.trim(),
-                        "state": _stateController.text.trim(),
-                        "district": selectedDistrict,
-                        "taluka": selectedTaluk,
-                        "village": selectedVillage,
-                        "address": _addressController.text.trim(),
-                        "pincode": _pincodeController.text.trim(),
-                        "dob": DateFormat('yyyy-MM-dd')
-                            .format(selectedDateOfBirth!),
-                        "gender": selectedGender,
-                      }),
-                    );
-                    print("Status Code: ${response.statusCode}");
-                    print("Response Body: ${response.body}");
+                      try {
+                        final url = Uri.parse("${KD.api}/user/insert_user");
+                        final response = await http.post(
+                          url,
+                          headers: {"Content-Type": "application/json"},
+                          body: jsonEncode({
+                            "phoneNumber": phone,
+                            "fullName": _nameController.text.trim(),
+                            "state": _stateController.text.trim(),
+                            "district": selectedDistrict,
+                            "taluka": selectedTaluk,
+                            "village": selectedVillage,
+                            "address": _addressController.text.trim(),
+                            "pincode": _pincodeController.text.trim(),
+                            "dob": DateFormat('yyyy-MM-dd')
+                                .format(selectedDateOfBirth!),
+                            "gender": selectedGender,
+                          }),
+                        );
+                        print("Status Code: ${response.statusCode}");
+                        print("Response Body: ${response.body}");
 
-                    final data = jsonDecode(response.body);
+                        final data = jsonDecode(response.body);
 
-                    if (response.statusCode == 200 &&
-                        data["status"] == "success") {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(tr("Registration successful!"))),
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PersonalDetailsScreen()
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text(data["message"] ?? "Registration failed")),
-                      );
-                    }
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Error: $e")),
-                    );
-                  } finally {
-                    setState(() => isSubmitting = false);
-                  }
-                },
+                        if (response.statusCode == 200 &&
+                            data["status"] == "success") {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(tr("Registration successful!"))),
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => PersonalDetailsScreen()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    data["message"] ?? "Registration failed")),
+                          );
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error: $e")),
+                        );
+                      } finally {
+                        setState(() => isSubmitting = false);
+                      }
+                    },
+                  ),
+                ],
               ),
             ],
           );
