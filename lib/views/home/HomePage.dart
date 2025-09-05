@@ -1112,7 +1112,7 @@ class _HomePageState extends State<HomePage> {
                       context,
                       MaterialPageRoute(builder: (context) => MandiRatesPage()),
                     );
-                  } else if (index == 1) {
+                  } /*else if (index == 1) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -1122,7 +1122,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     );
-                  }
+                  }*/
                 },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 5),

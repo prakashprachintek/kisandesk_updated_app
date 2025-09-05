@@ -29,11 +29,11 @@ class Postdetailspage extends StatefulWidget {
 class _PostdetailspageState extends State<Postdetailspage> {
   double _selectedRating = 0.0;
 
-  void _onStarTap(double rating) {
+  /*void _onStarTap(double rating) {
     setState(() {
       _selectedRating = rating;
     });
-  }
+  }*/
 
   // Method to handle sharing the product details
   void _shareProductDetails() {
@@ -93,12 +93,12 @@ class _PostdetailspageState extends State<Postdetailspage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
+                /*IconButton(
                   icon: Icon(Icons.favorite_border, color: Color(0xFF00AD83)),
                   onPressed: () {
                     // Add favorite functionality here
                   },
-                ),
+                ),*/
               ],
             ),
             SizedBox(height: 10),
@@ -134,7 +134,13 @@ class _PostdetailspageState extends State<Postdetailspage> {
               ),
             ),
             SizedBox(height: 30),
-
+          ],
+        ),
+      ),
+    );
+  }
+}
+/*
             // Review Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -196,4 +202,4 @@ class _PostdetailspageState extends State<Postdetailspage> {
       ),
     );
   }
-}
+}*/

@@ -10,12 +10,9 @@ class MarketPage extends StatefulWidget {
 }
 
 class _MarketPageState extends State<MarketPage> {
-  List<Map<String, dynamic>> marketItems =
-      []; // List to store market items
-  List<Map<String, dynamic>> favoriteItems =
-      []; // List to store favorite market items
+  List<Map<String, dynamic>> marketItems = [];
+  List<Map<String, dynamic>> originalMarketItems = [];
   bool isLoading = true;
-  String errorMessage = '';
   TextEditingController searchController = TextEditingController();
   String selectedFilter = '';
 
@@ -25,27 +22,24 @@ class _MarketPageState extends State<MarketPage> {
     fetchMarketPosts();
   }
 
-  // Fetch market posts from API
   Future<void> fetchMarketPosts() async {
-    const String url =
-        '${KD.api}/admin/getAll_market_post'; // Replace with your API endpoint
+    const String url = '${KD.api}/admin/getAll_market_post';
     try {
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "category": "", // Adjust the category for market
+          "category": "",
           "search": "",
-          
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final results = data['results']; // Accessing the results key
+        final results = data['results'];
         if (results != null) {
           setState(() {
-            marketItems = results.map<Map<String, dynamic>>((item) {
+            originalMarketItems = List<Map<String, dynamic>>.from(results.map<Map<String, dynamic>>((item) {
               final farmerDetails =
                   (item['farmerDetails'] as List?)?.isNotEmpty == true
                       ? item['farmerDetails'][0]
@@ -60,8 +54,10 @@ class _MarketPageState extends State<MarketPage> {
                 'fileName': item['post_url'] ?? 'assets/market1.webp',
                 'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
                 'Phone': farmerDetails?['phone'] ?? 'N/A',
+                'taluka': farmerDetails?['taluka'] ?? 'N/A',
               };
-            }).toList();
+            }).toList());
+            marketItems = List.from(originalMarketItems);
             isLoading = false;
           });
         } else {
@@ -76,34 +72,35 @@ class _MarketPageState extends State<MarketPage> {
     } catch (e) {
       setState(() {
         isLoading = false;
+        marketItems = [];
       });
       print('Error fetching market posts: $e');
     }
   }
 
-  void toggleFavorite(Map<String, dynamic> marketItem) {
+  void _performSearchAndFilter() {
+    List<Map<String, dynamic>> filteredList = List.from(originalMarketItems);
+
+    String query = searchController.text.toLowerCase();
+    if (query.isNotEmpty) {
+      filteredList = filteredList
+          .where((item) => item['name'].toString().toLowerCase().contains(query))
+          .toList();
+    }
+
+    if (selectedFilter == 'Price: Low to High') {
+      filteredList.sort((a, b) => (a['price'] as num).compareTo(b['price'] as num));
+    } else if (selectedFilter == 'Price: High to Low') {
+      filteredList.sort((a, b) => (b['price'] as num).compareTo(a['price'] as num));
+    }
+
     setState(() {
-      if (favoriteItems.contains(marketItem)) {
-        favoriteItems.remove(marketItem);
-      } else {
-        favoriteItems.add(marketItem);
-      }
+      marketItems = filteredList;
     });
   }
 
-  void applyFilter(String filter) {
-    setState(() {
-      selectedFilter = filter;
-      if (filter == 'Price: Low to High') {
-        marketItems.sort((a, b) => a['price'].compareTo(b['price']));
-      } else if (filter == 'Price: High to Low') {
-        marketItems.sort((a, b) => b['price'].compareTo(a['price']));
-      }
-    });
-  }
-
-  void showFilterDialog(BuildContext context) {
-    showModalBottomSheet(
+  void showFilterDialog(BuildContext context) async {
+    final newFilter = await showModalBottomSheet<String>(
       context: context,
       builder: (BuildContext context) {
         return Container(
@@ -125,8 +122,7 @@ class _MarketPageState extends State<MarketPage> {
                 value: 'Price: Low to High',
                 groupValue: selectedFilter,
                 onChanged: (value) {
-                  Navigator.pop(context);
-                  if (value != null) applyFilter(value);
+                  Navigator.pop(context, value); // Pass the selected value back
                 },
               ),
               RadioListTile<String>(
@@ -134,8 +130,7 @@ class _MarketPageState extends State<MarketPage> {
                 value: 'Price: High to Low',
                 groupValue: selectedFilter,
                 onChanged: (value) {
-                  Navigator.pop(context);
-                  if (value != null) applyFilter(value);
+                  Navigator.pop(context, value); // Pass the selected value back
                 },
               ),
             ],
@@ -143,6 +138,14 @@ class _MarketPageState extends State<MarketPage> {
         );
       },
     );
+
+    // This code runs only after the modal sheet is closed.
+    if (newFilter != null && newFilter != selectedFilter) {
+      setState(() {
+        selectedFilter = newFilter;
+      });
+      _performSearchAndFilter();
+    }
   }
 
   @override
@@ -167,14 +170,7 @@ class _MarketPageState extends State<MarketPage> {
                 prefixIcon: Icon(Icons.search, color: Colors.white),
               ),
               onChanged: (value) {
-                setState(() {
-                  marketItems = marketItems
-                      .where((item) => item['name']
-                          .toString()
-                          .toLowerCase()
-                          .contains(value.toLowerCase()))
-                      .toList();
-                });
+                _performSearchAndFilter();
               },
             ),
           ),
@@ -206,7 +202,6 @@ class _MarketPageState extends State<MarketPage> {
                     itemCount: marketItems.length,
                     itemBuilder: (context, index) {
                       final marketItem = marketItems[index];
-                      final isFavorited = favoriteItems.contains(marketItem);
 
                       return GestureDetector(
                         onTap: () {
@@ -218,12 +213,11 @@ class _MarketPageState extends State<MarketPage> {
                                 price: '₹${marketItem['price']}',
                                 imagePath: marketItem['fileName'],
                                 location: marketItem['location'] ??
-                                    'Unknown location', // Make sure location is not null
+                                    'Unknown location',
                                 description: marketItem['description'] ??
-                                    'No description available', // Make sure description is not null
-                                FarmerName: marketItem[
-                                    'FarmerName'], // Pass full name
-                                Phone: marketItem['Phone'], // Pass phone
+                                    'No description available',
+                                FarmerName: marketItem['FarmerName'],
+                                Phone: marketItem['Phone'],
                                 review: 'This is a sample review.',
                               ),
                             ),
@@ -231,11 +225,10 @@ class _MarketPageState extends State<MarketPage> {
                         },
                         child: MarketCard(
                           name: marketItem['name'],
+                          taluka: marketItem['taluka'] ?? 'N/A',
                           price: '₹${marketItem['price']}',
                           imagePath: marketItem['fileName'],
-                          isFavorited: isFavorited,
-                          onFavoritePressed: () =>
-                              toggleFavorite(marketItem),
+                          //taluka: marketItem['taluka'] ?? 'N/A',
                         ),
                       );
                     },
@@ -249,15 +242,14 @@ class MarketCard extends StatelessWidget {
   final String name;
   final String price;
   final String imagePath;
-  final bool isFavorited;
-  final VoidCallback onFavoritePressed;
+  final String taluka;
 
   const MarketCard({
+    super.key,
     required this.name,
     required this.price,
     required this.imagePath,
-    required this.isFavorited,
-    required this.onFavoritePressed,
+    required this.taluka,
   });
 
   @override
@@ -270,18 +262,17 @@ class MarketCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Fixed height for the image
           SizedBox(
-            height: 150, // Set a fixed height for the image
+            height: 120,
+            width: double.infinity,
             child: ClipRRect(
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10),
                 topRight: Radius.circular(10),
               ),
               child: Image.network(
                 imagePath,
                 fit: BoxFit.cover,
-                width: double.infinity,
                 errorBuilder: (context, error, stackTrace) => Image.asset(
                   'assets/land1.jpg',
                   fit: BoxFit.cover,
@@ -291,41 +282,46 @@ class MarketCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                        maxLines: 2, // Allows wrapping to a maximum of 2 lines
-                        overflow: TextOverflow
-                            .ellipsis, // Displays '...' if text overflows
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        price,
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                IconButton(
-                  icon: Icon(
-                    isFavorited ? Icons.favorite : Icons.favorite_border,
-                    color: Color(0xFF00AD83),
+                const SizedBox(height: 4),
+                Text(
+                  price,
+                  style: const TextStyle(
+                    color: Colors.green,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
-                  onPressed: onFavoritePressed,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, size: 12, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        taluka,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
