@@ -98,6 +98,67 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     },
   };
 
+  // Quantity dropdown options (all keys are lowercase)
+  final Map<String, List<String>> _quantityOptions = {
+    'labour': [
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      '11',
+      '12',
+      '13',
+      '14',
+      '15+'
+    ],
+    'cattle': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'],
+    'land': [
+      '1 Acre',
+      '2 Acres',
+      '3 Acres',
+      '4 Acres',
+      '5 Acres',
+      '6 Acres',
+      '7 Acres',
+      '8 Acres',
+      '9 Acres',
+      '10 Acres',
+      'More than 10 Acres'
+    ],
+    'machinery': [
+      '1 Unit',
+      '2 Units',
+      '3 Units',
+      '4 Units',
+      '5 Units',
+      '6 Units',
+      '7 Units',
+      '8 Units',
+      '9 Units',
+      '10 Units',
+      'More than 10 Units'
+    ],
+    'crop': [
+      '10 Kg',
+      '20 Kg',
+      '30 Kg',
+      '40 Kg',
+      ' 50 Kg',
+      '60 Kg',
+      '70 Kg',
+      '80 Kg',
+      '90 Kg',
+      '100 kg',
+      'More than 100 Kg'
+    ],
+  };
+
   // Default field labels
   Map<String, String> _currentFieldLabels = {
     'cropName': 'Title',
@@ -333,16 +394,54 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           initialValue: _price,
         ),
         SizedBox(height: 16),
-        TextFormField(
-          decoration: InputDecoration(
-            labelText: _currentFieldLabels['quantity'] ?? "Quantity",
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          keyboardType: TextInputType.number,
-          onChanged: (val) => _quantity = val,
-          initialValue: _quantity,
-        ),
-        SizedBox(height: 16),
+        if (_selectedCategory != 'machinery') ...[
+          if (_quantityOptions.containsKey(_selectedCategory))
+            DropdownSearch<String>(
+              items: _quantityOptions[_selectedCategory] ?? [],
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: _currentFieldLabels['quantity'] ?? "Quantity",
+                  border: OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade400)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.green, width: 2)),
+                ),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  _quantity = val;
+                });
+              },
+              selectedItem: _quantity,
+              popupProps: PopupProps.menu(
+                showSearchBox: false,
+                menuProps: MenuProps(
+                  borderRadius: BorderRadius.circular(8),
+                  elevation: 4,
+                ),
+              ),
+            )
+          else
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: _currentFieldLabels['quantity'] ?? "Quantity",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade400)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.green, width: 2)),
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (val) => _quantity = val,
+              initialValue: _quantity,
+            ),
+          SizedBox(height: 16),
+        ],
         GestureDetector(
           onTap: _pickImage,
           child: Container(
@@ -440,6 +539,13 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               if (val != null) updateDistricts(val);
             },
             selectedItem: _selectedState,
+            popupProps: PopupProps.menu(
+              showSearchBox: true,
+              menuProps: MenuProps(
+                borderRadius: BorderRadius.circular(8),
+                elevation: 4,
+              ),
+            ),
           ),
           SizedBox(height: 16),
           DropdownSearch<String>(
@@ -455,6 +561,13 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               if (val != null) updateTalukas(val);
             },
             selectedItem: _selectedDistrict,
+            popupProps: PopupProps.menu(
+              showSearchBox: true,
+              menuProps: MenuProps(
+                borderRadius: BorderRadius.circular(8),
+                elevation: 4,
+              ),
+            ),
           ),
           SizedBox(height: 16),
           DropdownSearch<String>(
@@ -470,11 +583,24 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               if (val != null) updateVillages(val);
             },
             selectedItem: _selectedTaluka,
+            popupProps: PopupProps.menu(
+              showSearchBox: true,
+              menuProps: MenuProps(
+                borderRadius: BorderRadius.circular(8),
+                elevation: 4,
+              ),
+            ),
           ),
           SizedBox(height: 16),
           DropdownSearch<String>(
             items: _villages,
-            popupProps: PopupProps.menu(showSearchBox: true),
+            popupProps: PopupProps.menu(
+              showSearchBox: true,
+              menuProps: MenuProps(
+                borderRadius: BorderRadius.circular(8),
+                elevation: 4,
+              ),
+            ),
             dropdownDecoratorProps: DropDownDecoratorProps(
               dropdownSearchDecoration: InputDecoration(
                 labelText: 'Village',
