@@ -8,8 +8,6 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:lottie/lottie.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mainproject1/views/services/api_config.dart';
-
-// Replace this with your actual HomePage widget import
 import '../home/HomePage.dart';
 import '../services/user_session.dart';
 
@@ -30,26 +28,18 @@ class AddMarketPostPage extends StatefulWidget {
 }
 
 class _AddMarketPostPageState extends State<AddMarketPostPage> {
-  // We have 3 steps: 0=Category, 1=Product Details, 2=Location & Submit.
   int _currentStep = 0;
-
-  // Basic fields
   String? _selectedCategory;
   String? _cropName;
   String? _description;
   String? _phoneNumber;
   String? _price;
   String? _quantity;
-
-  // Image stored as Base64 string
   String? _base64Image;
-
-  // Location fields
+  String? _fileName;
   bool _useCurrentLocation = false;
   double? _latitude;
   double? _longitude;
-
-  // Manual location data (loaded from JSON)
   Map<String, dynamic> _locationData = {};
   List<String> _states = [];
   List<String> _districts = [];
@@ -60,11 +50,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   String? _selectedTaluka;
   String? _selectedVillage;
   String? _pincode;
-
-  // Submission flag
   bool _isSubmitting = false;
 
-  // Category-based field labels
   final Map<String, Map<String, String>> _categoryFieldLabels = {
     'cattle': {
       'cropName': 'Cattle Name',
@@ -98,68 +85,14 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     },
   };
 
-  // Quantity dropdown options (all keys are lowercase)
   final Map<String, List<String>> _quantityOptions = {
-    'labour': [
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      '10',
-      '11',
-      '12',
-      '13',
-      '14',
-      '15+'
-    ],
+    'labour': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15+'],
     'cattle': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'],
-    'land': [
-      '1 Acre',
-      '2 Acres',
-      '3 Acres',
-      '4 Acres',
-      '5 Acres',
-      '6 Acres',
-      '7 Acres',
-      '8 Acres',
-      '9 Acres',
-      '10 Acres',
-      'More than 10 Acres'
-    ],
-    'machinery': [
-      '1 Unit',
-      '2 Units',
-      '3 Units',
-      '4 Units',
-      '5 Units',
-      '6 Units',
-      '7 Units',
-      '8 Units',
-      '9 Units',
-      '10 Units',
-      'More than 10 Units'
-    ],
-    'crop': [
-      '10 Kg',
-      '20 Kg',
-      '30 Kg',
-      '40 Kg',
-      ' 50 Kg',
-      '60 Kg',
-      '70 Kg',
-      '80 Kg',
-      '90 Kg',
-      '100 kg',
-      'More than 100 Kg'
-    ],
+    'land': ['1 Acre', '2 Acres', '3 Acres', '4 Acres', '5 Acres', '6 Acres', '7 Acres', '8 Acres', '9 Acres', '10 Acres', 'More than 10 Acres'],
+    'machinery': ['1 Unit', '2 Units', '3 Units', '4 Units', '5 Units', '6 Units', '7 Units', '8 Units', '9 Units', '10 Units', 'More than 10 Units'],
+    'crop': ['10 Kg', '20 Kg', '30 Kg', '40 Kg', ' 50 Kg', '60 Kg', '70 Kg', '80 Kg', '90 Kg', '100 kg', 'More than 100 Kg'],
   };
 
-  // Default field labels
   Map<String, String> _currentFieldLabels = {
     'cropName': 'Title',
     'description': 'Description',
@@ -170,9 +103,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   @override
   void initState() {
     super.initState();
-
     final user = UserSession.user ?? {};
-
     _phoneNumber = user['phone'] ?? widget.phoneNumber;
     _pincode = (user['pincode'] ?? '').toString();
     _selectedState = user['state'];
@@ -182,11 +113,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     _loadLocationData();
   }
 
-  /// Load location data from JSON file (adjust the path as needed)
   Future<void> _loadLocationData() async {
     try {
-      final String response =
-          await rootBundle.loadString('assets/loadLocation_data.json');
+      final String response = await rootBundle.loadString('assets/loadLocation_data.json');
       final data = json.decode(response);
       setState(() {
         _locationData = data;
@@ -224,7 +153,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     });
   }
 
-  // Step navigation
   void _handleNext() {
     if (_currentStep < 2) {
       setState(() => _currentStep++);
@@ -245,7 +173,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
   }
 
-  /// STEP 0: Category Selection with Image Cards
   Widget _buildStep0() {
     final Map<String, String> categoryImages = {
       'cattle': 'assets/cattlemm.png',
@@ -277,13 +204,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.green[100]
-                      : const Color.fromARGB(255, 255, 255, 255),
+                  color: isSelected ? Colors.green[100] : const Color.fromARGB(255, 255, 255, 255),
                   border: Border.all(
-                    color: isSelected
-                        ? Colors.green
-                        : const Color.fromARGB(255, 255, 255, 255),
+                    color: isSelected ? Colors.green : const Color.fromARGB(255, 255, 255, 255),
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(10),
@@ -294,10 +217,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   children: [
                     Expanded(
                       child: categoryImages.containsKey(key)
-                          ? Image.asset(
-                              categoryImages[key]!,
-                              fit: BoxFit.contain,
-                            )
+                          ? Image.asset(categoryImages[key]!, fit: BoxFit.contain)
                           : Icon(Icons.image_not_supported, size: 50),
                     ),
                     SizedBox(height: 10),
@@ -322,9 +242,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   title: Text("Error"),
                   content: Text("Please select a category."),
                   actions: [
-                    TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text("OK")),
+                    TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK")),
                   ],
                 ),
               );
@@ -337,13 +255,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     );
   }
 
-  /// STEP 1: Enter Product Details
   Widget _buildStep1() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // SizedBox(height: 30),
-        // Lottie.asset('assets/animations/onb3.json', height: 200),
         SizedBox(height: 20),
         Center(
           child: Text(
@@ -462,7 +377,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                           overflow: TextOverflow.ellipsis,
                         )
                       : Text(
-                          "Image selected (Base64)",
+                          "Image selected: ${_fileName ?? 'Base64'}",
                           style: TextStyle(color: Colors.black54),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -508,7 +423,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     );
   }
 
-  /// STEP 2: Location and Submission
   Widget _buildStep2() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -644,7 +558,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     );
   }
 
-  /// Build a toggle button for location selection (Manual vs. Current)
   Widget _buildLocationToggle() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -681,7 +594,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     );
   }
 
-  /// Fetch current location using Geolocator
   Future<void> _fetchCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -691,8 +603,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           title: Text("Location Error"),
           content: Text("Location services are disabled."),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
           ],
         ),
       );
@@ -708,9 +619,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             title: Text("Permission Denied"),
             content: Text("Location permission is denied."),
             actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text("OK"))
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
             ],
           ),
         );
@@ -724,15 +633,13 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           title: Text("Permission Error"),
           content: Text("Location permission is permanently denied."),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
           ],
         ),
       );
       return;
     }
-    Position pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _latitude = pos.latitude;
       _longitude = pos.longitude;
@@ -742,8 +649,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     );
   }
 
-  /// Submit post to the specified API
   Future<void> _submitMarketPost() async {
+    // Validation checks
     if (_selectedCategory == null) {
       showDialog(
         context: context,
@@ -751,8 +658,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           title: Text("Submission Error"),
           content: Text("Category is missing."),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
           ],
         ),
       );
@@ -766,116 +672,164 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           title: Text("Submission Error"),
           content: Text("Title/description is missing."),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
           ],
         ),
       );
       return;
     }
-    
-    if (_base64Image == null || _base64Image!.isEmpty) {
+    if (_base64Image == null || _base64Image!.isEmpty || _fileName == null) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: Text("Submission Error"),
           content: Text("Please select an image."),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
           ],
         ),
       );
       return;
     }
-    
 
     setState(() => _isSubmitting = true);
 
-    Map<String, dynamic> postData = {
-      "farmer_id": UserSession.userId,
-      "phoneNumber": _phoneNumber ?? '',
-      "cropName": _cropName ?? '',
-      "description": _description ?? '',
-      "price": int.tryParse(_price ?? '0') ?? 0,
-      "quantity": int.tryParse(_quantity ?? '0') ?? 0,
-      "state": _selectedState ?? '',
-      "district": _selectedDistrict ?? '',
-      "taluka": _selectedTaluka ?? '',
-      "village": _selectedVillage ?? '',
-      "pincode": _pincode ?? '',
-      "category": _selectedCategory,
-      // "image": _base64Image,
-    };
-
-    if (_useCurrentLocation) {
-      if (_latitude == null || _longitude == null) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text("Location Error"),
-            content: Text("Unable to fetch current location."),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text("OK"))
-            ],
+    try {
+      // Step 1: Upload the image with retry
+      bool imageUploaded = false;
+      for (int attempt = 1; attempt <= 3; attempt++) {
+        var imageRequest = http.MultipartRequest(
+          'POST',
+          Uri.parse('${KD.api}/upload_document'),
+        );
+        imageRequest.files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            base64Decode(_base64Image!),
+            filename: _fileName,
           ),
         );
+
+        var imageResponse = await imageRequest.send();
+        final responseData = jsonDecode(await imageResponse.stream.bytesToString());
+
+        if (imageResponse.statusCode == 200 || imageResponse.statusCode == 201) {
+          if (responseData['message'] == 'File uploaded successfully') {
+            imageUploaded = true;
+            break;
+          }
+        }
+        
+        if (attempt < 3) {
+          await Future.delayed(Duration(milliseconds: 500)); // Short delay between retries
+        } else {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text("Image Upload Error"),
+              content: Text("Failed to upload image: ${responseData['message'] ?? 'Status ${imageResponse.statusCode}'}"),
+              actions: [
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+              ],
+            ),
+          );
+          setState(() => _isSubmitting = false);
+          return;
+        }
+      }
+
+      if (!imageUploaded) return;
+
+      // Step 2: Immediately call the insert market post API
+      Map<String, dynamic> postData = {
+        "farmer_id": UserSession.userId,
+        "phoneNumber": _phoneNumber ?? '',
+        "cropName": _cropName ?? '',
+        "description": _description ?? '',
+        "price": int.tryParse(_price ?? '0') ?? 0,
+        "quantity": int.tryParse(_quantity?.replaceAll(RegExp(r'[^0-9]'), '') ?? '0') ?? 0,
+        "state": _selectedState ?? '',
+        "district": _selectedDistrict ?? '',
+        "taluka": _selectedTaluka ?? '',
+        "village": _selectedVillage ?? '',
+        "pincode": _pincode ?? '',
+        "category": _selectedCategory,
+        "fileName": _fileName,
+      };
+
+      if (_useCurrentLocation) {
+        if (_latitude == null || _longitude == null) {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text("Location Error"),
+              content: Text("Unable to fetch current location."),
+              actions: [
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+              ],
+            ),
+          );
+          setState(() => _isSubmitting = false);
+          return;
+        }
+        postData["latitude"] = _latitude;
+        postData["longitude"] = _longitude;
+      }
+
+      // Retry for market post API
+      bool postCreated = false;
+      for (int attempt = 1; attempt <= 3; attempt++) {
+        final postResponse = await http.post(
+          Uri.parse('${KD.api}/admin/insert_market_post'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(postData),
+        );
+
+        if (postResponse.statusCode == 200 || postResponse.statusCode == 201) {
+          postCreated = true;
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => AlertDialog(
+              title: Text("Submission Successful"),
+              content: Text("Market post added successfully! Redirecting to HomePage..."),
+              actions: [
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+              ],
+            ),
+          );
+          await Future.delayed(Duration(seconds: 2));
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HomePage(phoneNumber: widget.phoneNumber, userData: widget.userData),
+            ),
+          );
+          break;
+        }
+
+        if (attempt < 3) {
+          await Future.delayed(Duration(milliseconds: 500));
+        } else {
+          final responseData = jsonDecode(postResponse.body);
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text("Submission Error"),
+              content: Text("Failed to add post: ${responseData['message'] ?? 'Status ${postResponse.statusCode}'}"),
+              actions: [
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+              ],
+            ),
+          );
+        }
+      }
+
+      if (!postCreated) {
         setState(() => _isSubmitting = false);
         return;
-      }
-      postData["latitude"] = _latitude;
-      postData["longitude"] = _longitude;
-    } else {
-      postData["state"] = _selectedState;
-      postData["district"] = _selectedDistrict;
-      postData["taluka"] = _selectedTaluka;
-      postData["village"] = _selectedVillage;
-      postData["pincode"] = _pincode ?? '';
-    }
-
-    try {
-      print('❗❗❗postdata :${postData}');
-      final response = await http.post(
-        Uri.parse('${KD.api}/admin/insert_market_post'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(postData),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => AlertDialog(
-            title: Text("Submission Successful"),
-            content: Text(
-                "Market post added successfully! Redirecting to HomePage..."),
-          ),
-        );
-        await Future.delayed(Duration(seconds: 2));
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HomePage(
-                phoneNumber: widget.phoneNumber, userData: widget.userData),
-          ),
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text("Submission Error"),
-            content: Text("Failed to add post. Status: ${response.statusCode}"),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text("OK"))
-            ],
-          ),
-        );
       }
     } on SocketException {
       showDialog(
@@ -884,8 +838,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           title: Text("Network Error"),
           content: Text("Please check your internet connection."),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
           ],
         ),
       );
@@ -897,8 +850,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           title: Text("Submission Error"),
           content: Text("An unexpected error occurred: $e"),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
           ],
         ),
       );
@@ -907,7 +859,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
   }
 
-  /// Image picking: Convert selected image to Base64
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     showModalBottomSheet(
@@ -918,8 +869,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             children: [
               ListTile(
                 leading: Icon(Icons.camera_alt, color: Colors.black54),
-                title: Text('Take Picture',
-                    style: TextStyle(color: Colors.black54)),
+                title: Text('Take Picture', style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -932,8 +882,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: Colors.black54),
-                title: Text('Select from Gallery',
-                    style: TextStyle(color: Colors.black54)),
+                title: Text('Select from Gallery', style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -964,6 +913,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       String base64Str = base64Encode(bytes);
       setState(() {
         _base64Image = base64Str;
+        _fileName = pickedFile.name;
       });
     } catch (e) {
       print("Error reading file: $e");
@@ -1001,7 +951,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   }
 }
 
-/// A gradient button widget
 class _GradientButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
