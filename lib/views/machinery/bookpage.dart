@@ -5,8 +5,6 @@ import 'dart:convert';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
 import 'machinery_rent_page.dart';
-import 'machneryImages.dart';
-import 'worktypeImages.dart';
 
 class BookPage extends StatefulWidget {
   const BookPage({super.key});
@@ -33,7 +31,7 @@ class _BookPageState extends State<BookPage> {
   String selectedQuantity = "1"; // default
 
   // Controllers
-  final TextEditingController areaController = TextEditingController();
+  // final TextEditingController areaController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
   // Data lists
@@ -133,7 +131,8 @@ class _BookPageState extends State<BookPage> {
     setState(() {
       fieldErrors['machinery'] = selectedMachinery == null;
       fieldErrors['workType'] = selectedWorkType == null;
-      fieldErrors['area'] = areaController.text.isEmpty;
+      fieldErrors['area'] =
+          selectedQuantity == null || selectedQuantity.isEmpty;
       fieldErrors['date'] = bookingDate == null;
       fieldErrors['description'] = descriptionController.text.isEmpty;
     });
@@ -155,7 +154,8 @@ class _BookPageState extends State<BookPage> {
       "machineryType": selectedMachinery!,
       "workDate": bookingDate!,
       "workType": selectedWorkType!,
-      "workInQuantity": areaController.text,
+      "workInQuantity": selectedQuantity,
+      "workInUnit": selectedUnit,
       "description": descriptionController.text,
       "village": UserSession.user?['village']
     };
@@ -196,7 +196,8 @@ class _BookPageState extends State<BookPage> {
           selectedMachinery = null;
           selectedWorkType = null;
           workTypeList = [];
-          areaController.clear();
+          selectedQuantity = "1";
+          selectedUnit = "Acres";
           bookingDate = null;
           descriptionController.clear();
           fieldErrors.updateAll((key, value) => false);
@@ -583,7 +584,7 @@ class _BookPageState extends State<BookPage> {
 
                           // Dropdown for quantity
                           Flexible(
-                            flex: 1 ,
+                            flex: 1,
                             child: DropdownButtonFormField<String>(
                               value: selectedQuantity,
                               decoration: InputDecoration(

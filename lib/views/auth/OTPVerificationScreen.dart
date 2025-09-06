@@ -64,7 +64,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
     if (otp.length != 4 || !RegExp(r'^\d{4}$').hasMatch(otp)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Enter a valid 6-digit OTP"))),
+        SnackBar(content: Text(tr("Enter a valid 4-digit OTP"))),
       );
       return;
     }

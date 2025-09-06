@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:lottie/lottie.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mainproject1/views/marketplace/Market_page.dart';
 import 'package:mainproject1/views/services/api_config.dart';
 import '../home/HomePage.dart';
 import '../services/user_session.dart';
@@ -1084,8 +1085,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HomePage(
-                  phoneNumber: widget.phoneNumber, userData: widget.userData),
+              builder: (_) => /*HomePage(
+                  phoneNumber: widget.phoneNumber, userData: widget.userData),*/
+                  MarketPage(),
             ),
           );
           break;
