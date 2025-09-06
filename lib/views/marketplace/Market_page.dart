@@ -39,7 +39,8 @@ class _MarketPageState extends State<MarketPage> {
         final results = data['results'];
         if (results != null) {
           setState(() {
-            originalMarketItems = List<Map<String, dynamic>>.from(results.map<Map<String, dynamic>>((item) {
+            originalMarketItems = List<Map<String, dynamic>>.from(
+                results.map<Map<String, dynamic>>((item) {
               final farmerDetails =
                   (item['farmerDetails'] as List?)?.isNotEmpty == true
                       ? item['farmerDetails'][0]
@@ -52,9 +53,11 @@ class _MarketPageState extends State<MarketPage> {
                     item['description'] ?? 'No description available',
                 'location': item['village'] ?? 'Unknown location',
                 'fileName': item['post_url'] ?? 'assets/market1.webp',
+                'quantity' : item['quantity'] ?? 'N/A',
                 'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
                 'Phone': farmerDetails?['phone'] ?? 'N/A',
                 'taluka': farmerDetails?['taluka'] ?? 'N/A',
+                
               };
             }).toList());
             marketItems = List.from(originalMarketItems);
@@ -84,19 +87,33 @@ class _MarketPageState extends State<MarketPage> {
     String query = searchController.text.toLowerCase();
     if (query.isNotEmpty) {
       filteredList = filteredList
-          .where((item) => item['name'].toString().toLowerCase().contains(query))
+          .where(
+              (item) => item['name'].toString().toLowerCase().contains(query))
           .toList();
     }
 
     if (selectedFilter == 'Price: Low to High') {
-      filteredList.sort((a, b) => (a['price'] as num).compareTo(b['price'] as num));
+      filteredList.sort((a, b) {
+        final aPrice = a['price'] is num ? a['price'] as num : 0;
+        final bPrice = b['price'] is num ? b['price'] as num : 0;
+        return aPrice.compareTo(bPrice);
+      });
     } else if (selectedFilter == 'Price: High to Low') {
-      filteredList.sort((a, b) => (b['price'] as num).compareTo(a['price'] as num));
+      filteredList.sort((a, b) {
+        final aPrice = a['price'] is num ? a['price'] as num : 0;
+        final bPrice = b['price'] is num ? b['price'] as num : 0;
+        return bPrice.compareTo(aPrice);
+      });
     }
 
     setState(() {
       marketItems = filteredList;
     });
+
+    
+    print('Filtered items: ${filteredList.length}');
+    filteredList.forEach(
+        (item) => print('Item: ${item['name']}, Price: ${item['price']}'));
   }
 
   void showFilterDialog(BuildContext context) async {
@@ -219,6 +236,7 @@ class _MarketPageState extends State<MarketPage> {
                                 FarmerName: marketItem['FarmerName'],
                                 Phone: marketItem['Phone'],
                                 review: 'This is a sample review.',
+                                // quantity: marketItem['quantity'],
                               ),
                             ),
                           );

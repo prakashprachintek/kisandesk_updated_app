@@ -9,31 +9,27 @@ import 'package:geocoding/geocoding.dart' as geocod;
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
-import 'package:mainproject1/views/profile/myProfile.dart';
-//port '../widgets/Market_card.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
 import '../other/privacyPolicyPage.dart';
 import '../other/termsNconditionsPage.dart';
-import '../other/testingpage.dart';
+
 import 'package:http/http.dart' as http;
 import '../other/welcome.dart';
 import '../profile/personalDetailsPage.dart';
 import '../redundant files/profile_page.dart';
-import '../other/favoritePage.dart';
+
 import '../mandi/mandiRates.dart';
 import '../services/api_config.dart';
 import '../services/user_session.dart';
-import '../whether/whetherinfo.dart';
-//import '../redundant files/LabourRequest.dart';
+
 import '../other/add_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
-//import '../widgets/api_config.dart';
 
 /// A placeholder cart page if you don't have one
 Future<List<MarketPost>> fetchMarketPosts() async {
