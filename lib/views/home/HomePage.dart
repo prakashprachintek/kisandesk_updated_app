@@ -532,7 +532,7 @@ class _HomePageState extends State<HomePage> {
             leading: Icon(Icons.logout),
             title: Text(tr("Logout")),
             onTap: () async {
-              Navigator.pop(context); // Close the drawer first
+              Navigator.pop(context); 
 
               final confirm = await showDialog<bool>(
                 context: context,

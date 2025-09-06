@@ -14,7 +14,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   String _title = "";
   String _description = "";
   String _imageUrl = "";
-  // For simplicity, hardcode userId. In production, fetch the current user's ID.
   String _userId = "testUser";
 
   void _submitPost() async {
@@ -23,7 +22,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
       final url = Uri.parse("${KD.api}/admin/insert_market_post");
 
-      // The data to be sent to the API
       Map<String, dynamic> postData = {
         "title": _title,
         "description": _description,
@@ -40,12 +38,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         );
 
         if (response.statusCode == 200) {
-          // Success case
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Post added successfully!")));
-          Navigator.pop(context); // Go back to the previous screen
-        } else {
-          // Handle server-side errors
+          Navigator.pop(context); 
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Error adding post: ${response.body}")));
         }
