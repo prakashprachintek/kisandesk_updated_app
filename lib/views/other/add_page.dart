@@ -153,8 +153,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       '60 Kg',
       '70 Kg',
       '80 Kg',
-      '90 Kg'
-          '100 kg',
+      '90 Kg',
+      '100 kg',
       'More than 100 Kg'
     ],
   };
@@ -417,14 +417,41 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           initialValue: _price,
         ),
         SizedBox(height: 16),
-        // Conditionally display quantity input
-        if (_quantityOptions.containsKey(_selectedCategory))
-          DropdownSearch<String>(
-            items: _quantityOptions[_selectedCategory] ?? [],
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
+        if (_selectedCategory != 'machinery') ...[
+          if (_quantityOptions.containsKey(_selectedCategory))
+            DropdownSearch<String>(
+              items: _quantityOptions[_selectedCategory] ?? [],
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: _currentFieldLabels['quantity'] ?? "Quantity",
+                  border: OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade400)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.green, width: 2)),
+                ),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  _quantity = val;
+                });
+              },
+              selectedItem: _quantity,
+              popupProps: PopupProps.menu(
+                showSearchBox: false,
+                menuProps: MenuProps(
+                  borderRadius: BorderRadius.circular(8),
+                  elevation: 4,
+                ),
+              ),
+            )
+          else
+            TextFormField(
+              decoration: InputDecoration(
                 labelText: _currentFieldLabels['quantity'] ?? "Quantity",
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade400)),
@@ -432,40 +459,12 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.green, width: 2)),
               ),
+              keyboardType: TextInputType.number,
+              onChanged: (val) => _quantity = val,
+              initialValue: _quantity,
             ),
-            onChanged: (val) {
-              setState(() {
-                _quantity = val;
-              });
-            },
-            selectedItem: _quantity,
-            popupProps: PopupProps.menu(
-              showSearchBox: false,
-              menuProps: MenuProps(
-                // This makes the dropdown scrollable
-                //constraints: BoxConstraints(maxHeight: 250),
-                borderRadius: BorderRadius.circular(8),
-                elevation: 4,
-              ),
-            ),
-          )
-        else
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: _currentFieldLabels['quantity'] ?? "Quantity",
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade400)),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.green, width: 2)),
-            ),
-            keyboardType: TextInputType.number,
-            onChanged: (val) => _quantity = val,
-            initialValue: _quantity,
-          ),
-        SizedBox(height: 16),
+          SizedBox(height: 16),
+        ],
         GestureDetector(
           onTap: _pickImage,
           child: Container(
@@ -572,7 +571,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             popupProps: PopupProps.menu(
               showSearchBox: true,
               menuProps: MenuProps(
-                //constraints: BoxConstraints(maxHeight: 250),
                 borderRadius: BorderRadius.circular(8),
                 elevation: 4,
               ),
@@ -601,7 +599,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             popupProps: PopupProps.menu(
               showSearchBox: true,
               menuProps: MenuProps(
-                //constraints: BoxConstraints(maxHeight: 250),
                 borderRadius: BorderRadius.circular(8),
                 elevation: 4,
               ),
@@ -630,7 +627,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             popupProps: PopupProps.menu(
               showSearchBox: true,
               menuProps: MenuProps(
-                //constraints: BoxConstraints(maxHeight: 250),
                 borderRadius: BorderRadius.circular(8),
                 elevation: 4,
               ),
@@ -642,7 +638,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             popupProps: PopupProps.menu(
               showSearchBox: true,
               menuProps: MenuProps(
-                //constraints: BoxConstraints(maxHeight: 250),
                 borderRadius: BorderRadius.circular(8),
                 elevation: 4,
               ),
