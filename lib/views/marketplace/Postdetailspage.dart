@@ -10,6 +10,7 @@ class Postdetailspage extends StatefulWidget {
   final String review;
   final String FarmerName; // Farmer's name
   final String Phone; // Phone number
+  // final String quantity;
 
   const Postdetailspage({
     required this.name,
@@ -20,6 +21,7 @@ class Postdetailspage extends StatefulWidget {
     required this.review,
     required this.FarmerName,
     required this.Phone,
+    // required this.quantity,
   });
 
   @override
@@ -37,8 +39,7 @@ class _PostdetailspageState extends State<Postdetailspage> {
 
   // Method to handle sharing the product details
   void _shareProductDetails() {
-    String productDetails =
-        'Check out this machinery: ${widget.name}\n'
+    String productDetails = 'Check out this machinery: ${widget.name}\n'
         'Price: ${widget.price}\n'
         'Location: ${widget.location}\n'
         'Description: ${widget.description}\n'
@@ -101,7 +102,19 @@ class _PostdetailspageState extends State<Postdetailspage> {
                 ),*/
               ],
             ),
+            SizedBox(
+              height: 10,
+            ),
+            /*
+            Text(
+              'Quantity: ${widget.quantity}',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
             SizedBox(height: 10),
+            */
             Text(
               'Location: ${widget.location}',
               style: TextStyle(

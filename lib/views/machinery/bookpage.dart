@@ -548,7 +548,8 @@ class _BookPageState extends State<BookPage> {
                       child: Row(
                         children: [
                           // Radio Buttons
-                          Expanded(
+                          Flexible(
+                            flex: 2,
                             child: Row(
                               children: [
                                 Radio<String>(
@@ -581,7 +582,8 @@ class _BookPageState extends State<BookPage> {
                           SizedBox(width: 12),
 
                           // Dropdown for quantity
-                          Expanded(
+                          Flexible(
+                            flex: 1 ,
                             child: DropdownButtonFormField<String>(
                               value: selectedQuantity,
                               decoration: InputDecoration(
