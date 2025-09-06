@@ -64,7 +64,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   // Submission flag
   bool _isSubmitting = false;
 
-  // Category-based field labels (all keys are lowercase)
+  // Category-based field labels
   final Map<String, Map<String, String>> _categoryFieldLabels = {
     'cattle': {
       'cropName': 'Cattle Name',
@@ -84,7 +84,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       'price': 'Price per Acre',
       'quantity': 'Total Area (Acres)',
     },
-    'labour': {
+    'Labour': {
       'cropName': 'Job Role',
       'description': 'Job Description',
       'price': 'Wages per Day',
@@ -96,67 +96,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       'price': 'Price',
       'quantity': 'Quantity Available',
     },
-  };
-
-  // Quantity dropdown options (all keys are lowercase)
-  final Map<String, List<String>> _quantityOptions = {
-    'labour': [
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      '10',
-      '11',
-      '12',
-      '13',
-      '14',
-      '15+'
-    ],
-    'cattle': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'],
-    'land': [
-      '1 Acre',
-      '2 Acres',
-      '3 Acres',
-      '4 Acres',
-      '5 Acres',
-      '6 Acres',
-      '7 Acres',
-      '8 Acres',
-      '9 Acres',
-      '10 Acres',
-      'More than 10 Acres'
-    ],
-    'machinery': [
-      '1 Unit',
-      '2 Units',
-      '3 Units',
-      '4 Units',
-      '5 Units',
-      '6 Units',
-      '7 Units',
-      '8 Units',
-      '9 Units',
-      '10 Units',
-      'More than 10 Units'
-    ],
-    'crop': [
-      '10 Kg',
-      '20 Kg',
-      '30 Kg',
-      '40 Kg',
-      ' 50 Kg',
-      '60 Kg',
-      '70 Kg',
-      '80 Kg',
-      '90 Kg'
-          '100 kg',
-      'More than 100 Kg'
-    ],
   };
 
   // Default field labels
@@ -241,7 +180,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     if (cat != null && _categoryFieldLabels.containsKey(cat)) {
       setState(() {
         _currentFieldLabels = _categoryFieldLabels[cat]!;
-        _quantity = null; // Clear quantity when changing categories
       });
     }
   }
@@ -266,7 +204,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           mainAxisSpacing: 10,
           physics: NeverScrollableScrollPhysics(),
           children: _categoryFieldLabels.keys.map((cat) {
-            final String key = cat.toLowerCase(); // ensures key is always lowercase
+            final String key = cat.toLowerCase();
             final isSelected = _selectedCategory == key;
 
             return GestureDetector(
@@ -303,7 +241,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      cat[0].toUpperCase() + cat.substring(1),
+                      key[0].toUpperCase() + key.substring(1),
                       style: TextStyle(fontSize: 16),
                     ),
                   ],
@@ -343,6 +281,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // SizedBox(height: 30),
+        // Lottie.asset('assets/animations/onb3.json', height: 200),
         SizedBox(height: 20),
         Center(
           child: Text(
@@ -355,12 +295,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           decoration: InputDecoration(
             labelText: _currentFieldLabels['cropName'] ?? "Title",
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.green, width: 2)),
           ),
           onChanged: (val) => _cropName = val,
           initialValue: _cropName,
@@ -370,12 +304,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           decoration: InputDecoration(
             labelText: _currentFieldLabels['description'] ?? "Description",
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.green, width: 2)),
           ),
           onChanged: (val) => _description = val,
           initialValue: _description,
@@ -385,12 +313,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           decoration: InputDecoration(
             labelText: "Phone Number",
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.green, width: 2)),
           ),
           keyboardType: TextInputType.phone,
           inputFormatters: [
@@ -405,66 +327,21 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           decoration: InputDecoration(
             labelText: _currentFieldLabels['price'] ?? "Price",
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.green, width: 2)),
           ),
           keyboardType: TextInputType.number,
           onChanged: (val) => _price = val,
           initialValue: _price,
         ),
         SizedBox(height: 16),
-        // Conditionally display quantity input
-        if (_quantityOptions.containsKey(_selectedCategory))
-          DropdownSearch<String>(
-            items: _quantityOptions[_selectedCategory] ?? [],
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                labelText: _currentFieldLabels['quantity'] ?? "Quantity",
-                border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.green, width: 2)),
-              ),
-            ),
-            onChanged: (val) {
-              setState(() {
-                _quantity = val;
-              });
-            },
-            selectedItem: _quantity,
-            popupProps: PopupProps.menu(
-              showSearchBox: false,
-              menuProps: MenuProps(
-                // This makes the dropdown scrollable
-                //constraints: BoxConstraints(maxHeight: 250),
-                borderRadius: BorderRadius.circular(8),
-                elevation: 4,
-              ),
-            ),
-          )
-        else
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: _currentFieldLabels['quantity'] ?? "Quantity",
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade400)),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.green, width: 2)),
-            ),
-            keyboardType: TextInputType.number,
-            onChanged: (val) => _quantity = val,
-            initialValue: _quantity,
+        TextFormField(
+          decoration: InputDecoration(
+            labelText: _currentFieldLabels['quantity'] ?? "Quantity",
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
+          keyboardType: TextInputType.number,
+          onChanged: (val) => _quantity = val,
+          initialValue: _quantity,
+        ),
         SizedBox(height: 16),
         GestureDetector(
           onTap: _pickImage,
@@ -556,12 +433,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               dropdownSearchDecoration: InputDecoration(
                 labelText: 'State',
                 border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.green, width: 2)),
               ),
             ),
             onChanged: (val) {
@@ -569,14 +440,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               if (val != null) updateDistricts(val);
             },
             selectedItem: _selectedState,
-            popupProps: PopupProps.menu(
-              showSearchBox: true,
-              menuProps: MenuProps(
-                //constraints: BoxConstraints(maxHeight: 250),
-                borderRadius: BorderRadius.circular(8),
-                elevation: 4,
-              ),
-            ),
           ),
           SizedBox(height: 16),
           DropdownSearch<String>(
@@ -585,12 +448,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               dropdownSearchDecoration: InputDecoration(
                 labelText: 'District',
                 border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.green, width: 2)),
               ),
             ),
             onChanged: (val) {
@@ -598,14 +455,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               if (val != null) updateTalukas(val);
             },
             selectedItem: _selectedDistrict,
-            popupProps: PopupProps.menu(
-              showSearchBox: true,
-              menuProps: MenuProps(
-                //constraints: BoxConstraints(maxHeight: 250),
-                borderRadius: BorderRadius.circular(8),
-                elevation: 4,
-              ),
-            ),
           ),
           SizedBox(height: 16),
           DropdownSearch<String>(
@@ -614,12 +463,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               dropdownSearchDecoration: InputDecoration(
                 labelText: 'Taluka',
                 border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.green, width: 2)),
               ),
             ),
             onChanged: (val) {
@@ -627,36 +470,15 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               if (val != null) updateVillages(val);
             },
             selectedItem: _selectedTaluka,
-            popupProps: PopupProps.menu(
-              showSearchBox: true,
-              menuProps: MenuProps(
-                //constraints: BoxConstraints(maxHeight: 250),
-                borderRadius: BorderRadius.circular(8),
-                elevation: 4,
-              ),
-            ),
           ),
           SizedBox(height: 16),
           DropdownSearch<String>(
             items: _villages,
-            popupProps: PopupProps.menu(
-              showSearchBox: true,
-              menuProps: MenuProps(
-                //constraints: BoxConstraints(maxHeight: 250),
-                borderRadius: BorderRadius.circular(8),
-                elevation: 4,
-              ),
-            ),
+            popupProps: PopupProps.menu(showSearchBox: true),
             dropdownDecoratorProps: DropDownDecoratorProps(
               dropdownSearchDecoration: InputDecoration(
                 labelText: 'Village',
                 border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.green, width: 2)),
               ),
             ),
             onChanged: (val) => _selectedVillage = val,
@@ -668,12 +490,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           decoration: InputDecoration(
             labelText: "Pincode",
             border: OutlineInputBorder(),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.green, width: 2)),
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [
@@ -831,7 +647,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       );
       return;
     }
-
+    
     if (_base64Image == null || _base64Image!.isEmpty) {
       showDialog(
         context: context,
@@ -846,6 +662,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       );
       return;
     }
+    
 
     setState(() => _isSubmitting = true);
 
