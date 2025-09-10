@@ -206,8 +206,8 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    item['work']?.toString() ?? 'No Work Description',
-                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                    item['order_id']?.toString() ?? 'orderId unavailable',
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 8),
                                   Row(

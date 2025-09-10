@@ -36,7 +36,7 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
         url,
         body: jsonEncode({
           "userId": UserSession.userId,
-          "type": "transactions"
+          "type": "orders"
         }),
         headers: {
           "Content-Type": "application/json",
@@ -45,7 +45,7 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        print("Orders response: ${response.body}");
+        print("⭐⭐⭐⭐Orders response: ${response.body}⭐⭐⭐⭐");
 
         if (json['status'] == 'success') {
           final List results = json['results'];

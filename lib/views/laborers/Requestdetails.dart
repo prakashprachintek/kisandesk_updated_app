@@ -28,7 +28,6 @@ class RequestDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Request Details",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -39,37 +38,43 @@ class RequestDetailsPage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: ListView.separated(
-              itemCount: 5,
+              itemCount: 6,
               separatorBuilder: (_, __) =>
                   const Divider(thickness: 0.8, height: 24),
               itemBuilder: (context, index) {
                 switch (index) {
                   case 0:
                     return _buildDetailRow(
+                      icon: Icons.confirmation_num,
+                      label: "Order ID",
+                      value: requestData['order_id']?.toString() ?? 'N/A',
+                    );
+                  case 1:
+                    return _buildDetailRow(
                       icon: Icons.person_pin,
                       label: "Farmer ID",
                       value: requestData['farmer_id']?.toString() ?? 'N/A',
                     );
-                  case 1:
+                  case 2:
                     return _buildDetailRow(
                       icon: Icons.work_outline,
                       label: "Work Description",
                       value: requestData['work']?.toString() ?? 'N/A',
                     );
-                  case 2:
+                  case 3:
                     return _buildDetailRow(
                       icon: Icons.calendar_today,
                       label: "Work Date",
                       value: _formatDate(
                           requestData['work_date_from']?.toString()),
                     );
-                  case 3:
+                  case 4:
                     return _buildDetailRow(
                       icon: Icons.info_outline,
                       label: "Status",
                       value: requestData['status']?.toString() ?? 'N/A',
                     );
-                  case 4:
+                  case 5:
                     return _buildDetailRow(
                       icon: Icons.people_alt,
                       label: "Labour Type",

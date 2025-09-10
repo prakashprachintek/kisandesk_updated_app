@@ -332,28 +332,82 @@ class _HomePageState extends State<HomePage> {
     setState(() => _selectedIndex = index);
 
     if (index == 2) {
-      // Navigate to our new dashboard with tabs
+      // Navigate to MarketPage
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => MarketPage(
-              // userData: widget.userData ?? {},
-              // phoneNumber: widget.phoneNumber ?? '',
-              ),
+          builder: (_) => MarketPage(),
         ),
       );
     } else if (index == 1) {
-      // "Add"
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => AddMarketPostPage(
-            userData: widget.userData ?? {},
-            phoneNumber: widget.phoneNumber ?? '',
-            isUserExists: true,
+      // Check if user has all required details
+      final user = UserSession.user ?? widget.userData ?? {};
+      final requiredFields = {
+        'phone': user['phone'] ?? widget.phoneNumber,
+        'state': user['state'],
+        'district': user['district'],
+        'taluka': user['taluka'],
+        'village': user['village'],
+        'pincode': user['pincode'],
+      };
+
+      // Check if any required field is missing or empty
+      final missingFields = requiredFields.entries
+          .where(
+              (entry) => entry.value == null || entry.value.toString().isEmpty)
+          .map((entry) => entry.key)
+          .toList();
+
+      if (missingFields.isNotEmpty) {
+        // Show dialog if any required field is missing
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            content: const Text(
+              "Update your profile to create a post",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  // Navigate to profile update page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          PersonalDetailsScreen(), // Your profile page
+                    ),
+                  );
+                },
+                child: const Text(
+                  "Update Profile",
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 29, 108, 92),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      );
+        );
+      } else {
+        // Navigate to AddMarketPostPage if all details are present
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AddMarketPostPage(
+              userData: widget.userData ?? {},
+              phoneNumber: widget.phoneNumber ?? '',
+              isUserExists: true,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -489,8 +543,9 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 // MaterialPageRoute(builder: (context) => const Myprofile()),
-                MaterialPageRoute(builder: (context) => PersonalDetailsScreen()),
-               );
+                MaterialPageRoute(
+                    builder: (context) => PersonalDetailsScreen()),
+              );
             },
           ),
           ListTile(
@@ -528,7 +583,7 @@ class _HomePageState extends State<HomePage> {
             leading: Icon(Icons.logout),
             title: Text(tr("Logout")),
             onTap: () async {
-              Navigator.pop(context); 
+              Navigator.pop(context);
 
               final confirm = await showDialog<bool>(
                 context: context,

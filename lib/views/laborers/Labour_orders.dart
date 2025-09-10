@@ -8,14 +8,17 @@ import '../services/api_config.dart';
 class LabourRequestOrdersPage extends StatelessWidget {
   //final Map<String, dynamic> userData;
 
-  const LabourRequestOrdersPage({Key? key,}) : super(key: key);
+  const LabourRequestOrdersPage({
+    Key? key,
+  }) : super(key: key);
 
   // Fetches labour requests from your API
   Future<List<Map<String, dynamic>>> _fetchLabourRequests() async {
     final Uri apiUrl = Uri.parse('${KD.api}/admin/get_labours_request');
     Map<String, String> body = {
-      'farmer_id': UserSession.userId.toString() ?? '',
+      'farmer_id': UserSession.userId.toString(),
     };
+
     try {
       final response = await http.post(
         apiUrl,
@@ -24,14 +27,25 @@ class LabourRequestOrdersPage extends StatelessWidget {
         },
         body: jsonEncode(body),
       );
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success' && data['results'] != null) {
-          return (data['results'] as List).cast<Map<String, dynamic>>();
+          List<Map<String, dynamic>> allRequests =
+              (data['results'] as List).cast<Map<String, dynamic>>();
+
+          allRequests.sort((a, b) {
+            final DateTime dateA = DateTime.parse(a['work_date_from']);
+            final DateTime dateB = DateTime.parse(b['work_date_from']);
+            return dateB.compareTo(dateA);
+          });
+
+          return allRequests;
         }
         return [];
       } else {
-        throw Exception("Failed to load labour requests: ${response.statusCode}");
+        throw Exception(
+            "Failed to load labour requests: ${response.statusCode}");
       }
     } catch (e) {
       print("Error fetching labour requests: $e");
@@ -43,9 +57,9 @@ class LabourRequestOrdersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Labour Requests Dashboard", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        centerTitle: true,
-        
+        title: const Text("Labour Requests Dashboard",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        // centerTitle: true,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchLabourRequests(),
@@ -70,45 +84,53 @@ class LabourRequestOrdersPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => RequestDetailsPage(requestData: item),
+                      builder: (context) =>
+                          RequestDetailsPage(requestData: item),
                     ),
                   );
                 },
                 child: Card(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item['work']?.toString() ?? 'No Work Description',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          item['order_id']?.toString() ?? 'orderId unavailable',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
                             const Icon(Icons.calendar_month_outlined, size: 16),
                             const SizedBox(width: 8),
-                            Text('Date: ${item['work_date_from']?.toString() ?? 'N/A'}'),
+                            Text(
+                                'Date: ${item['work_date_from']?.toString() ?? 'N/A'}'),
                           ],
                         ),
                         Row(
                           children: [
                             const Icon(Icons.person, size: 16),
                             const SizedBox(width: 8),
-                            Text('Gender: ${item['labour_type']?.toString() ?? 'N/A'}'),
+                            Text(
+                                'Gender: ${item['labour_type']?.toString() ?? 'N/A'}'),
                           ],
                         ),
                         Row(
                           children: [
                             const Icon(Icons.info_outline, size: 16),
                             const SizedBox(width: 8),
-                            Text('Status: ${item['status']?.toString() ?? 'N/A'}'),
+                            Text(
+                                'Status: ${item['status']?.toString() ?? 'N/A'}'),
                           ],
                         ),
+                        Text(item['work']?.toString() ??
+                            'No description provided.'),
                       ],
                     ),
                   ),

@@ -36,7 +36,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
         url,
         body: jsonEncode({
           "userId": UserSession.userId,
-          "type": "orders"
+          "type": "transactions"
         }),
         headers: {
           "Content-Type": "application/json",

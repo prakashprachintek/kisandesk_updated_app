@@ -398,14 +398,15 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
                         setState(() => isSubmitting = false);
                         return;
                       }
-
+                      //API Call to submit the data
                       try {
-                        final url = Uri.parse("${KD.api}/user/insert_user");
+                        final url = Uri.parse("${KD.api}/user/update_user");
                         final response = await http.post(
                           url,
                           headers: {"Content-Type": "application/json"},
                           body: jsonEncode({
-                            "phoneNumber": phone,
+                            "_id": UserSession.user?["_id"],
+                            // "phoneNumber": phone,
                             "fullName": _nameController.text.trim(),
                             "state": _stateController.text.trim(),
                             "district": selectedDistrict,
@@ -413,7 +414,7 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
                             "village": selectedVillage,
                             "address": _addressController.text.trim(),
                             "pincode": _pincodeController.text.trim(),
-                            "dob": DateFormat('yyyy-MM-dd')
+                            "dob": DateFormat('dd-MM-yyyy')
                                 .format(selectedDateOfBirth!),
                             "gender": selectedGender,
                           }),
