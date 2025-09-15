@@ -28,6 +28,7 @@ class OTPVerificationScreen extends StatefulWidget {
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final TextEditingController otpController = TextEditingController();
   bool isLoading = false;
+  bool isResendLoading = false;
 
   int secondsRemaining = 30;
   bool resendEnabled = false;
@@ -53,10 +54,43 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    startTimer(); // start countdown on screen load
+  Future<void> resendOTP() async {
+    setState(() {
+      isResendLoading = true;
+      otpController.clear(); // Clear the OTP input boxes
+    });
+
+    final url = Uri.parse("${KD.api}/admin/generate_otp");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"phoneNumber": widget.phoneNumber}),
+      );
+
+      final data = jsonDecode(response.body);
+      print("Resend OTP API Response: $data");
+
+      if (response.statusCode == 200 && data["status"] == "success") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr("OTP resent successfully"))),
+        );
+        startTimer(); // Restart the timer after successful resend
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data["message"] ?? tr("Failed to resend OTP")),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("Network error. Try again."))),
+      );
+    } finally {
+      setState(() => isResendLoading = false);
+    }
   }
 
   Future<void> verifyOTP() async {
@@ -108,7 +142,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           // If OTP was never generated, force a retry
           if (data["message"] == tr("Please generate OTP")) {
             // Navigator.pop(context); // Go back to phone input
-            // will work when the changes in the backedn will be made
+            // will work when the changes in the backend will be made
           }
         }
       } else {
@@ -126,9 +160,14 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    startTimer(); // start countdown on screen load
+  }
+
+  @override
   void dispose() {
     otpController.dispose();
-    super.dispose();
     timer.cancel();
     super.dispose();
   }
@@ -202,8 +241,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         animationDuration: const Duration(milliseconds: 250),
                         enableActiveFill: true,
                       ),
-                      // SizedBox(height: 2),
-
                       const SizedBox(height: 2),
                       GradientAuthButton(
                         text: isLoading ? tr("Verifying...") : tr("Verify OTP"),
@@ -211,7 +248,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         textStyle: TextStyle(fontSize: 14),
                       ),
                       const SizedBox(height: 0),
-
                       Padding(
                         padding: const EdgeInsets.only(top: 20.0),
                         child: Row(
@@ -232,17 +268,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                 style: TextStyle(
                                   color: const Color.fromARGB(255, 32, 90, 40),
                                   fontSize: 14,
-                                  // decoration: TextDecoration.underline,
                                 ),
                               ),
                             ),
                             resendEnabled
                                 ? TextButton(
-                                    onPressed: () {
-                                      startTimer(); // restart the timer
-                                    },
+                                    onPressed: isResendLoading ? null : resendOTP,
                                     child: Text(
-                                      "Resend OTP",
+                                      isResendLoading
+                                          ? tr("Resending...")
+                                          : tr("Resend OTP"),
                                       style: TextStyle(
                                         color: Colors.blueAccent,
                                         fontWeight: FontWeight.bold,
