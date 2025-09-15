@@ -458,7 +458,7 @@ class _HomePageState extends State<HomePage> {
                   bottom: 0,
                   right: 0,
                   child: GestureDetector(
-                    onTap: _pickProfilePicture, // Use the new method here
+                    onTap: _pickProfilePicture,
                     child: CircleAvatar(
                       radius: 12,
                       backgroundColor: Colors.white,
@@ -489,8 +489,9 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 // MaterialPageRoute(builder: (context) => const Myprofile()),
-                MaterialPageRoute(builder: (context) => PersonalDetailsScreen()),
-               );
+                MaterialPageRoute(
+                    builder: (context) => PersonalDetailsScreen()),
+              );
             },
           ),
           ListTile(
@@ -528,7 +529,7 @@ class _HomePageState extends State<HomePage> {
             leading: Icon(Icons.logout),
             title: Text(tr("Logout")),
             onTap: () async {
-              Navigator.pop(context); 
+              Navigator.pop(context);
 
               final confirm = await showDialog<bool>(
                 context: context,
@@ -1471,10 +1472,12 @@ class MarketPost {
         (json['farmerDetails'] != null && json['farmerDetails'].isNotEmpty)
             ? json['farmerDetails'][0]
             : null;
+
+    String imageUrl = json['image'] ?? '';
     return MarketPost(
       title: json['post_name'] ?? 'No Title',
       price: (json['price'] ?? '0').toString(),
-      imageUrl: json['image'] ?? '',
+      imageUrl: imageUrl,
       location: json['village'] ?? 'Unknown',
       description: json['description'] ?? 'No description',
       review: json['review'] ?? 'N/A',

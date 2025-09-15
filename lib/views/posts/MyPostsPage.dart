@@ -1,7 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
-
 import '../other/add_page.dart';
 import 'MyPostDetailsPage.dart';
 
@@ -16,7 +15,6 @@ class MyPostPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final DatabaseReference postsRef =
         FirebaseDatabase.instance.ref("marketPosts");
-
     return StreamBuilder(
       stream: postsRef.onValue,
       builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
@@ -29,10 +27,8 @@ class MyPostPage extends StatelessWidget {
         }
         List<Map<String, dynamic>> posts =
             data.values.map((e) => Map<String, dynamic>.from(e)).toList();
-// Filter to include only posts created by the current user.
         posts =
             posts.where((post) => post['userId'] == userData['uid']).toList();
-
         return Padding(
           padding: const EdgeInsets.all(8.0),
           child: GridView.builder(
@@ -59,7 +55,6 @@ class MyPostPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-// Image section
                       Expanded(
                         child: post["imageUrl"] != null &&
                                 post["imageUrl"].isNotEmpty
@@ -67,7 +62,6 @@ class MyPostPage extends StatelessWidget {
                                 fit: BoxFit.cover, width: double.infinity)
                             : Container(color: Colors.grey),
                       ),
-// Title
                       Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: Text(
@@ -77,7 +71,6 @@ class MyPostPage extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-// Price
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: Text(
