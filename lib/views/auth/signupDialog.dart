@@ -92,7 +92,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                   SizedBox(height: 10),
                   if (selectedDistrict != null)
                     DropdownButton<String>(
-                      hint: Text(tr("Select Taluk")),
+                      hint: Text(tr("Select Taluka")),
                       value: selectedTaluk,
                       isExpanded: true,
                       items: taluks.map((taluk) {
@@ -162,9 +162,11 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                   setState(() => isSubmitting = true);
 
                   try {
-                    final url = Uri.parse("${KD.api}/user/insert_user");
-                    final response = await http.post(
-                      url,
+                    // 1. Attempt to insert user
+                    final userInsertUrl =
+                        Uri.parse("${KD.api}/user/insert_user");
+                    final userInsertResponse = await http.post(
+                      userInsertUrl,
                       headers: {"Content-Type": "application/json"},
                       body: jsonEncode({
                         "phoneNumber": phone,
@@ -176,29 +178,52 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         "state": "Karnataka",
                       }),
                     );
-                    print("Status Code: ${response.statusCode}");
-                    print("Response Body: ${response.body}");
 
-                    final data = jsonDecode(response.body);
+                    final userInsertData = jsonDecode(userInsertResponse.body);
 
-                    if (response.statusCode == 200 &&
-                        data["status"] == "success") {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(tr("Registration successful!"))),
+                    if (userInsertResponse.statusCode == 200 &&
+                        userInsertData["status"] == "success") {
+                      // 2. If user insertion is successful, generate OTP
+                      final generateOtpUrl =
+                          Uri.parse("${KD.api}/admin/generate_otp");
+                      final generateOtpResponse = await http.post(
+                        generateOtpUrl,
+                        headers: {"Content-Type": "application/json"},
+                        body: jsonEncode({
+                          "phoneNumber": phone,
+                        }),
                       );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              OTPVerificationScreen(phoneNumber: phone),
-                        ),
-                      );
+                      final generateOtpData =
+                          jsonDecode(generateOtpResponse.body);
+
+                      if (generateOtpResponse.statusCode == 200 &&
+                          generateOtpData["status"] == "success") {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text(tr("Registration successful!"))),
+                        );
+                        // 3. Navigate to OTP verification screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                OTPVerificationScreen(phoneNumber: phone),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(generateOtpData["message"] ??
+                                  "Failed to generate OTP")),
+                        );
+                      }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content:
-                                Text(data["message"] ?? "Registration failed")),
+                            content: Text(
+                                userInsertData["message"] ?? "Registration failed")),
                       );
                     }
                   } catch (e) {

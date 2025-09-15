@@ -512,7 +512,7 @@ class _HomePageState extends State<HomePage> {
                   bottom: 0,
                   right: 0,
                   child: GestureDetector(
-                    onTap: _pickProfilePicture, // Use the new method here
+                    onTap: _pickProfilePicture,
                     child: CircleAvatar(
                       radius: 12,
                       backgroundColor: Colors.white,
@@ -1526,10 +1526,12 @@ class MarketPost {
         (json['farmerDetails'] != null && json['farmerDetails'].isNotEmpty)
             ? json['farmerDetails'][0]
             : null;
+
+    String imageUrl = json['image'] ?? '';
     return MarketPost(
       title: json['post_name'] ?? 'No Title',
       price: (json['price'] ?? '0').toString(),
-      imageUrl: json['image'] ?? '',
+      imageUrl: imageUrl,
       location: json['village'] ?? 'Unknown',
       description: json['description'] ?? 'No description',
       review: json['review'] ?? 'N/A',
