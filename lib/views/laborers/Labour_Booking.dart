@@ -3,7 +3,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/laborers/Labour_orders.dart';
 import 'package:mainproject1/views/laborers/Labourrequest_new.dart';
-import 'package:mainproject1/views/laborers/Requestdetails.dart'; // Import the details page
+import 'package:mainproject1/views/laborers/Requestdetails.dart';
 import 'dart:convert';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
@@ -53,13 +53,13 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
         final Map<String, dynamic> data = json.decode(response.body);
         if (data['status'] == 'success' && data['results'] != null) {
           List<dynamic> allRequests = data['results'];
-          
+
           allRequests.sort((a, b) {
             final DateTime dateA = DateTime.parse(a['work_date_from']);
             final DateTime dateB = DateTime.parse(b['work_date_from']);
             return dateB.compareTo(dateA);
           });
-          
+
           return allRequests.take(2).toList();
         }
         return [];
@@ -72,6 +72,12 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
     }
   }
 
+  Future<void> _onRefresh() async {
+    setState(() {
+      _recentOrdersFuture = _fetchRecentOrders();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,94 +88,96 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Container(
-        color: const Color(0xFFEEF3F9),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CarouselSlider(
-                options: CarouselOptions(
-                  height: 150.0,
-                  autoPlay: true,
-                  enlargeCenterPage: true,
-                ),
-                items: imagePaths.map((path) {
-                  return Builder(
-                    builder: (BuildContext context) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            path,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
+      backgroundColor: const Color(0xFFEEF3F9), // Set Scaffold background color
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CarouselSlider(
+                  options: CarouselOptions(
+                    height: 150.0,
+                    autoPlay: true,
+                    enlargeCenterPage: true,
+                  ),
+                  items: imagePaths.map((path) {
+                    return Builder(
+                      builder: (BuildContext context) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.5),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 20),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              path,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
 
-              GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.2,
-                children: [
-                  _buildTile(
-                    context,
-                    icon: Icons.shopping_cart,
-                    label: "Book",
-                    color: Colors.green,
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => LabourrequestNew()));
-                    },
-                  ),
-                  _buildTile(
-                    context,
-                    icon: Icons.list_alt,
-                    label: "My Orders",
-                    color: Colors.orange,
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => LabourRequestOrdersPage()));
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              
-              const Text(
-                "Recent Orders",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
+                GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 1.2,
+                  children: [
+                    _buildTile(
+                      context,
+                      icon: Icons.shopping_cart,
+                      label: "Book",
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LabourrequestNew()));
+                      },
+                    ),
+                    _buildTile(
+                      context,
+                      icon: Icons.list_alt,
+                      label: "My Orders",
+                      color: Colors.orange,
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LabourRequestOrdersPage()));
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
 
-              Expanded(
-                child: FutureBuilder<List<dynamic>>(
+                const Text(
+                  "Recent Orders",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+
+                FutureBuilder<List<dynamic>>(
                   future: _recentOrdersFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -179,16 +187,17 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return const Center(child: Text("No recent orders found."));
                     }
-                    
+
                     final recentOrders = snapshot.data!;
-                    
+
                     return ListView.builder(
                       itemCount: recentOrders.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
                         final item = recentOrders[index];
                         return InkWell(
                           onTap: () {
-                            // Navigate to the details page on tap
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -240,8 +249,8 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
                     );
                   },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -50,10 +50,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
       print("Fetching orders for userId: ${UserSession.userId}");
       final response = await http.post(
         url,
-        body: jsonEncode({
-          "userId": UserSession.userId,
-          "type": "orders"
-        }),
+        body: jsonEncode({"userId": UserSession.userId, "type": "transactions"}),
         headers: {
           "Content-Type": "application/json",
         },
@@ -70,7 +67,8 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           final List results = json['results'] ?? [];
           print("Results count: ${results.length}");
 
-          results.sort((a, b) => b['created_at'].toString().compareTo(a['created_at'].toString()));
+          results.sort((a, b) =>
+              b['created_at'].toString().compareTo(a['created_at'].toString()));
 
           final recent = results.take(2).map<Map<String, String>>((item) {
             return {
@@ -117,101 +115,113 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     }
   }
 
+  // Function to handle pull-to-refresh
+  Future<void> _onRefresh() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+      recentOrders = [];
+    });
+    await _fetchRecentOrders();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Machinery Rent",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Container(
-        color: const Color(0xFFEEF3F9),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CarouselSlider(
-                options: CarouselOptions(
-                  height: 150.0,
-                  autoPlay: true,
-                  enlargeCenterPage: true,
-                ),
-                items: imagePaths.map((path) {
-                  return Builder(
-                    builder: (BuildContext context) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            path,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
+      backgroundColor: const Color(0xFFEEF3F9), // Set Scaffold background color
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CarouselSlider(
+                  options: CarouselOptions(
+                    height: 150.0,
+                    autoPlay: true,
+                    enlargeCenterPage: true,
+                  ),
+                  items: imagePaths.map((path) {
+                    return Builder(
+                      builder: (BuildContext context) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.5),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 20),
-              GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.2,
-                children: [
-                  _buildTile(
-                    context,
-                    icon: Icons.shopping_cart,
-                    label: "Book",
-                    color: Colors.green,
-                    page: const BookPage(),
-                  ),
-                  _buildTile(
-                    context,
-                    icon: Icons.list_alt,
-                    label: "My Orders",
-                    color: Colors.orange,
-                    page: const Ordertransactiontab(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              ///////////////
-              //Recent orders
-              ///////////////
-              Text(
-                "Recent Orders",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: isLoading
-                    ? Center(child: CircularProgressIndicator())
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              path,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+                GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 1.2,
+                  children: [
+                    _buildTile(
+                      context,
+                      icon: Icons.shopping_cart,
+                      label: "Book",
+                      color: Colors.green,
+                      page: const BookPage(),
+                    ),
+                    _buildTile(
+                      context,
+                      icon: Icons.list_alt,
+                      label: "My Orders",
+                      color: Colors.orange,
+                      page: const Ordertransactiontab(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  "Recent Orders",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                isLoading
+                    ? const Center(child: CircularProgressIndicator())
                     : errorMessage != null
                         ? Center(child: Text(errorMessage!))
                         : recentOrders.isEmpty
-                            ? Center(child: Text("No recent orders found"))
+                            ? const Center(
+                                child: Text("No recent orders found"))
                             : ListView.builder(
                                 itemCount: recentOrders.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   final order = recentOrders[index];
                                   return InkWell(
@@ -219,7 +229,8 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => OrderDetailPage(order: order),
+                                          builder: (context) =>
+                                              OrderDetailPage(order: order),
                                         ),
                                       );
                                     },
@@ -231,23 +242,28 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                                         borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.05),
+                                            color:
+                                                Colors.black.withOpacity(0.05),
                                             blurRadius: 6,
                                             offset: const Offset(0, 3),
                                           )
                                         ],
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             "${order['orderId']}",
-                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
                                           ),
                                           const SizedBox(height: 6),
-                                          Text("🔧 Machine Booked: ${order['machine']}"),
+                                          Text(
+                                              "🔧 Machine Booked: ${order['machine']}"),
                                           Text("📅 Date: ${order['date']}"),
-                                          Text("⚒️ Machine Owner: ${order['name']}"),
+                                          Text(
+                                              "⚒️ Machine Owner: ${order['name']}"),
                                           Text("📞 Contact: ${order['phone']}"),
                                           Text("📌 Status: ${order['status']}"),
                                         ],
@@ -256,8 +272,8 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                                   );
                                 },
                               ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -265,7 +281,10 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
   }
 
   Widget _buildTile(BuildContext context,
-      {required IconData icon, required String label, required Color color, required Widget page}) {
+      {required IconData icon,
+      required String label,
+      required Color color,
+      required Widget page}) {
     return GestureDetector(
       onTap: () {
         Navigator.push(

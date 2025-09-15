@@ -1133,7 +1133,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// -----------------------------------------
-  /// Second Carousel (top slideshow)
+  /// Second Carousel (2nd slideshow)
   Widget _buildCarouselSlideshow() {
     final List<String> imageUrls = [
       'assets/image2.2.jpg',
@@ -1157,7 +1157,7 @@ class _HomePageState extends State<HomePage> {
           return Builder(
             builder: (BuildContext context) {
               return GestureDetector(
-                onTap: () {
+                /*onTap: () {
                   if (index == 0) {
                     Navigator.push(
                       context,
@@ -1175,6 +1175,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   }*/
                 },
+                */
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 5),
                   decoration: BoxDecoration(
