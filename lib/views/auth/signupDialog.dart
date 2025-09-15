@@ -16,7 +16,9 @@ Future<Map<String, dynamic>> loadLocationJson() async {
 Future<void> showSignupDialog(BuildContext context, String phone) async {
   print("Dialog loaded");
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _pincodeController = TextEditingController();
   _nameController.text = "";
+  _pincodeController.text = "";
 
   String? selectedDistrict;
   String? selectedTaluk;
@@ -126,6 +128,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         });
                       },
                     ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: _pincodeController,
+                    decoration: InputDecoration(labelText: tr("Pincode")),
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                  ),
                 ],
               ),
             ),
@@ -142,7 +151,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                   if (_nameController.text.isEmpty ||
                       selectedDistrict == null ||
                       selectedTaluk == null ||
-                      selectedVillage == null) {
+                      selectedVillage == null ||
+                      _pincodeController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(tr("Please fill all fields"))),
                     );
@@ -162,6 +172,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         "district": selectedDistrict,
                         "taluka": selectedTaluk,
                         "village": selectedVillage,
+                        "pincode": _pincodeController.text.trim(),
+                        "state": "Karnataka",
                       }),
                     );
                     print("Status Code: ${response.statusCode}");
