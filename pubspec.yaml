@@ -88,7 +88,8 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon.png"  # Replace with the path to your app icon
+  # image_path: "assets/icon.png"  # Replace with the path to your app icon
+  image_path: "assets/icon2.jpg"  # Replace with the path to your app icon
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
