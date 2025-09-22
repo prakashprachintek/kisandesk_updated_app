@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:hive_flutter/hive_flutter.dart'; 
 import '../services/api_config.dart';
 import 'Postdetailspage.dart';
 
@@ -9,20 +10,87 @@ class MarketPage extends StatefulWidget {
   _MarketPageState createState() => _MarketPageState();
 }
 
-class _MarketPageState extends State<MarketPage> {
+class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMixin {
   List<Map<String, dynamic>> marketItems = [];
   List<Map<String, dynamic>> originalMarketItems = [];
   bool isLoading = true;
+  bool isOffline = false; 
+  String? lastUpdated; 
+  
   TextEditingController searchController = TextEditingController();
   String selectedFilter = '';
+  late Box cacheBox; 
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    fetchMarketPosts();
+    _initHiveAndFetch(); 
   }
 
-  Future<void> fetchMarketPosts() async {
+  @override
+  void dispose() {
+    searchController.dispose();
+    cacheBox.close();
+    super.dispose();
+  }
+
+
+  Future<void> _initHiveAndFetch() async {
+    await Hive.initFlutter();
+    cacheBox = await Hive.openBox('market_posts_box');
+    await _loadFromCacheOrFetch();
+  }
+
+
+  Future<void> _loadFromCacheOrFetch() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final cachedData = cacheBox.get('data');
+      final cachedTimestamp = cacheBox.get('last_updated');
+
+      if (cachedData != null && cachedTimestamp != null && cachedData is List && cachedTimestamp is String) {
+        final lastUpdatedTime = DateTime.tryParse(cachedTimestamp);
+        if (lastUpdatedTime != null) {
+          final now = DateTime.now();
+          const cacheDuration = Duration(hours: 24);
+
+          if (now.difference(lastUpdatedTime) < cacheDuration) {
+            setState(() {
+              originalMarketItems = List<Map<String, dynamic>>.from(cachedData);
+              marketItems = List.from(originalMarketItems);
+              lastUpdated = cachedTimestamp;
+              isLoading = false;
+            });
+            _performSearchAndFilter();
+            _fetchMarketPosts(isBackground: true);
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      print("Error reading cache: $e");
+      await cacheBox.clear();
+    }
+
+
+    await _fetchMarketPosts();
+  }
+
+
+  Future<void> _fetchMarketPosts({bool isBackground = false}) async {
+    if (!isBackground) {
+      setState(() {
+        isLoading = true;
+        isOffline = false;
+      });
+    }
+
     const String url = '${KD.api}/admin/getAll_market_post';
     try {
       final response = await http.post(
@@ -32,52 +100,84 @@ class _MarketPageState extends State<MarketPage> {
           "category": "",
           "search": "",
         }),
-      );
+      ).timeout(Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final results = data['results'];
         if (results != null) {
-          setState(() {
-            originalMarketItems = List<Map<String, dynamic>>.from(
-                results.map<Map<String, dynamic>>((item) {
-              final farmerDetails =
-                  (item['farmerDetails'] as List?)?.isNotEmpty == true
-                      ? item['farmerDetails'][0]
-                      : null;
+          final fetchedItems = List<Map<String, dynamic>>.from(
+              results.map<Map<String, dynamic>>((item) {
+                final farmerDetails =
+                    (item['farmerDetails'] as List?)?.isNotEmpty == true
+                        ? item['farmerDetails'][0]
+                        : null;
+                return {
+                  'name': item['post_name'] ?? 'Unknown market',
+                  'price': item['price'] ?? 0,
+                  'description': item['description'] ?? 'No description available',
+                  'location': item['village'] ?? 'Unknown location',
+                  'fileName': item['post_url'] ?? 'assets/market1.webp',
+                  'quantity' : item['quantity'] ?? 'N/A',
+                  'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
+                  'Phone': farmerDetails?['phone'] ?? 'N/A',
+                  'taluka': farmerDetails?['taluka'] ?? 'N/A',
+                };
+              }).toList());
 
-              return {
-                'name': item['post_name'] ?? 'Unknown market',
-                'price': item['price'] ?? 0,
-                'description':
-                    item['description'] ?? 'No description available',
-                'location': item['village'] ?? 'Unknown location',
-                'fileName': item['post_url'] ?? 'assets/market1.webp',
-                'quantity' : item['quantity'] ?? 'N/A',
-                'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
-                'Phone': farmerDetails?['phone'] ?? 'N/A',
-                'taluka': farmerDetails?['taluka'] ?? 'N/A',
-                
-              };
-            }).toList());
-            marketItems = List.from(originalMarketItems);
-            isLoading = false;
-          });
+          
+          await cacheBox.put('data', fetchedItems);
+          final now = DateTime.now().toString();
+          await cacheBox.put('last_updated', now);
+
+          if (mounted) {
+            setState(() {
+              originalMarketItems = fetchedItems;
+              marketItems = List.from(originalMarketItems);
+              isLoading = false;
+              isOffline = false;
+              lastUpdated = now;
+            });
+            _performSearchAndFilter();
+          }
         } else {
-          setState(() {
-            isLoading = false;
-          });
           print('No results found in response: ${response.body}');
+          if (mounted) {
+            setState(() {
+              isLoading = false;
+            });
+          }
         }
       } else {
         throw Exception('Failed to load posts: ${response.statusCode}');
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-        marketItems = [];
-      });
       print('Error fetching market posts: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          isOffline = true;
+        });
+        _loadCachedDataOnFailure();
+      }
+    }
+  }
+
+
+  void _loadCachedDataOnFailure() {
+    try {
+      final cachedData = cacheBox.get('data');
+      final cachedTimestamp = cacheBox.get('last_updated');
+      if (cachedData != null && cachedTimestamp != null && cachedData is List) {
+        setState(() {
+          originalMarketItems = List<Map<String, dynamic>>.from(cachedData);
+          marketItems = List.from(originalMarketItems);
+          lastUpdated = cachedTimestamp;
+          _performSearchAndFilter();
+        });
+      }
+    } catch (e) {
+      print("Error loading cache on failure: $e");
     }
   }
 
@@ -87,8 +187,7 @@ class _MarketPageState extends State<MarketPage> {
     String query = searchController.text.toLowerCase();
     if (query.isNotEmpty) {
       filteredList = filteredList
-          .where(
-              (item) => item['name'].toString().toLowerCase().contains(query))
+          .where((item) => item['name'].toString().toLowerCase().contains(query))
           .toList();
     }
 
@@ -109,11 +208,6 @@ class _MarketPageState extends State<MarketPage> {
     setState(() {
       marketItems = filteredList;
     });
-
-    
-    print('Filtered items: ${filteredList.length}');
-    filteredList.forEach(
-        (item) => print('Item: ${item['name']}, Price: ${item['price']}'));
   }
 
   void showFilterDialog(BuildContext context) async {
@@ -139,7 +233,7 @@ class _MarketPageState extends State<MarketPage> {
                 value: 'Price: Low to High',
                 groupValue: selectedFilter,
                 onChanged: (value) {
-                  Navigator.pop(context, value); // Pass the selected value back
+                  Navigator.pop(context, value);
                 },
               ),
               RadioListTile<String>(
@@ -147,7 +241,7 @@ class _MarketPageState extends State<MarketPage> {
                 value: 'Price: High to Low',
                 groupValue: selectedFilter,
                 onChanged: (value) {
-                  Navigator.pop(context, value); // Pass the selected value back
+                  Navigator.pop(context, value);
                 },
               ),
             ],
@@ -156,7 +250,6 @@ class _MarketPageState extends State<MarketPage> {
       },
     );
 
-    // This code runs only after the modal sheet is closed.
     if (newFilter != null && newFilter != selectedFilter) {
       setState(() {
         selectedFilter = newFilter;
@@ -167,6 +260,7 @@ class _MarketPageState extends State<MarketPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: Padding(
@@ -203,55 +297,74 @@ class _MarketPageState extends State<MarketPage> {
           ),
         ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : marketItems.isEmpty
-              ? Center(child: Text('No market posts found.'))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 2 / 2.7,
-                      mainAxisSpacing: 8.0,
-                      crossAxisSpacing: 8.0,
-                    ),
-                    itemCount: marketItems.length,
-                    itemBuilder: (context, index) {
-                      final marketItem = marketItems[index];
-
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Postdetailspage(
-                                name: marketItem['name'],
-                                price: '₹${marketItem['price']}',
-                                imagePath: marketItem['fileName'],
-                                location: marketItem['location'] ??
-                                    'Unknown location',
-                                description: marketItem['description'] ??
-                                    'No description available',
-                                FarmerName: marketItem['FarmerName'],
-                                Phone: marketItem['Phone'],
-                                review: 'This is a sample review.',
-                                // quantity: marketItem['quantity'],
-                              ),
-                            ),
-                          );
-                        },
-                        child: MarketCard(
-                          name: marketItem['name'],
-                          taluka: marketItem['taluka'] ?? 'N/A',
-                          price: '₹${marketItem['price']}',
-                          imagePath: marketItem['fileName'],
-                          //taluka: marketItem['taluka'] ?? 'N/A',
-                        ),
-                      );
-                    },
+      body: RefreshIndicator(
+        onRefresh: () => _fetchMarketPosts(), 
+        child: Column(
+          children: [
+            if (lastUpdated != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  isOffline
+                      ? "Showing cached data (Last updated: $lastUpdated)."
+                      : "Last updated: $lastUpdated",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isOffline ? Colors.red : Colors.grey[600],
                   ),
                 ),
+              ),
+            Expanded(
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : marketItems.isEmpty
+                      ? Center(child: Text('No market posts found.'))
+                      : Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: GridView.builder(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 2 / 2.7,
+                              mainAxisSpacing: 8.0,
+                              crossAxisSpacing: 8.0,
+                            ),
+                            itemCount: marketItems.length,
+                            itemBuilder: (context, index) {
+                              final marketItem = marketItems[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Postdetailspage(
+                                        name: marketItem['name'],
+                                        price: '₹${marketItem['price']}',
+                                        imagePath: marketItem['fileName'],
+                                        location: marketItem['location'] ??
+                                            'Unknown location',
+                                        description: marketItem['description'] ??
+                                            'No description available',
+                                        FarmerName: marketItem['FarmerName'],
+                                        Phone: marketItem['Phone'],
+                                        review: 'This is a sample review.',
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: MarketCard(
+                                  name: marketItem['name'],
+                                  taluka: marketItem['taluka'] ?? 'N/A',
+                                  price: '₹${marketItem['price']}',
+                                  imagePath: marketItem['fileName'],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
