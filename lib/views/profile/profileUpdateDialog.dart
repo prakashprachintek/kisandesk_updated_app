@@ -30,17 +30,23 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
   String? selectedTaluk = UserSession.user?['taluka'];
   String? selectedVillage = UserSession.user?['village'];
   String? selectedGender = UserSession.user?['gender'];
-  DateTime? selectedDateOfBirth = UserSession.user?['dob'] != null
-      ? DateFormat('dd-MM-yyyy').parse(UserSession.user?['dob'])
-      : null;
+if (selectedGender != null && selectedGender.trim().isEmpty) {
+  selectedGender = null;
+}
+  DateTime? selectedDateOfBirth;
+  if (UserSession.user?['dob'] != null) {
+    try {
+      selectedDateOfBirth = DateFormat('dd-MM-yyyy').parse(UserSession.user?['dob']);
+    } catch (e) {
+      selectedDateOfBirth = null;
+    }
+  } else {
+    selectedDateOfBirth = null;
+  }
 
   List<String> districts = [];
-  List<String> taluks = selectedDistrict != null
-      ? List<String>.from((await loadLocationJson())['talukas'][selectedDistrict] ?? [])
-      : [];
-  List<String> villagesList = selectedTaluk != null
-      ? List<String>.from((await loadLocationJson())['villages'][selectedTaluk] ?? [])
-      : [];
+  List<String> taluks = [];
+  List<String> villagesList = [];
   List<String> genders = ['Male', 'Female'];
 
   Map<String, dynamic> locationData = await loadLocationJson();
@@ -60,6 +66,43 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
   // Sort the districts list
   districts = List<String>.from(locationData['districts']['Karnataka'] ?? []);
   districts.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+  // Set default district if none is selected
+  if (selectedDistrict == null && districts.isNotEmpty) {
+    selectedDistrict = districts.first;
+  }
+
+  // Validate and reset invalid location selections
+  if (selectedDistrict != null && !districts.contains(selectedDistrict)) {
+    selectedDistrict = null;
+    selectedTaluk = null;
+    selectedVillage = null;
+  }
+
+  // Always recompute taluks if district is set
+  if (selectedDistrict != null) {
+    taluks = List<String>.from(talukasMap[selectedDistrict] ?? []);
+    if (selectedTaluk != null && !taluks.contains(selectedTaluk)) {
+      selectedTaluk = null;
+      selectedVillage = null;
+    }
+  } else {
+    taluks = []; // Ensure empty if no district
+  }
+
+  // Always recompute villages if taluk is set
+  if (selectedTaluk != null) {
+    villagesList = List<String>.from(villagesMap[selectedTaluk] ?? []);
+    if (selectedVillage != null && !villagesList.contains(selectedVillage)) {
+      selectedVillage = null;
+    }
+  } else {
+    villagesList = []; // Ensure empty if no taluk
+  }
+
+  // Debug print statements to track dropdown state
+  print('DEBUG: selectedDistrict=$selectedDistrict, taluks=$taluks, selectedTaluk=$selectedTaluk');
+  print('DEBUG: selectedTaluk=$selectedTaluk, villagesList=$villagesList, selectedVillage=$selectedVillage');
 
   bool isSubmitting = false;
 
@@ -229,62 +272,86 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
                   ),
                   SizedBox(height: 10),
                   // Taluka
-                  if (selectedDistrict != null)
-                    InputDecorator(
-                      decoration: _inputDecoration('Taluka', hasError: _talukError),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          hint: Text('Select Taluka', style: TextStyle(color: Colors.grey[600])),
-                          value: selectedTaluk,
-                          isExpanded: true,
-                          items: taluks.map((taluk) {
-                            return DropdownMenuItem(
-                              value: taluk,
-                              child: Text(taluk, style: TextStyle(color: Colors.black87)),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedTaluk = value;
-                              _talukError = false;
-                              villagesList = List<String>.from(villagesMap[selectedTaluk!] ?? []);
-                              selectedVillage = null;
-                              _villageError = false;
-                            });
-                          },
-                          style: TextStyle(color: Colors.black87),
-                          dropdownColor: Colors.grey[100],
+                  InputDecorator(
+                    decoration: _inputDecoration(
+                      'Taluka',
+                      hasError: _talukError,
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        hint: Text(
+                          selectedDistrict == null 
+                              ? 'Select District first' 
+                              : 'Select Taluka',
+                          style: TextStyle(color: Colors.grey[600]),
                         ),
+                        value: selectedTaluk,
+                        isExpanded: true,
+                        items: taluks
+                            .where((taluk) => taluk != null && taluk.isNotEmpty)
+                            .map((taluk) {
+                              return DropdownMenuItem(
+                                value: taluk,
+                                child: Text(taluk, style: TextStyle(color: Colors.black87)),
+                              );
+                            })
+                            .toList(),
+                        onChanged: selectedDistrict == null
+                            ? null // disables dropdown
+                            : (value) {
+                                setState(() {
+                                  selectedTaluk = value;
+                                  _talukError = false;
+                                  villagesList = List<String>.from(villagesMap[selectedTaluk!] ?? []);
+                                  selectedVillage = null;
+                                  _villageError = false;
+                                });
+                              },
+                        style: TextStyle(color: Colors.black87),
+                        dropdownColor: Colors.grey[100],
                       ),
                     ),
-                  if (selectedDistrict != null) SizedBox(height: 10),
+                  ),
+                  SizedBox(height: 10),
                   // Village
-                  if (selectedTaluk != null)
-                    InputDecorator(
-                      decoration: _inputDecoration('Village', hasError: _villageError),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          hint: Text('Select Village', style: TextStyle(color: Colors.grey[600])),
-                          value: selectedVillage,
-                          isExpanded: true,
-                          items: villagesList.map((village) {
-                            return DropdownMenuItem(
-                              value: village,
-                              child: Text(village, style: TextStyle(color: Colors.black87)),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedVillage = value;
-                              _villageError = false;
-                            });
-                          },
-                          style: TextStyle(color: Colors.black87),
-                          dropdownColor: Colors.grey[100],
+                  InputDecorator(
+                    decoration: _inputDecoration(
+                      'Village',
+                      hasError: _villageError,
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        hint: Text(
+                          selectedTaluk == null 
+                              ? 'Select Taluka first' 
+                              : 'Select Village',
+                          style: TextStyle(color: Colors.grey[600]),
                         ),
+                        value: selectedVillage,
+                        isExpanded: true,
+                        items: villagesList
+                            .where((village) => village != null && village.isNotEmpty)
+                            .map((village) {
+                              return DropdownMenuItem(
+                                value: village,
+                                child: Text(village, style: TextStyle(color: Colors.black87)),
+                              );
+                            })
+                            .toList(),
+                        onChanged: selectedTaluk == null
+                            ? null // disables dropdown
+                            : (value) {
+                                setState(() {
+                                  selectedVillage = value;
+                                  _villageError = false;
+                                });
+                              },
+                        style: TextStyle(color: Colors.black87),
+                        dropdownColor: Colors.grey[100],
                       ),
                     ),
-                  if (selectedTaluk != null) SizedBox(height: 10),
+                  ),
+                  SizedBox(height: 10),
                   // Address
                   TextField(
                     controller: _addressController,
