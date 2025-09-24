@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:hive_flutter/hive_flutter.dart'; 
+import 'package:hive_flutter/hive_flutter.dart';
 import '../services/api_config.dart';
 import 'Postdetailspage.dart';
 
@@ -10,16 +10,18 @@ class MarketPage extends StatefulWidget {
   _MarketPageState createState() => _MarketPageState();
 }
 
-class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMixin {
+class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> marketItems = [];
   List<Map<String, dynamic>> originalMarketItems = [];
   bool isLoading = true;
-  bool isOffline = false; 
-  String? lastUpdated; 
+  bool isOffline = false;
+  String? lastUpdated;
+  String selectedCategory = ''; // Default to 'All' (empty string for API)
   
   TextEditingController searchController = TextEditingController();
   String selectedFilter = '';
-  late Box cacheBox; 
+  late Box cacheBox;
+  late TabController _tabController;
 
   @override
   bool get wantKeepAlive => true;
@@ -27,23 +29,49 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    _initHiveAndFetch(); 
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_handleTabSelection);
+    _initHiveAndFetch();
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) {
+      setState(() {
+        selectedCategory = _getCategoryForTab(_tabController.index);
+        isLoading = true;
+      });
+      _loadFromCacheOrFetch();
+    }
+  }
+
+  String _getCategoryForTab(int index) {
+    switch (index) {
+      case 0:
+        return ''; // 'All'
+      case 1:
+        return 'crop';
+      case 2:
+        return 'cattle';
+      case 3:
+        return 'machinery';
+      default:
+        return '';
+    }
   }
 
   @override
   void dispose() {
     searchController.dispose();
     cacheBox.close();
+    _tabController.dispose();
     super.dispose();
   }
 
-
   Future<void> _initHiveAndFetch() async {
     await Hive.initFlutter();
-    cacheBox = await Hive.openBox('market_posts_box');
+    cacheBox = await Hive.openBox('market_posts_box_${selectedCategory}');
     await _loadFromCacheOrFetch();
   }
-
 
   Future<void> _loadFromCacheOrFetch() async {
     setState(() {
@@ -51,8 +79,8 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
     });
 
     try {
-      final cachedData = cacheBox.get('data');
-      final cachedTimestamp = cacheBox.get('last_updated');
+      final cachedData = cacheBox.get('data_${selectedCategory}');
+      final cachedTimestamp = cacheBox.get('last_updated_${selectedCategory}');
 
       if (cachedData != null && cachedTimestamp != null && cachedData is List && cachedTimestamp is String) {
         final lastUpdatedTime = DateTime.tryParse(cachedTimestamp);
@@ -74,14 +102,12 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         }
       }
     } catch (e) {
-      print("Error reading cache: $e");
+      print("Error reading cache for $selectedCategory: $e");
       await cacheBox.clear();
     }
 
-
     await _fetchMarketPosts();
   }
-
 
   Future<void> _fetchMarketPosts({bool isBackground = false}) async {
     if (!isBackground) {
@@ -97,7 +123,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "category": "",
+          "category": selectedCategory,
           "search": "",
         }),
       ).timeout(Duration(seconds: 10));
@@ -118,17 +144,16 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                   'description': item['description'] ?? 'No description available',
                   'location': item['village'] ?? 'Unknown location',
                   'fileName': item['post_url'] ?? 'assets/market1.webp',
-                  'quantity' : item['quantity'] ?? 'N/A',
+                  'quantity': item['quantity'] ?? 'N/A',
                   'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
                   'Phone': farmerDetails?['phone'] ?? 'N/A',
                   'taluka': farmerDetails?['taluka'] ?? 'N/A',
                 };
               }).toList());
 
-          
-          await cacheBox.put('data', fetchedItems);
+          await cacheBox.put('data_${selectedCategory}', fetchedItems);
           final now = DateTime.now().toString();
-          await cacheBox.put('last_updated', now);
+          await cacheBox.put('last_updated_${selectedCategory}', now);
 
           if (mounted) {
             setState(() {
@@ -152,7 +177,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         throw Exception('Failed to load posts: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching market posts: $e');
+      print('Error fetching market posts for $selectedCategory: $e');
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -163,11 +188,10 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
     }
   }
 
-
   void _loadCachedDataOnFailure() {
     try {
-      final cachedData = cacheBox.get('data');
-      final cachedTimestamp = cacheBox.get('last_updated');
+      final cachedData = cacheBox.get('data_${selectedCategory}');
+      final cachedTimestamp = cacheBox.get('last_updated_${selectedCategory}');
       if (cachedData != null && cachedTimestamp != null && cachedData is List) {
         setState(() {
           originalMarketItems = List<Map<String, dynamic>>.from(cachedData);
@@ -177,7 +201,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         });
       }
     } catch (e) {
-      print("Error loading cache on failure: $e");
+      print("Error loading cache on failure for $selectedCategory: $e");
     }
   }
 
@@ -296,9 +320,22 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
             onPressed: () => showFilterDialog(context),
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: 'All'),
+            Tab(text: 'Crop'),
+            Tab(text: 'Cattle'),
+            Tab(text: 'Machinery'),
+          ],
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+        ),
       ),
       body: RefreshIndicator(
-        onRefresh: () => _fetchMarketPosts(), 
+        onRefresh: () => _fetchMarketPosts(),
         child: Column(
           children: [
             if (lastUpdated != null)
@@ -340,10 +377,8 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                                         name: marketItem['name'],
                                         price: '₹${marketItem['price']}',
                                         imagePath: marketItem['fileName'],
-                                        location: marketItem['location'] ??
-                                            'Unknown location',
-                                        description: marketItem['description'] ??
-                                            'No description available',
+                                        location: marketItem['location'] ?? 'Unknown location',
+                                        description: marketItem['description'] ?? 'No description available',
                                         FarmerName: marketItem['FarmerName'],
                                         Phone: marketItem['Phone'],
                                         review: 'This is a sample review.',

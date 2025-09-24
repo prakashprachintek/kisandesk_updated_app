@@ -329,102 +329,104 @@ class _HomePageState extends State<HomePage> {
 
   // Bottom nav
   void _onItemTapped(int index) {
-  setState(() => _selectedIndex = index);
+    setState(() => _selectedIndex = index);
 
-  if (index == 2) {
-    // Navigate to MarketPage
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MarketPage(),
-      ),
-    );
-  } else if (index == 1) {
-    // Check if user has all required details
-    final user = UserSession.user ?? widget.userData ?? {};
-    final requiredFields = {
-      'phone': (user['phone'] ?? widget.phoneNumber ?? '').length == 10
-          ? (user['phone'] ?? widget.phoneNumber)
-          : null,
-      'state': user['state'],
-      'district': user['district'],
-      'taluka': user['taluka'],
-      'village': user['village'],
-      'pincode': user['pincode'],
-      'address': user['address'],
-    };
-
-    // Check if any required field is missing or empty
-    final missingFields = requiredFields.entries
-        .where((entry) => entry.value == null || entry.value.toString().isEmpty)
-        .map((entry) => entry.key)
-        .toList();
-
-    if (missingFields.isNotEmpty) {
-      // Show dialog if any required field is missing
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(tr("Incomplete Profile"), style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          )),
-          content: Text(
-            tr("Please update your information to create a post"),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                tr("Cancel"),
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PersonalDetailsScreen(),
-                  ),
-                );
-              },
-              child: Text(
-                tr("Update Profile"),
-                style: const TextStyle(
-                  color: Color.fromARGB(255, 29, 108, 92),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Navigate to AddMarketPostPage if all details are present
+    if (index == 2) {
+      // Navigate to MarketPage
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => AddMarketPostPage(
-            userData: widget.userData ?? {},
-            phoneNumber: widget.phoneNumber ?? '',
-            isUserExists: true,
-          ),
+          builder: (_) => MarketPage(),
         ),
       );
+    } else if (index == 1) {
+      // Check if user has all required details
+      final user = UserSession.user ?? widget.userData ?? {};
+      final requiredFields = {
+        'phone': (user['phone'] ?? widget.phoneNumber ?? '').length == 10
+            ? (user['phone'] ?? widget.phoneNumber)
+            : null,
+        'state': user['state'],
+        'district': user['district'],
+        'taluka': user['taluka'],
+        'village': user['village'],
+        'pincode': user['pincode'],
+        'address': user['address'],
+      };
+
+      // Check if any required field is missing or empty
+      final missingFields = requiredFields.entries
+          .where(
+              (entry) => entry.value == null || entry.value.toString().isEmpty)
+          .map((entry) => entry.key)
+          .toList();
+
+      if (missingFields.isNotEmpty) {
+        // Show dialog if any required field is missing
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(tr("Incomplete Profile"),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                )),
+            content: Text(
+              tr("Please update your information to create a post"),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  tr("Cancel"),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PersonalDetailsScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  tr("Update Profile"),
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 29, 108, 92),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Navigate to AddMarketPostPage if all details are present
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AddMarketPostPage(
+              userData: widget.userData ?? {},
+              phoneNumber: widget.phoneNumber ?? '',
+              isUserExists: true,
+            ),
+          ),
+        );
+      }
     }
   }
-}
 
   Future<void> _pickProfilePicture() async {
     final ImagePicker picker = ImagePicker();
@@ -1543,7 +1545,8 @@ class MarketPost {
             ? json['farmerDetails'][0]
             : null;
 
-    String imageUrl = json['image'] ?? '';
+    String imageUrl =
+        json['post_url'] ?? 'assets/market1.webp'; // Use post_url with fallback
     return MarketPost(
       title: json['post_name'] ?? 'No Title',
       price: (json['price'] ?? '0').toString(),
