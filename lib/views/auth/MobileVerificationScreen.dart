@@ -18,10 +18,22 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
   final TextEditingController phoneController = TextEditingController();
   bool isLoading = false;
   bool isPhoneValid = false;
+  String? phoneError;
 
   bool isValid10Digit(String phone) {
-    final regex = RegExp(r'^\d{10}$');
-    return regex.hasMatch(phone);
+    // Check for 10 digits, starting with 6, 7, 8, or 9
+    final regex = RegExp(r'^[6-9]\d{9}$');
+    if (!regex.hasMatch(phone)) {
+      phoneError = tr("Please enter a valid phone number");
+      return false;
+    }
+    // Check for repetitive numbers (e.g., 1111111111, 0000000000)
+    if (RegExp(r'^(\d)\1{9}$').hasMatch(phone)) {
+      phoneError = tr("Invalid phone number. Try a different number.");
+      return false;
+    }
+    phoneError = null;
+    return true;
   }
 
   Future<void> verifyPhoneNumber() async {
@@ -29,7 +41,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
 
     if (!isValid10Digit(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Invalid phone number. Enter 10 digits."))),
+        SnackBar(content: Text(phoneError ?? tr("Invalid phone number"))),
       );
       return;
     }
@@ -62,19 +74,19 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
           } catch (e) {
             print("Signup dialog error: $e");
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Something went wrong. Try again.")),
+              SnackBar(content: Text(tr("Something went wrong. Try again."))),
             );
           }
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text("Error: ${data["message"] ?? "Unknown error"}")),
+              content: Text(tr("Error: ${data["message"] ?? "Unknown error"}"))),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Network error. Try again.")),
+        SnackBar(content: Text(tr("Network error. Try again."))),
       );
     } finally {
       setState(() => isLoading = false);
@@ -85,10 +97,13 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
   void initState() {
     super.initState();
     phoneController.addListener(() {
-      print(
-          "Phone input: ${phoneController.text}, Valid: ${isValid10Digit(phoneController.text.trim())}");
+      final phone = phoneController.text.trim();
+      print("Phone input: $phone, Valid: ${isValid10Digit(phone)}");
       setState(() {
-        isPhoneValid = isValid10Digit(phoneController.text.trim());
+        isPhoneValid = isValid10Digit(phone);
+        if (isPhoneValid) {
+          FocusScope.of(context).unfocus();
+        }
       });
     });
   }
@@ -128,6 +143,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 SizedBox(height: 20),
                 Text(
                   tr("Enter Your Phone Number"),
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -137,8 +153,8 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 SizedBox(height: 12),
                 Text(
                   tr("We'll send an OTP to verify your number (+91)"),
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 ),
                 SizedBox(height: 20),
                 TextField(
@@ -153,14 +169,12 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    /*
+                    errorText: phoneController.text.isNotEmpty && !isPhoneValid
+                        ? phoneError
+                        : null,
                     suffixIcon: isPhoneValid
                         ? Icon(Icons.check, color: Colors.green)
                         : null,
-                    errorText: phoneController.text.isNotEmpty && !isPhoneValid
-                        ? tr("Enter 10 digits")
-                        : null,
-                        */
                   ),
                 ),
                 SizedBox(height: 24),
@@ -169,19 +183,14 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                   onTap: isLoading || !isPhoneValid
                       ? null
                       : () async {
-                          await verifyPhoneNumber(); // Wrap async call
+                          await verifyPhoneNumber();
                         },
                   textStyle: TextStyle(
                     fontSize: 14,
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
-                  opacity: isLoading || !isPhoneValid ? 0.5 : 1.0, // Visual feedback
-                ),
-                SizedBox(height: 16),
-                Text(
-                  tr("Need Help?"),
-                  style: TextStyle(color: Colors.grey[700]),
+                  opacity: isLoading || !isPhoneValid ? 0.5 : 1.0,
                 ),
                 SizedBox(height: 16),
               ],

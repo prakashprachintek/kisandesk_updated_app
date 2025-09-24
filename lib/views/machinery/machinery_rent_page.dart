@@ -3,11 +3,13 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:mainproject1/views/machinery/order_detail_page.dart';
-import '../machinery/myorderspage.dart';
+import 'package:mainproject1/views/machinery/myorderspage.dart';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
 import 'bookpage.dart';
 import 'orderTransactionTab.dart';
+import 'package:mainproject1/views/profile/personalDetailsPage.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class MachineryRentPage extends StatefulWidget {
   const MachineryRentPage({super.key});
@@ -38,35 +40,27 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     if (UserSession.userId == null) {
       setState(() {
         isLoading = false;
-        errorMessage = "User not logged in";
+        errorMessage = tr("User not logged in");
       });
-      print("Error: UserSession.userId is null");
       return;
     }
 
     final url = Uri.parse("${KD.api}/app/get_machinary_orders");
 
     try {
-      print("Fetching orders for userId: ${UserSession.userId}");
       final response = await http.post(
         url,
-        body: jsonEncode({"userId": UserSession.userId, "type": "transactions"}),
+        body:
+            jsonEncode({"userId": UserSession.userId, "type": "transactions"}),
         headers: {
           "Content-Type": "application/json",
         },
       );
 
-      print("API Response Status: ${response.statusCode}");
-      print("API Response Body: ${response.body}");
-
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        print("Parsed JSON: $json");
-
         if (json['status'] == 'success') {
           final List results = json['results'] ?? [];
-          print("Results count: ${results.length}");
-
           results.sort((a, b) =>
               b['created_at'].toString().compareTo(a['created_at'].toString()));
 
@@ -89,33 +83,28 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           setState(() {
             recentOrders = recent;
             isLoading = false;
-            errorMessage = recent.isEmpty ? "No recent orders found" : null;
+            errorMessage = recent.isEmpty ? tr("No recent orders found") : null;
           });
-          print("Recent Orders: $recentOrders");
         } else {
           setState(() {
             isLoading = false;
-            errorMessage = json['message'] ?? "Failed to fetch orders";
+            errorMessage = json['message'] ?? tr("Failed to fetch orders");
           });
-          print("API status not success: ${json['message']}");
         }
       } else {
         setState(() {
           isLoading = false;
-          errorMessage = "Server error: ${response.statusCode}";
+          errorMessage = tr("Server error: ${response.statusCode}");
         });
-        print("Failed to fetch orders: ${response.statusCode}");
       }
     } catch (e) {
       setState(() {
         isLoading = false;
-        errorMessage = "Error fetching orders: $e";
+        errorMessage = tr("Error fetching orders: $e");
       });
-      print("Error fetching recent orders: $e");
     }
   }
 
-  // Function to handle pull-to-refresh
   Future<void> _onRefresh() async {
     setState(() {
       isLoading = true;
@@ -125,17 +114,86 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     await _fetchRecentOrders();
   }
 
+  void _checkProfileAndNavigate() {
+    final user = UserSession.user ?? {};
+    final requiredFields = {
+      'phone': (user['phone'] ?? '').length == 10 ? user['phone'] : null,
+      'state': user['state'],
+      'district': user['district'],
+      'taluka': user['taluka'],
+      'village': user['village'],
+      'pincode': user['pincode'],
+      'address': user['address'],
+    };
+
+    final missingFields = requiredFields.entries
+        .where((entry) => entry.value == null || entry.value.toString().isEmpty)
+        .map((entry) => entry.key)
+        .toList();
+
+    if (missingFields.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(
+            tr("Incomplete Profile"),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
+          content: Text(
+            tr("Please update your information to book machinery"),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                tr("Cancel"),
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => PersonalDetailsScreen()),
+                );
+              },
+              child: Text(
+                tr("Update Profile"),
+                style: TextStyle(
+                  color: Color.fromARGB(255, 29, 108, 92),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BookPage()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Machinery Rent",
+        title: Text(
+          tr("Machinery Rent"),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      backgroundColor: const Color(0xFFEEF3F9), // Set Scaffold background color
+      backgroundColor: const Color(0xFFEEF3F9),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         child: SingleChildScrollView(
@@ -192,32 +250,39 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                     _buildTile(
                       context,
                       icon: Icons.shopping_cart,
-                      label: "Book",
+                      label: tr("Book"),
                       color: Colors.green,
-                      page: const BookPage(),
+                      onTap:
+                          _checkProfileAndNavigate, // Updated to check profile
                     ),
                     _buildTile(
                       context,
                       icon: Icons.list_alt,
-                      label: "My Orders",
+                      label: tr("My Orders"),
                       color: Colors.orange,
-                      page: const Ordertransactiontab(),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const Ordertransactiontab(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  "Recent Orders",
+                Text(
+                  tr("Recent Orders"),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : errorMessage != null
-                        ? Center(child: Text(errorMessage!))
+                        ? Center(child: Text(tr(errorMessage!)))
                         : recentOrders.isEmpty
-                            ? const Center(
-                                child: Text("No recent orders found"))
+                            ? Center(child: Text(tr("No recent orders found")))
                             : ListView.builder(
                                 itemCount: recentOrders.length,
                                 shrinkWrap: true,
@@ -260,12 +325,15 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
-                                              "🔧 Machine Booked: ${order['machine']}"),
-                                          Text("📅 Date: ${order['date']}"),
+                                              "${tr('Machine Booked')}: ${order['machine']}"),
                                           Text(
-                                              "⚒️ Machine Owner: ${order['name']}"),
-                                          Text("📞 Contact: ${order['phone']}"),
-                                          Text("📌 Status: ${order['status']}"),
+                                              "${tr('Date')}: ${order['date']}"),
+                                          Text(
+                                              "${tr('Machine Owner')}: ${order['name']}"),
+                                          Text(
+                                              "${tr('Contact')}: ${order['phone']}"),
+                                          Text(
+                                              "${tr('Status')}: ${order['status']}"),
                                         ],
                                       ),
                                     ),
@@ -280,18 +348,15 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     );
   }
 
-  Widget _buildTile(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required Color color,
-      required Widget page}) {
+  Widget _buildTile(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => page),
-        );
-      },
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),

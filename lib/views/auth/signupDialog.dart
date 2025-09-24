@@ -66,7 +66,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                   TextField(
                     controller: _nameController,
                     decoration: InputDecoration(labelText: tr("Full Name")),
-                  ),
+                  ),/*
                   SizedBox(height: 10),
                   DropdownButton<String>(
                     hint: Text(tr("Select District")),
@@ -135,6 +135,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                     keyboardType: TextInputType.number,
                     maxLength: 6,
                   ),
+                  */
                 ],
               ),
             ),
@@ -148,11 +149,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                     ? CircularProgressIndicator()
                     : Text(tr("Submit")),
                 onPressed: () async {
-                  if (_nameController.text.isEmpty ||
-                      selectedDistrict == null ||
-                      selectedTaluk == null ||
-                      selectedVillage == null ||
-                      _pincodeController.text.isEmpty) {
+                  if (_nameController.text.isEmpty 
+                  // ||
+                      // selectedDistrict == null ||
+                      // selectedTaluk == null ||
+                      // selectedVillage == null ||
+                      // _pincodeController.text.isEmpty
+                      ) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(tr("Please fill all fields"))),
                     );
@@ -171,10 +174,10 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                       body: jsonEncode({
                         "phoneNumber": phone,
                         "fullName": _nameController.text.trim(),
-                        "district": selectedDistrict,
-                        "taluka": selectedTaluk,
-                        "village": selectedVillage,
-                        "pincode": _pincodeController.text.trim(),
+                        // "district": selectedDistrict,
+                        // "taluka": selectedTaluk,
+                        // "village": selectedVillage,
+                        // "pincode": _pincodeController.text.trim(),
                         "state": "Karnataka",
                       }),
                     );
