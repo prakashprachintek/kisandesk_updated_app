@@ -42,18 +42,8 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                       height: 30,
                     ),
                     Image.asset(
-                      'assets/Logo.jpeg',
-                      height: 100,
-                    ),
-                    SizedBox(height: 24),
-
-                    Text(
-                      'Welcome To Kisan Desk',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF4CAF50),
-                      ),
+                      'assets/New_logo.png',
+                      height: 200,
                     ),
                     SizedBox(height: 12),
                     Text(
@@ -90,7 +80,7 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                               padding: EdgeInsets.symmetric(vertical: 40),
                               decoration: BoxDecoration(
                                 color: _selectedLocale == const Locale('en')
-                                    ? Color(0xFF4CAF50)
+                                    ? Color(0xFF1B5E20)
                                         .withOpacity(0.8) // Highlighted
                                     : Colors.green.withOpacity(0.1), // Default
                                 borderRadius: BorderRadius.circular(12),
@@ -135,7 +125,7 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                               padding: EdgeInsets.symmetric(vertical: 40),
                               decoration: BoxDecoration(
                                 color: _selectedLocale == const Locale('kn')
-                                    ? Color(0xFF4CAF50).withOpacity(0.8)
+                                    ? Color(0xFF1B5E20).withOpacity(0.8)
                                     : Colors.green.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.green),
@@ -168,11 +158,6 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                         ),
                       ],
                     ),
-
-                    // SizedBox(
-                    //   height: 75,
-                    // ),
-
                     Spacer(),
 
                     //next button
@@ -190,7 +175,7 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                       child: Text('Next'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _selectedLocale != null
-                            ? Color(0xFF4CAF50)
+                            ? Color(0xFF1B5E20)
                             : Colors.grey,
                         foregroundColor: Colors.white,
                         padding:
