@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import '../services/api_config.dart';
 import '../home/HomePage.dart';
 import '../widgets/GradientAuthButton.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:sms_autofill/sms_autofill.dart'; // Only for app signature
 
 class OTPVerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -29,10 +29,18 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final TextEditingController otpController = TextEditingController();
   bool isLoading = false;
   bool isResendLoading = false;
-
+  String? errorMessage;
+  bool isOtpValid = false;
   int secondsRemaining = 30;
   bool resendEnabled = false;
   late Timer timer;
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+    _logAppSignature(); // Log signature for backend
+  }
 
   void startTimer() {
     setState(() {
@@ -54,10 +62,21 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     });
   }
 
+  Future<void> _logAppSignature() async {
+    try {
+      String? appSignature = await SmsAutoFill().getAppSignature;
+      print("App Signature: $appSignature (Share this with SMS provider for auto-fill)");
+    } catch (e) {
+      print("Error getting app signature: $e");
+    }
+  }
+
   Future<void> resendOTP() async {
     setState(() {
       isResendLoading = true;
-      otpController.clear(); // Clear the OTP input boxes
+      otpController.clear();
+      errorMessage = null;
+      isOtpValid = false;
     });
 
     final url = Uri.parse("${KD.api}/admin/generate_otp");
@@ -76,7 +95,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(tr("OTP resent successfully"))),
         );
-        startTimer(); // Restart the timer after successful resend
+        startTimer();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -97,19 +116,21 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     final otp = otpController.text.trim();
 
     if (otp.length != 4 || !RegExp(r'^\d{4}$').hasMatch(otp)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Enter a valid 4-digit OTP"))),
-      );
+      setState(() {
+        errorMessage = tr("Please enter a valid OTP");
+      });
       return;
     }
 
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
 
     final url = Uri.parse("${KD.api}/admin/verify_otp");
-
-    //Get FCM token
     String? token = await FirebaseMessaging.instance.getToken();
     print("⭐⭐FCM Token: $token");
+
     try {
       final response = await http.post(
         url,
@@ -123,46 +144,30 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
       if (response.statusCode == 200) {
         if (data["status"] == "success") {
-          //storing data for later user
           UserSession.setUser(data["result"]);
-
-          // OTP correct → Navigate to Home
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => HomePage()),
           );
-        } else if (data["status"] == tr("failed")) {
-          // OTP incorrect or not generated → Show error
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text(data["message"] ?? tr("OTP verification failed"))),
-          );
-
-          // If OTP was never generated, force a retry
-          if (data["message"] == tr("Please generate OTP")) {
-            // Navigator.pop(context); // Go back to phone input
-            // will work when the changes in the backend will be made
-          }
+        } else if (data["status"] == "failed") {
+          setState(() {
+            errorMessage = data["message"] == "Invalid OTP"
+                ? tr("Please enter a valid OTP")
+                : data["message"] ?? tr("OTP verification failed");
+          });
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr("Server error. Try again."))),
-        );
+        setState(() {
+          errorMessage = tr("Server error. Try again.");
+        });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Network error. Try again."))),
-      );
+      setState(() {
+        errorMessage = tr("Network error. Try again.");
+      });
     } finally {
       setState(() => isLoading = false);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    startTimer(); // start countdown on screen load
   }
 
   @override
@@ -177,8 +182,10 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(tr("OTP Verification"),
-            style: TextStyle(color: Colors.grey[700])),
+        title: Text(
+          tr("OTP Verification"),
+          style: TextStyle(color: Colors.grey[700]),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.grey[700]),
@@ -212,10 +219,23 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                       const SizedBox(height: 12),
                       Text(
                         tr("OTP sent to: ${widget.phoneNumber}"),
-                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                         textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 20),
+                      if (errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            errorMessage!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       PinCodeTextField(
                         appContext: context,
                         length: 4,
@@ -225,7 +245,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         textStyle: TextStyle(fontSize: 20),
                         animationType: AnimationType.scale,
                         cursorColor: Colors.green.shade800,
-                        onChanged: (value) {},
+                        onChanged: (value) {
+                          print("onChanged: value=$value, length=${value.length}");
+                          setState(() {
+                            isOtpValid = value.trim().length == 4 &&
+                                RegExp(r'^\d{4}$').hasMatch(value.trim());
+                            if (errorMessage != null) {
+                              errorMessage = null;
+                            }
+                          });
+                        },
                         pinTheme: PinTheme(
                           shape: PinCodeFieldShape.box,
                           borderRadius: BorderRadius.circular(10),
@@ -236,16 +265,21 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                           inactiveFillColor: Colors.grey.shade200,
                           activeColor: Colors.green,
                           selectedColor: Colors.green.shade800,
-                          inactiveColor: const Color.fromARGB(255, 255, 255, 255),
+                          inactiveColor: Colors.white,
                         ),
                         animationDuration: const Duration(milliseconds: 250),
                         enableActiveFill: true,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 20),
                       GradientAuthButton(
                         text: isLoading ? tr("Verifying...") : tr("Verify OTP"),
-                        onTap: isLoading ? null : verifyOTP,
-                        textStyle: TextStyle(fontSize: 14),
+                        onTap: isLoading || !isOtpValid ? null : verifyOTP,
+                        textStyle: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        opacity: isLoading || !isOtpValid ? 0.5 : 1.0,
                       ),
                       const SizedBox(height: 0),
                       Padding(
@@ -265,6 +299,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                               },
                               child: Text(
                                 tr("Wrong number? Go back"),
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: const Color.fromARGB(255, 32, 90, 40),
                                   fontSize: 14,
@@ -286,7 +321,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                     ),
                                   )
                                 : Text(
-                                    "Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}",
+                                    "${tr('Resend in')} 00:${secondsRemaining.toString().padLeft(2, '0')}",
                                     style: TextStyle(
                                         color: Colors.grey[600], fontSize: 14),
                                   ),
