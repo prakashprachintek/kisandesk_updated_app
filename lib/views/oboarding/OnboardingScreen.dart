@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
 
 import '../../main.dart';
 import '../auth/AuthSelectionScreen.dart';
@@ -28,7 +29,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _nextPage() {
     if (_currentIndex < onboardingFiles.length - 1) {
-      _pageController.nextPage(duration: Duration(milliseconds: 500), curve: Curves.easeIn);
+      _pageController.nextPage(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeIn,
+      );
     }
   }
 
@@ -75,10 +79,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => AuthSelectionScreen()),
+                            MaterialPageRoute(builder: (_) => MobileVerificationScreen()),
                           );
                         },
                       )
+                    else
+                      GradientButton(
+                        text: "Next",
+                        onPressed: _nextPage,
+                      ),
                   ],
                 ),
               );
@@ -92,23 +101,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               onTap: _skip,
               child: Text(
                 "Skip",
-                style: TextStyle(fontSize: 16, color: Color(0xFF1B5E20), fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          // next bottom-center if not last
-          if (_currentIndex < onboardingFiles.length - 1)
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: GradientButton(
-                  text: "Next",
-                  onPressed: _nextPage,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF1B5E20),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
+          ),
         ],
       ),
     );
