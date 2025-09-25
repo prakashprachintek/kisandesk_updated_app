@@ -38,7 +38,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
     if (_tabController.indexIsChanging) {
       setState(() {
         selectedCategory = _getCategoryForTab(_tabController.index);
-        isLoading = true;
+        print('🔄 Switching to category: $selectedCategory');
       });
       _loadFromCacheOrFetch();
     }
@@ -62,15 +62,23 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   @override
   void dispose() {
     searchController.dispose();
-    cacheBox.close();
     _tabController.dispose();
+    _closeHiveBox();
     super.dispose();
   }
 
   Future<void> _initHiveAndFetch() async {
     await Hive.initFlutter();
-    cacheBox = await Hive.openBox('market_posts_box_${selectedCategory}');
+    cacheBox = await Hive.openBox('market_posts_box'); // Single box for all categories
+    print('📦 Hive box opened: market_posts_box');
     await _loadFromCacheOrFetch();
+  }
+
+  Future<void> _closeHiveBox() async {
+    if (cacheBox.isOpen) {
+      await cacheBox.close();
+      print('📕 Cache box closed');
+    }
   }
 
   Future<void> _loadFromCacheOrFetch() async {
@@ -78,9 +86,12 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       isLoading = true;
     });
 
+    final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+    final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+
     try {
-      final cachedData = cacheBox.get('data_${selectedCategory}');
-      final cachedTimestamp = cacheBox.get('last_updated_${selectedCategory}');
+      final cachedData = cacheBox.get(cacheKey);
+      final cachedTimestamp = cacheBox.get(timestampKey);
 
       if (cachedData != null && cachedTimestamp != null && cachedData is List && cachedTimestamp is String) {
         final lastUpdatedTime = DateTime.tryParse(cachedTimestamp);
@@ -89,21 +100,28 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
           const cacheDuration = Duration(hours: 24);
 
           if (now.difference(lastUpdatedTime) < cacheDuration) {
+            print('✅ Cache hit for $cacheKey, timestamp: $cachedTimestamp');
+            final castedData = cachedData.map((item) => (item as Map).cast<String, dynamic>()).toList();
             setState(() {
-              originalMarketItems = List<Map<String, dynamic>>.from(cachedData);
+              originalMarketItems = castedData;
               marketItems = List.from(originalMarketItems);
               lastUpdated = cachedTimestamp;
               isLoading = false;
+              isOffline = false;
             });
             _performSearchAndFilter();
-            _fetchMarketPosts(isBackground: true);
+            // Fetch in background only if cache is close to expiring (e.g., within last hour)
+            if (now.difference(lastUpdatedTime) > const Duration(hours: 23)) {
+              print('🔄 Cache near expiration, fetching in background for $selectedCategory');
+              _fetchMarketPosts(isBackground: true);
+            }
             return;
           }
         }
       }
+      print('❌ Cache miss or stale for $cacheKey, fetching from API');
     } catch (e) {
-      print("Error reading cache for $selectedCategory: $e");
-      await cacheBox.clear();
+      print('⚠️ Error reading cache for $cacheKey: $e');
     }
 
     await _fetchMarketPosts();
@@ -118,6 +136,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
     }
 
     const String url = '${KD.api}/admin/getAll_market_post';
+    print('🌐 Fetching from API for category: $selectedCategory');
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -151,9 +170,12 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                 };
               }).toList());
 
-          await cacheBox.put('data_${selectedCategory}', fetchedItems);
+          final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+          final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+          await cacheBox.put(cacheKey, fetchedItems);
           final now = DateTime.now().toString();
-          await cacheBox.put('last_updated_${selectedCategory}', now);
+          await cacheBox.put(timestampKey, now);
+          print('💾 Cached data for $cacheKey at $now');
 
           if (mounted) {
             setState(() {
@@ -166,7 +188,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
             _performSearchAndFilter();
           }
         } else {
-          print('No results found in response: ${response.body}');
+          print('⚠️ No results found in API response: ${response.body}');
           if (mounted) {
             setState(() {
               isLoading = false;
@@ -177,7 +199,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         throw Exception('Failed to load posts: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching market posts for $selectedCategory: $e');
+      print('❌ Error fetching market posts for $selectedCategory: $e');
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -189,19 +211,34 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   }
 
   void _loadCachedDataOnFailure() {
+    final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+    final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
     try {
-      final cachedData = cacheBox.get('data_${selectedCategory}');
-      final cachedTimestamp = cacheBox.get('last_updated_${selectedCategory}');
+      final cachedData = cacheBox.get(cacheKey);
+      final cachedTimestamp = cacheBox.get(timestampKey);
       if (cachedData != null && cachedTimestamp != null && cachedData is List) {
+        print('✅ Loaded cached data on failure for $cacheKey');
+        final castedData = cachedData.map((item) => (item as Map).cast<String, dynamic>()).toList();
         setState(() {
-          originalMarketItems = List<Map<String, dynamic>>.from(cachedData);
+          originalMarketItems = castedData;
           marketItems = List.from(originalMarketItems);
           lastUpdated = cachedTimestamp;
+          isOffline = true;
           _performSearchAndFilter();
+        });
+      } else {
+        print('❌ No valid cached data for $cacheKey');
+        setState(() {
+          marketItems = [];
+          originalMarketItems = [];
         });
       }
     } catch (e) {
-      print("Error loading cache on failure for $selectedCategory: $e");
+      print('⚠️ Error loading cache on failure for $cacheKey: $e');
+      setState(() {
+        marketItems = [];
+        originalMarketItems = [];
+      });
     }
   }
 
@@ -213,6 +250,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       filteredList = filteredList
           .where((item) => item['name'].toString().toLowerCase().contains(query))
           .toList();
+      print('🔍 Search applied: $query, ${filteredList.length} items found');
     }
 
     if (selectedFilter == 'Price: Low to High') {
@@ -221,12 +259,14 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         final bPrice = b['price'] is num ? b['price'] as num : 0;
         return aPrice.compareTo(bPrice);
       });
+      print('📈 Sorted by Price: Low to High');
     } else if (selectedFilter == 'Price: High to Low') {
       filteredList.sort((a, b) {
         final aPrice = a['price'] is num ? a['price'] as num : 0;
         final bPrice = b['price'] is num ? b['price'] as num : 0;
         return bPrice.compareTo(aPrice);
       });
+      print('📉 Sorted by Price: High to Low');
     }
 
     setState(() {
@@ -335,7 +375,15 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: () => _fetchMarketPosts(),
+        onRefresh: () async {
+          // Clear cache for the current category on explicit refresh
+          final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+          final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+          await cacheBox.delete(cacheKey);
+          await cacheBox.delete(timestampKey);
+          print('🗑️ Cache cleared for $cacheKey on refresh');
+          await _fetchMarketPosts();
+        },
         child: Column(
           children: [
             if (lastUpdated != null)
