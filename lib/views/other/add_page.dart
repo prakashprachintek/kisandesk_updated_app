@@ -71,12 +71,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       'price': 'Price per Acre',
       'quantity': 'Total Area (Acres)',
     },
-    'Labour': {
-      'cropName': 'Job Role',
-      'description': 'Job Description',
-      'price': 'Wages per Day',
-      'quantity': 'Number of Workers Needed',
-    },
     'machinery': {
       'cropName': 'Machine Name',
       'description': 'Machine Description',
@@ -85,24 +79,38 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     },
   };
 
-  final Map<String, List<String>> _quantityOptions = {
-    'labour': [
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      '10',
-      '11',
-      '12',
-      '13',
-      '14',
-      '15+'
+  final Map<String, List<Map<String, String>>> _categoryOptions = {
+    'cattle': [
+      {'name': 'Cow', 'image': 'assets/cow.png'},
+      {'name': 'Ox', 'image': 'assets/Ox.png'},
+      {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
+      {'name': 'Sheep', 'image': 'assets/Sheep.png'},
+      {'name': 'Goat', 'image': 'assets/goat (2).png'},
+      {'name': 'Hen', 'image': 'assets/Henm.png'},
+      {'name': 'Duck', 'image': 'assets/Duck.png'},
     ],
+    'crop': [
+      {'name': 'Pulses', 'image': 'assets/pulses.png'},
+      {'name': 'Oil Seeds', 'image': 'assets/oil_seedsm.png'},
+      {'name': 'Fruits', 'image': 'assets/fruitsm.png'},
+      {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'},
+      {'name': 'Cereals', 'image': 'assets/cerealsm.png'},
+      {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
+    ],
+    'land': [
+      {'name': 'Home', 'image': 'assets/house.jpg'},
+      {'name': 'Plots', 'image': 'assets/land_barren.png'},
+      {'name': 'Dry Land', 'image': 'assets/land_comm.png'},
+      {'name': 'Irrigation Land', 'image': 'assets/wheat.png'}
+    ],
+    'machinery': [
+      {'name': 'Transport Vehicles', 'image': 'assets/Transportm.png'},
+      {'name': 'Farming Machines', 'image': 'assets/FarmingMachine.png'},
+      {'name': 'Farming Equipment', 'image': 'assets/FarmingEqui.png'},
+    ],
+  };
+
+  final Map<String, List<String>> _quantityOptions = {
     'cattle': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'],
     'land': [
       '1 Acre',
@@ -135,7 +143,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       '20 Kg',
       '30 Kg',
       '40 Kg',
-      ' 50 Kg',
+      '50 Kg',
       '60 Kg',
       '70 Kg',
       '80 Kg',
@@ -224,26 +232,29 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         _currentFieldLabels = _categoryFieldLabels[cat]!;
       });
     }
-  }
+  } 
+
 
   Widget _buildStep0() {
     final Map<String, String> categoryImages = {
       'cattle': 'assets/cattlemm.png',
       'crop': 'assets/cropmm.png',
       'land': 'assets/landmm.png',
-      'labour': 'assets/labourm.png',
       'machinery': 'assets/tracm.png',
     };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      //mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        GridView.count(
+        SizedBox(
+          height: 450,
+          child: GridView.count(
           crossAxisCount: 2,
-          shrinkWrap: true,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          physics: NeverScrollableScrollPhysics(),
+          //shrinkWrap: true,
+          //physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
           children: _categoryFieldLabels.keys.map((cat) {
             final String key = cat.toLowerCase();
             final isSelected = _selectedCategory == key;
@@ -253,8 +264,14 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 setState(() {
                   _selectedCategory = key;
                   _updateFieldLabels(key);
+                  // Clear product details when category changes
+                  _cropName = null;
+                  _description = null;
+                  _price = null;
+                  _quantity = null;
                 });
               },
+              
               child: Container(
                 decoration: BoxDecoration(
                   color: isSelected
@@ -272,7 +289,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
+                    SizedBox(
+                      height: 80,
                       child: categoryImages.containsKey(key)
                           ? Image.asset(categoryImages[key]!,
                               fit: BoxFit.contain)
@@ -289,7 +307,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             );
           }).toList(),
         ),
-        SizedBox(height: 30),
+        ),
+        SizedBox(height: 160),
         _GradientButton(
           text: "Next",
           onPressed: () {
@@ -315,8 +334,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     );
   }
 
-  //Product Details
+  // Product Details (MODIFIED TO USE DROPDOWNSEARCH FOR CROP NAME)
   Widget _buildStep1() {
+    final List<Map<String, String>> currentOptions =
+        _categoryOptions[_selectedCategory!] ?? [];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -328,32 +350,78 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           ),
         ),
         SizedBox(height: 20),
-        TextFormField(
-          decoration: InputDecoration(
-            labelText: _currentFieldLabels['cropName'] ?? "Title",
-            labelStyle: TextStyle(color: Colors.grey[600]),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade400),
+
+        // -------------------------------------------------------------------
+        // MODIFIED: DropdownSearch for Product/Cattle Name with Images
+        // -------------------------------------------------------------------
+        DropdownSearch<String>(
+          //menuHeight: 400,
+          items: currentOptions.map((e) => e['name']!).toList(),
+          dropdownDecoratorProps: DropDownDecoratorProps(
+            dropdownSearchDecoration: InputDecoration(
+              labelText: _currentFieldLabels['cropName'] ?? "Title",
+              labelStyle: TextStyle(color: Colors.grey[600]),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade400),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
-          onChanged: (val) => _cropName = val,
-          initialValue: _cropName,
+          onChanged: (val) {
+            setState(() {
+              _cropName = val;
+            });
+          },
+          selectedItem: _cropName,
+          // Customizing the dropdown list view to show images
+          popupProps: PopupProps.menu(
+            showSearchBox: true,
+            constraints: const BoxConstraints(
+              maxHeight: 400,
+            ),
+            menuProps: MenuProps(
+              borderRadius: BorderRadius.circular(8),
+              elevation: 4,
+              //padding: EdgeInsets.zero,
+            ),
+            itemBuilder: (context, item, isSelected) {
+              final option = currentOptions.firstWhere((e) => e['name'] == item,
+                  orElse: () => {'name': item, 'image': 'assets/default.png'}); // Fallback
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                color: isSelected ? Colors.green[50] : null,
+                child: Row(
+                  children: [
+                    // Display image
+                    Image.asset(
+                      option['image']!,
+                      width: 90,
+                      height: 90,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Icon(Icons.image_not_supported, size: 30),
+                    ),
+                    SizedBox(width: 10),
+                    // Display name
+                    Text(
+                      item,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
+        // -------------------------------------------------------------------
         SizedBox(height: 16),
         TextFormField(
           decoration: InputDecoration(
@@ -450,8 +518,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 dropdownSearchDecoration: InputDecoration(
                   labelText: _currentFieldLabels['quantity'] ?? "Quantity",
                   labelStyle: TextStyle(color: Colors.grey[600]),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                  border:
+                      OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade400),
@@ -564,7 +632,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                     context: context,
                     builder: (_) => AlertDialog(
                       title: Text("Error"),
-                      content: Text("Please enter product name/description."),
+                      content: Text(
+                          "Please select a product name and fill the description."),
                       actions: [
                         TextButton(
                             onPressed: () => Navigator.of(context).pop(),
@@ -582,13 +651,12 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       ],
     );
   }
-
   // location selection and submission
   Widget _buildStep2() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(height: 30),
+        SizedBox(height: 10),
         Lottie.asset('assets/animations/location.json', height: 180),
         SizedBox(height: 20),
         Center(
@@ -1227,7 +1295,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       appBar: AppBar(
         title: Text("Add Market Post (Step ${_currentStep + 1}/3)"),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Container(
           constraints: BoxConstraints(
             minHeight: MediaQuery.of(context).size.height,

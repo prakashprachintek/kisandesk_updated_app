@@ -18,8 +18,8 @@ class GradientButton extends StatelessWidget {
           gradient: LinearGradient(
             colors: [
               Color(0xFF1B5E20),
-              Color(0xFF4CAF50),
-              Color(0xFFFFD600),
+              Color(0xFF1B5E20),
+              Color(0xFF1B5E20),
             ],
             stops: [0.0, 0.5, 1.0],
             begin: Alignment.topLeft,

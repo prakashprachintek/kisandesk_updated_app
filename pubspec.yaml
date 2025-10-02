@@ -114,6 +114,22 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/profile.jpg
+    - assets/Sheep.png
+    - assets/Ox.png
+    - assets/goat (2).png
+    - assets/Duck.png
+    - assets/cow.png
+    - assets/Buffalom.png
+    - assets/Henm.png
+    - assets/cerealsm.png
+    - assets/dryfruitsm.png
+    - assets/fruitsm.png
+    - assets/oil_seedsm.png
+    - assets/vegetablesm.png
+    - assets/pulses.png
+    - assets/FarmingMachine.png
+    - assets/FarmingEqui.png
+    - assets/Transportm.png
     - assets/ration.jpg
     - assets/machines.webp
     - assets/pesticide.webp
