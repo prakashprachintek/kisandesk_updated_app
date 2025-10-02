@@ -145,9 +145,10 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       if (response.statusCode == 200) {
         if (data["status"] == "success") {
           UserSession.setUser(data["result"]);
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => HomePage()),
+            (Route<dynamic> route) => false,
           );
         } else if (data["status"] == "failed") {
           setState(() {

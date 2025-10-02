@@ -1,5 +1,5 @@
 class KD {
-  static const String api = 'http://13.204.87.75:7000/api';
+  static const String api = 'https://app.kisandesk.com/api';
 
   // Use the API like this
   //'${KD.api}/<rest content>' ---> e.g '${KD.api}/admin/fetch_mandi_rates'
