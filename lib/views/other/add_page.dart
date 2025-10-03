@@ -99,9 +99,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     ],
     'land': [
       {'name': 'Home', 'image': 'assets/house.jpg'},
-      {'name': 'Plots', 'image': 'assets/land_barren.png'},
-      {'name': 'Dry Land', 'image': 'assets/land_comm.png'},
-      {'name': 'Irrigation Land', 'image': 'assets/wheat.png'}
+      {'name': 'Plots', 'image': 'assets/Plots.png'},
+      {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
+      {'name': 'Irrigation Land', 'image': 'assets/irrigationland.png'}
     ],
     'machinery': [
       {'name': 'Transport Vehicles', 'image': 'assets/Transportm.png'},
@@ -339,13 +339,14 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     final List<Map<String, String>> currentOptions =
         _categoryOptions[_selectedCategory!] ?? [];
 
-    return Column(
+    return SingleChildScrollView(
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(height: 20),
         Center(
           child: Text(
-            "Enter Product Details",
+            "Enter Your Details",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
@@ -649,16 +650,18 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           ],
         ),
       ],
+    ),
     );
   }
   // location selection and submission
   Widget _buildStep2() {
-    return Column(
+    return SingleChildScrollView(
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(height: 10),
+        //SizedBox(height: 10),
         Lottie.asset('assets/animations/location.json', height: 180),
-        SizedBox(height: 20),
+        SizedBox(height: 10),
         Center(
           child: Text(
             "Enter Location & Submit",
@@ -666,8 +669,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           ),
         ),
         SizedBox(height: 20),
-        _buildLocationToggle(),
-        SizedBox(height: 16),
+        //_buildLocationToggle(),
+        //SizedBox(height: 16),
         if (!_useCurrentLocation) ...[
           DropdownSearch<String>(
             items: _states,
@@ -882,6 +885,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           ],
         ),
       ],
+    ),
     );
   }
 

@@ -130,6 +130,9 @@ flutter:
     - assets/FarmingMachine.png
     - assets/FarmingEqui.png
     - assets/Transportm.png
+    - assets/Plots.png
+    - assets/irrigationland.png
+    - assets/DryLand.png
     - assets/ration.jpg
     - assets/machines.webp
     - assets/pesticide.webp
