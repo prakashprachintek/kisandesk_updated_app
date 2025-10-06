@@ -82,7 +82,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   final Map<String, List<Map<String, String>>> _categoryOptions = {
     'cattle': [
       {'name': 'Cow', 'image': 'assets/cow.png'},
-      {'name': 'Ox', 'image': 'assets/Ox.png'},
+      {'name': 'Ox', 'image': 'assets/oxn.png'},
       {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
       {'name': 'Sheep', 'image': 'assets/Sheep.png'},
       {'name': 'Goat', 'image': 'assets/goat (2).png'},
@@ -112,7 +112,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
   final Map<String, List<String>> _quantityOptions = {
     'cattle': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'],
-    'land': [
+    'Properties': [
       '1 Acre',
       '2 Acres',
       '3 Acres',
@@ -237,13 +237,14 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
   Widget _buildStep0() {
     final Map<String, String> categoryImages = {
-      'cattle': 'assets/cattlemm.png',
-      'crop': 'assets/cropmm.png',
-      'land': 'assets/landmm.png',
-      'machinery': 'assets/tracm.png',
+      'cattle': 'assets/cattlen.png',
+      'crop': 'assets/cropn.png',
+      'land': 'assets/propn.jpg',
+      'machinery': 'assets/Machinen.png',
     };
 
-    return Column(
+    return SingleChildScrollView(
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       //mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -294,7 +295,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                       child: categoryImages.containsKey(key)
                           ? Image.asset(categoryImages[key]!,
                               fit: BoxFit.contain)
-                          : Icon(Icons.image_not_supported, size: 50),
+                          : Icon(Icons.image_not_supported, size: 160),
                     ),
                     SizedBox(height: 10),
                     Text(
@@ -308,7 +309,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           }).toList(),
         ),
         ),
-        SizedBox(height: 160),
+        SizedBox(height: 90),
         _GradientButton(
           text: "Next",
           onPressed: () {
@@ -331,6 +332,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           },
         ),
       ],
+    ),
     );
   }
 
@@ -356,7 +358,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         // MODIFIED: DropdownSearch for Product/Cattle Name with Images
         // -------------------------------------------------------------------
         DropdownSearch<String>(
-          //menuHeight: 400,
           items: currentOptions.map((e) => e['name']!).toList(),
           dropdownDecoratorProps: DropDownDecoratorProps(
             dropdownSearchDecoration: InputDecoration(
@@ -382,7 +383,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           selectedItem: _cropName,
           // Customizing the dropdown list view to show images
           popupProps: PopupProps.menu(
-            showSearchBox: true,
+            showSearchBox: false,
             constraints: const BoxConstraints(
               maxHeight: 400,
             ),
