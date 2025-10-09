@@ -3,25 +3,75 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import '../services/api_config.dart';
-import 'Postdetailspage.dart';
+import 'Postdetailspage.dart'; 
+
 
 class MarketPage extends StatefulWidget {
   @override
   _MarketPageState createState() => _MarketPageState();
 }
 
-class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMixin {
   List<Map<String, dynamic>> marketItems = [];
   List<Map<String, dynamic>> originalMarketItems = [];
   bool isLoading = true;
   bool isOffline = false;
   String? lastUpdated;
-  String selectedCategory = ''; // Default to 'All' (empty string for API)
-  
+  String selectedCategory = ''; 
+  String selectedSubCategory = ''; 
+
   TextEditingController searchController = TextEditingController();
   String selectedFilter = '';
   late Box cacheBox;
-  late TabController _tabController;
+
+  // --- Category Data ---
+  final Map<String, String> categoryImages = {
+    '': 'assets/all_market.jpg', 
+    'crop': 'assets/cropn.png', 
+    'cattle': 'assets/cattlen.png', 
+    'machinery': 'assets/Machinen.png',
+    'land': 'assets/propn.jpg' 
+  };
+
+  final Map<String, String> categoryNames = {
+    '': 'All',
+    'crop': 'Crop',
+    'cattle': 'Cattle',
+    'machinery': 'Machinery',
+    'land': "Properties"
+  };
+
+  // CENTRALIZED MAP for all subcategories
+  final Map<String, Map<String, Map<String, String>>> subCategoriesData = {
+    'cattle': {
+      'cow': {'name': 'Cow', 'image': 'assets/cow.png'}, 
+      'ox': {'name': 'Ox', 'image': 'assets/oxn.png'}, 
+      'buffalo': {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
+      'sheep': {'name': 'Sheep', 'image': 'assets/Sheep.png'},
+      'goat': {'name': 'Goat', 'image': 'assets/goat (2).png'},
+      'hen': {'name': 'Hen', 'image': 'assets/Henm.png'},
+      'duck': {'name': 'Duck', 'image': 'assets/Duck.png'}, 
+    },
+    'machinery': {
+      'machines': {'name': 'Machines', 'image':'assets/FarmingMachine.png'},
+      'farming_equipment': {'name': 'Farming Equipment', 'image': 'assets/FarmingEqui.png'}, 
+      'transport': {'name': 'Transport', 'image': 'assets/Transportm.png'}, 
+    },
+    'crop': {
+      'oil_seed': {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'}, 
+      'vegetables': {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'}, 
+      'fruits': {'name': 'Fruits', 'image': 'assets/fruitsm.png'}, 
+      'pulses': {'name': 'Pulses', 'image': 'assets/pulses.png'}, 
+      'cerals': {'name': 'Cerals', 'image': 'assets/cerealsm.png'},
+      'dry_fruits': {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'} 
+    },
+    'land': {
+      'home': {'name': 'Home', 'image': 'assets/house.jpg'},
+      'dry_land': {'name': 'Dry Land', 'image': 'assets/DryLand.png'}, 
+      'irrigation_land': {'name': 'Irrigation Land', 'image': 'assets/irrigationland.png'}, 
+      'plots': {'name': 'Plots', 'image': 'assets/Plots.png'}, 
+    },
+  };
 
   @override
   bool get wantKeepAlive => true;
@@ -29,47 +79,26 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(_handleTabSelection);
     _initHiveAndFetch();
-  }
-
-  void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
-      setState(() {
-        selectedCategory = _getCategoryForTab(_tabController.index);
-        print('🔄 Switching to category: $selectedCategory');
-      });
-      _loadFromCacheOrFetch();
-    }
-  }
-
-  String _getCategoryForTab(int index) {
-    switch (index) {
-      case 0:
-        return ''; // 'All'
-      case 1:
-        return 'crop';
-      case 2:
-        return 'cattle';
-      case 3:
-        return 'machinery';
-      default:
-        return '';
-    }
+    searchController.addListener(_performSearchAndFilter);
   }
 
   @override
   void dispose() {
     searchController.dispose();
-    _tabController.dispose();
     _closeHiveBox();
     super.dispose();
   }
+  
+  String _normalizePostName(String? postName) {
+    if (postName == null) return '';
+    return postName.toLowerCase().replaceAll(' ', '_');
+  }
+
 
   Future<void> _initHiveAndFetch() async {
     await Hive.initFlutter();
-    cacheBox = await Hive.openBox('market_posts_box'); // Single box for all categories
+    cacheBox = await Hive.openBox('market_posts_box');
     print('📦 Hive box opened: market_posts_box');
     await _loadFromCacheOrFetch();
   }
@@ -78,6 +107,30 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
     if (cacheBox.isOpen) {
       await cacheBox.close();
       print('📕 Cache box closed');
+    }
+  }
+
+  void _selectCategory(String category) {
+    if (selectedCategory != category) {
+      setState(() {
+        selectedCategory = category;
+        selectedSubCategory = ''; 
+        print('🔄 Switching to category: $selectedCategory');
+      });
+      _loadFromCacheOrFetch();
+    }
+  }
+
+  void _selectSubCategory(String subCategory) {
+
+    final newSubCategory = selectedSubCategory == subCategory ? '' : subCategory;
+
+    if (selectedSubCategory != newSubCategory) {
+      setState(() {
+        selectedSubCategory = newSubCategory;
+        print('🔄 Switching to subcategory: $selectedSubCategory');
+      });
+      _performSearchAndFilter(); 
     }
   }
 
@@ -101,16 +154,17 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
 
           if (now.difference(lastUpdatedTime) < cacheDuration) {
             print('✅ Cache hit for $cacheKey, timestamp: $cachedTimestamp');
-            final castedData = cachedData.map((item) => (item as Map).cast<String, dynamic>()).toList();
-            setState(() {
-              originalMarketItems = castedData;
-              marketItems = List.from(originalMarketItems);
-              lastUpdated = cachedTimestamp;
-              isLoading = false;
-              isOffline = false;
-            });
-            _performSearchAndFilter();
-            // Fetch in background only if cache is close to expiring (e.g., within last hour)
+            final castedData = (cachedData as List).map((item) => (item as Map).cast<String, dynamic>()).toList();
+            if (mounted) {
+              setState(() {
+                originalMarketItems = castedData;
+                marketItems = List.from(originalMarketItems);
+                lastUpdated = cachedTimestamp;
+                isLoading = false;
+                isOffline = false;
+              });
+              _performSearchAndFilter(); 
+            }
             if (now.difference(lastUpdatedTime) > const Duration(hours: 23)) {
               print('🔄 Cache near expiration, fetching in background for $selectedCategory');
               _fetchMarketPosts(isBackground: true);
@@ -135,7 +189,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       });
     }
 
-    const String url = '${KD.api}/admin/getAll_market_post';
+    const String url = '${KD.api}/admin/getAll_market_post'; 
     print('🌐 Fetching from API for category: $selectedCategory');
     try {
       final response = await http.post(
@@ -145,7 +199,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
           "category": selectedCategory,
           "search": "",
         }),
-      ).timeout(Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -167,6 +221,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                   'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
                   'Phone': farmerDetails?['phone'] ?? 'N/A',
                   'taluka': farmerDetails?['taluka'] ?? 'N/A',
+                  'postType': _normalizePostName(item['post_name']), 
                 };
               }).toList());
 
@@ -185,7 +240,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
               isOffline = false;
               lastUpdated = now;
             });
-            _performSearchAndFilter();
+            _performSearchAndFilter(); 
           }
         } else {
           print('⚠️ No results found in API response: ${response.body}');
@@ -218,32 +273,52 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       final cachedTimestamp = cacheBox.get(timestampKey);
       if (cachedData != null && cachedTimestamp != null && cachedData is List) {
         print('✅ Loaded cached data on failure for $cacheKey');
-        final castedData = cachedData.map((item) => (item as Map).cast<String, dynamic>()).toList();
-        setState(() {
-          originalMarketItems = castedData;
-          marketItems = List.from(originalMarketItems);
-          lastUpdated = cachedTimestamp;
-          isOffline = true;
-          _performSearchAndFilter();
-        });
+        final castedData = (cachedData as List).map((item) => (item as Map).cast<String, dynamic>()).toList();
+        if(mounted) {
+          setState(() {
+            originalMarketItems = castedData;
+            marketItems = List.from(originalMarketItems);
+            lastUpdated = cachedTimestamp;
+            isOffline = true;
+            _performSearchAndFilter();
+          });
+        }
       } else {
         print('❌ No valid cached data for $cacheKey');
-        setState(() {
-          marketItems = [];
-          originalMarketItems = [];
-        });
+        if(mounted) {
+          setState(() {
+            marketItems = [];
+            originalMarketItems = [];
+          });
+        }
       }
     } catch (e) {
       print('⚠️ Error loading cache on failure for $cacheKey: $e');
-      setState(() {
-        marketItems = [];
-        originalMarketItems = [];
-      });
+      if(mounted) {
+        setState(() {
+            marketItems = [];
+            originalMarketItems = [];
+        });
+      }
     }
   }
 
   void _performSearchAndFilter() {
     List<Map<String, dynamic>> filteredList = List.from(originalMarketItems);
+
+
+    if (selectedCategory.isNotEmpty && selectedSubCategory.isNotEmpty) {
+      
+      final subcategoryKeys = subCategoriesData[selectedCategory]?.keys.toList() ?? [];
+
+      if (subcategoryKeys.contains(selectedSubCategory)) {
+        filteredList = filteredList
+            .where((item) => 
+                item['postType']?.toString().toLowerCase() == selectedSubCategory.toLowerCase())
+            .toList();
+        print('⚙️ Sub-filter applied: $selectedSubCategory, ${filteredList.length} items found');
+      }
+    }
 
     String query = searchController.text.toLowerCase();
     if (query.isNotEmpty) {
@@ -253,25 +328,26 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       print('🔍 Search applied: $query, ${filteredList.length} items found');
     }
 
+
     if (selectedFilter == 'Price: Low to High') {
       filteredList.sort((a, b) {
         final aPrice = a['price'] is num ? a['price'] as num : 0;
         final bPrice = b['price'] is num ? b['price'] as num : 0;
         return aPrice.compareTo(bPrice);
       });
-      print('📈 Sorted by Price: Low to High');
     } else if (selectedFilter == 'Price: High to Low') {
       filteredList.sort((a, b) {
         final aPrice = a['price'] is num ? a['price'] as num : 0;
         final bPrice = b['price'] is num ? b['price'] as num : 0;
         return bPrice.compareTo(aPrice);
       });
-      print('📉 Sorted by Price: High to Low');
     }
 
-    setState(() {
-      marketItems = filteredList;
-    });
+    if (mounted) {
+      setState(() {
+        marketItems = filteredList;
+      });
+    }
   }
 
   void showFilterDialog(BuildContext context) async {
@@ -279,21 +355,21 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       context: context,
       builder: (BuildContext context) {
         return Container(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Filter',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               RadioListTile<String>(
-                title: Text('Price: Low to High'),
+                title: const Text('Price: Low to High'),
                 value: 'Price: Low to High',
                 groupValue: selectedFilter,
                 onChanged: (value) {
@@ -301,7 +377,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                 },
               ),
               RadioListTile<String>(
-                title: Text('Price: High to Low'),
+                title: const Text('Price: High to Low'),
                 value: 'Price: High to Low',
                 groupValue: selectedFilter,
                 onChanged: (value) {
@@ -325,34 +401,35 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
+    final currentSubCategories = subCategoriesData[selectedCategory];
+    final bool showSubCategories = currentSubCategories != null && currentSubCategories.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Container(
+          child: SizedBox(
             height: 40,
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search market",
-                hintStyle: TextStyle(color: Colors.white),
+                hintStyle: const TextStyle(color: Colors.white),
                 filled: true,
-                fillColor: Color.fromRGBO(255, 255, 255, 0.3),
+                fillColor: const Color.fromRGBO(255, 255, 255, 0.3),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
                 ),
-                prefixIcon: Icon(Icons.search, color: Colors.white),
+                prefixIcon: const Icon(Icons.search, color: Colors.white),
               ),
-              onChanged: (value) {
-                _performSearchAndFilter();
-              },
             ),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.filter_list_sharp,
               color: Colors.white,
               size: 30,
@@ -360,93 +437,303 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
             onPressed: () => showFilterDialog(context),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: 'All'),
-            Tab(text: 'Crop'),
-            Tab(text: 'Cattle'),
-            Tab(text: 'Machinery'),
-          ],
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          indicatorWeight: 3,
-        ),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // Clear cache for the current category on explicit refresh
-          final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
-          final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
-          await cacheBox.delete(cacheKey);
-          await cacheBox.delete(timestampKey);
-          print('🗑️ Cache cleared for $cacheKey on refresh');
-          await _fetchMarketPosts();
-        },
-        child: Column(
-          children: [
-            if (lastUpdated != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  isOffline
-                      ? "Showing cached data (Last updated: $lastUpdated)."
-                      : "Last updated: $lastUpdated",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isOffline ? Colors.red : Colors.grey[600],
+      body: Stack( 
+        children: [
+          Positioned.fill(
+            child: Opacity( 
+              opacity: 0.1, 
+              child: Image.asset(
+                'assets/NewLogo.png',
+                fit: BoxFit.contain, 
+              ),
+            ),
+          ),
+          RefreshIndicator(
+            onRefresh: () async {
+              final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+              final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+              await cacheBox.delete(cacheKey);
+              await cacheBox.delete(timestampKey);
+              print('🗑️ Cache cleared for $cacheKey on refresh');
+              await _fetchMarketPosts();
+            },
+            child: Column(
+              children: [
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: SizedBox(
+                    height: 100,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      children: categoryImages.entries.map((entry) {
+                        final categoryKey = entry.key;
+                        final imagePath = entry.value;
+                        final displayName = categoryNames[categoryKey]!;
+                        final isSelected = selectedCategory == categoryKey;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: CategoryImageCard(
+                            imagePath: imagePath,
+                            categoryName: displayName,
+                            isSelected: isSelected,
+                            onTap: () => _selectCategory(categoryKey),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
-              ),
-            Expanded(
-              child: isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : marketItems.isEmpty
-                      ? Center(child: Text('No market posts found.'))
-                      : Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: GridView.builder(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 2 / 2.7,
-                              mainAxisSpacing: 8.0,
-                              crossAxisSpacing: 8.0,
-                            ),
-                            itemCount: marketItems.length,
-                            itemBuilder: (context, index) {
-                              final marketItem = marketItems[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Postdetailspage(
-                                        name: marketItem['name'],
-                                        price: '₹${marketItem['price']}',
-                                        imagePath: marketItem['fileName'],
-                                        location: marketItem['location'] ?? 'Unknown location',
-                                        description: marketItem['description'] ?? 'No description available',
-                                        FarmerName: marketItem['FarmerName'],
-                                        Phone: marketItem['Phone'],
-                                        review: 'This is a sample review.',
-                                      ),
+
+                if (showSubCategories)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: SizedBox(
+                      height: 80, 
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        children: [
+                          ...currentSubCategories!.entries.map((entry) {
+                            final subCategoryKey = entry.key;
+                            final subCategoryData = entry.value;
+                            final isSelected = selectedSubCategory == subCategoryKey;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: SubCategoryCard(
+                                imagePath: subCategoryData['image'],
+                                categoryName: subCategoryData['name']!,
+                                isSelected: isSelected,
+                                onTap: () => _selectSubCategory(subCategoryKey),
+                              ),
+                            );
+                          }).toList(),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                if (lastUpdated != null)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      isOffline
+                          ? "Showing cached data (Last updated: $lastUpdated). Pull to refresh."
+                          : "Last updated: $lastUpdated",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isOffline ? Colors.red : Colors.grey[600],
+                      ),
+                    ),
+                  ),
+
+
+                Expanded(
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : marketItems.isEmpty
+                          ? Center(child: Text('No market posts found for ${categoryNames[selectedCategory]}${selectedSubCategory.isNotEmpty ? ' (${subCategoriesData[selectedCategory]?[selectedSubCategory]?['name'] ?? selectedSubCategory})' : ''}.'))
+                          : Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: GridView.builder(
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 2 / 2.7,
+                                  mainAxisSpacing: 8.0,
+                                  crossAxisSpacing: 8.0,
+                                ),
+                                itemCount: marketItems.length,
+                                itemBuilder: (context, index) {
+                                  final marketItem = marketItems[index];
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => Postdetailspage(
+                                            name: marketItem['name'],
+                                            price: '₹${marketItem['price']}',
+                                            imagePath: marketItem['fileName'],
+                                            location: marketItem['location'] ?? 'Unknown location',
+                                            description: marketItem['description'] ?? 'No description available',
+                                            FarmerName: marketItem['FarmerName'],
+                                            Phone: marketItem['Phone'],
+                                            review: 'This is a sample review.',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: MarketCard(
+                                      name: marketItem['name'],
+                                      taluka: marketItem['taluka'] ?? 'N/A',
+                                      price: '₹${marketItem['price']}',
+                                      imagePath: marketItem['fileName'],
                                     ),
                                   );
                                 },
-                                child: MarketCard(
-                                  name: marketItem['name'],
-                                  taluka: marketItem['taluka'] ?? 'N/A',
-                                  price: '₹${marketItem['price']}',
-                                  imagePath: marketItem['fileName'],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                              ),
+                            ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+class SubCategoryCard extends StatelessWidget {
+  final String? imagePath;
+  final String categoryName;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const SubCategoryCard({
+    super.key,
+    this.imagePath,
+    required this.categoryName,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 60, 
+            height: 50, 
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSelected ? Colors.blue.shade700 : Colors.grey.shade300,
+                width: 2,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Colors.blue.shade700.withOpacity(0.3),
+                        spreadRadius: 1,
+                        blurRadius: 2,
+                      )
+                    ]
+                  : null,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: imagePath != null
+                  ? Image.asset(
+                      imagePath!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Center(
+                        child: Text(
+                          categoryName[0], 
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        categoryName,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 10, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            categoryName,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? Colors.green : Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CategoryImageCard extends StatelessWidget {
+  final String imagePath;
+  final String categoryName;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const CategoryImageCard({
+    super.key,
+    required this.imagePath,
+    required this.categoryName,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 70,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? Colors.green : Colors.grey.shade300,
+                width: 3,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Colors.green.withOpacity(0.5),
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                      )
+                    ]
+                  : null,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey.shade200,
+                  child: Center(
+                    child: Text(
+                      categoryName,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            categoryName,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? Colors.green : Colors.black87,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -488,7 +775,7 @@ class MarketCard extends StatelessWidget {
                 imagePath,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Image.asset(
-                  'assets/land1.jpg',
+                  'assets/land1.jpg', 
                   fit: BoxFit.cover,
                 ),
               ),
