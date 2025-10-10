@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart'; // Import share_plus package
+import 'package:share_plus/share_plus.dart'; 
 
 class Postdetailspage extends StatefulWidget {
   final String name;
   final String price;
-  final String imagePath; // Main image from API
+  final String imagePath;
   final String location;
   final String description;
   final String review;
-  final String FarmerName; // Farmer's name
-  final String Phone; // Phone number
-  // final String quantity;
+  final String FarmerName; 
+  final String Phone; 
 
   const Postdetailspage({
     required this.name,
@@ -21,7 +20,8 @@ class Postdetailspage extends StatefulWidget {
     required this.review,
     required this.FarmerName,
     required this.Phone,
-    // required this.quantity,
+
+    super.key,
   });
 
   @override
@@ -29,15 +29,9 @@ class Postdetailspage extends StatefulWidget {
 }
 
 class _PostdetailspageState extends State<Postdetailspage> {
-  double _selectedRating = 0.0;
+  final double _selectedRating = 0.0;
 
-  /*void _onStarTap(double rating) {
-    setState(() {
-      _selectedRating = rating;
-    });
-  }*/
 
-  // Method to handle sharing the product details
   void _shareProductDetails() {
     String productDetails = 'Check out this machinery: ${widget.name}\n'
         'Price: ${widget.price}\n'
@@ -50,18 +44,43 @@ class _PostdetailspageState extends State<Postdetailspage> {
     Share.share(productDetails);
   }
 
+
+  Widget _buildDetailRow({required IconData icon, required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7.0), 
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.black, size: 24), 
+          const SizedBox(width: 15), 
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(fontSize: 16, color: Colors.black), 
+                children: <TextSpan>[
+                  TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(text: value),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'About this post',
           style: TextStyle(color: Colors.white),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.share, color: Colors.white),
-            onPressed: _shareProductDetails, // Call share functionality
+            icon: const Icon(Icons.share, color: Colors.white),
+            onPressed: _shareProductDetails,
           ),
         ],
       ),
@@ -70,149 +89,64 @@ class _PostdetailspageState extends State<Postdetailspage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Main Image
             Container(
               height: 240,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
                   image: NetworkImage(widget.imagePath),
-                  fit: BoxFit.cover,
+                  fit: BoxFit.cover, 
                 ),
               ),
             ),
-            SizedBox(height: 20),
-
-            // Price, Location, and Favorite Button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Price: ${widget.price}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+            const SizedBox(height: 30), 
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                'Price: ₹${widget.price}', 
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
-                /*IconButton(
-                  icon: Icon(Icons.favorite_border, color: Color(0xFF00AD83)),
-                  onPressed: () {
-                    // Add favorite functionality here
-                  },
-                ),*/
-              ],
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            /*
-            Text(
-              'Quantity: ${widget.quantity}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 10),
-            */
-            Text(
-              'Location: ${widget.location}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+            const SizedBox(height: 30), 
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0), 
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDetailRow(
+                      icon: Icons.location_on,
+                      label: 'Location',
+                      value: widget.location,
+                    ),
+                    _buildDetailRow(
+                      icon: Icons.list, 
+                      label: 'Description',
+                      value: widget.description,
+                    ),
+                    _buildDetailRow(
+                      icon: Icons.person,
+                      label: 'Farmer Name',
+                      value: widget.FarmerName,
+                    ),
+                    _buildDetailRow(
+                      icon: Icons.call,
+                      label: 'Phone',
+                      value: widget.Phone,
+                    ),
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: 10),
-            Text(
-              'Description: ${widget.description}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[800],
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Farmer Name: ${widget.FarmerName}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Phone: ${widget.Phone}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 }
-/*
-            // Review Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Reviews',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    widget.review,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: List.generate(5, (index) {
-                      return GestureDetector(
-                        onTap: () => _onStarTap(index + 1.0),
-                        child: Icon(
-                          Icons.star,
-                          color: index < _selectedRating
-                              ? Colors.amber
-                              : Colors.grey,
-                          size: 30,
-                        ),
-                      );
-                    }),
-                  ),
-                  SizedBox(height: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: List.generate(5, (index) {
-                      return Row(
-                        children: [
-                          Text('${index + 1} star:'),
-                          SizedBox(width: 8),
-                          SizedBox(
-                            width: 150,
-                            child: LinearProgressIndicator(
-                              value: (_selectedRating >= index + 1) ? 1.0 : 0.0,
-                              backgroundColor: Colors.grey[300],
-                              color: Color(0xFF00AD83),
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}*/
