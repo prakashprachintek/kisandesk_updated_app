@@ -616,13 +616,13 @@ class SubCategoryCard extends StatelessWidget {
               color: Colors.grey.shade100,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isSelected ? Colors.blue.shade700 : Colors.grey.shade300,
+                color: isSelected ? Colors.green : Colors.grey.shade300,
                 width: 2,
               ),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: Colors.blue.shade700.withOpacity(0.3),
+                        color: Colors.green.withOpacity(0.3),
                         spreadRadius: 1,
                         blurRadius: 2,
                       )
