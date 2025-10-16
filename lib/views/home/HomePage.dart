@@ -1153,9 +1153,9 @@ class _HomePageState extends State<HomePage> {
   /// Second Carousel (2nd slideshow)
   Widget _buildCarouselSlideshow() {
     final List<String> imageUrls = [
-      'assets/image2.2.jpg',
+      'assets/car1.webp',
       'assets/image1.webp',
-      'assets/scrolimage3.jpg',
+      'assets/car4.jpg',
       'assets/image3.jpg',
     ];
 

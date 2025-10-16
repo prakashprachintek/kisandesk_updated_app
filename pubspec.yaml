@@ -115,6 +115,9 @@ flutter:
   assets:
     - assets/profile.jpg
     - assets/oxn.png
+    - assets/oxnew.jpg
+    - assets/car1.webp
+    - assets/car4.jpg
     - assets/Machinen.png
     - assets/cropn.png
     - assets/cattlen.png
