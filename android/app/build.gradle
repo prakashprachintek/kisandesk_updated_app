@@ -36,7 +36,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.example.mainproject1"
-    compileSdk 34
+    compileSdk 36
     ndkVersion flutter.ndkVersion
 
     //was having some errors so commenting and adding new
@@ -88,18 +88,22 @@ android {
         applicationId "com.prachintek.kisandesk"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 23
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
     buildTypes {
-        release {
-            signingConfig signingConfigs.release
-            minifyEnabled false
-            shrinkResources false
+        debug {
+            signingConfig signingConfigs.debug
         }
+
+//        release {
+//            signingConfig signingConfigs.release
+//            minifyEnabled false
+//            shrinkResources false
+//        }
     }
 
 
@@ -115,6 +119,7 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+//    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"
 }
-apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.gms.google-services'

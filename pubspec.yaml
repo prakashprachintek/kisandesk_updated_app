@@ -33,22 +33,22 @@ dependencies:
   win32: ^5.5.4
   google_maps_flutter: ^2.1.1
   url_launcher: ^6.1.7
-  image_picker: ^0.8.5+3
+  image_picker: ^1.2.0
   easy_localization: ^3.0.0
   flutter_localizations:
     sdk: flutter
-  intl: ^0.19.0
+  intl: ^0.20.2
   font_awesome_flutter: ^10.4.0
-  http: ^0.13.5
+  http: ^1.5.0
   share_plus: ^10.0.2
-  provider: ^6.0.0
+  provider: ^6.0.0 # state management
   path_provider: ^2.1.4
   shared_preferences: ^2.2.3
   dio: ^5.0.3
   dropdown_search: ^5.0.0
-  flutter_svg: 2.0.9
+  flutter_svg: ^2.2.1
   pin_code_fields: ^8.0.1
-  awesome_notifications: ^0.9.2+1
+  awesome_notifications: ^0.10.1
   hive_flutter: ^1.1.0
   hive: ^2.2.3
   path: ^1.8.2
@@ -65,26 +65,26 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
-  firebase_core: ^3.10.1
-  firebase_auth: ^5.4.1
-  cloud_firestore: ^5.6.2
+  firebase_core: ^4.1.1
+  firebase_auth: ^6.1.0
+  cloud_firestore: ^6.0.2
   google_sign_in: ^6.2.2
   lottie: ^3.0.0
   carousel_slider: ^5.0.0
-  geolocator: ^9.0.2
-  geocoding: ^2.0.0
-  firebase_storage: ^12.4.1
-  firebase_database: ^11.3.1
-  firebase_messaging: ^15.2.10
-  flutter_local_notifications: ^18.0.1
-  permission_handler: ^11.3.1
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  firebase_storage: ^13.0.2
+  firebase_database: ^12.0.2
+  firebase_messaging: ^16.0.2
+  flutter_local_notifications: ^19.4.2
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   # carousel_slider: ^5.0.0
 
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
 flutter_icons:
   android: true
   ios: true
@@ -113,6 +113,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/
     - assets/profile.jpg
     - assets/oxn.png
     - assets/Machinen.png
