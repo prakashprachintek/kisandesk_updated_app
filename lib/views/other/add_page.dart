@@ -82,7 +82,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   final Map<String, List<Map<String, String>>> _categoryOptions = {
     'cattle': [
       {'name': 'Cow', 'image': 'assets/cow.png'},
-      {'name': 'Ox', 'image': 'assets/oxn.png'},
+      {'name': 'Ox', 'image': 'assets/oxnew.jpg'},
       {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
       {'name': 'Sheep', 'image': 'assets/Sheep.png'},
       {'name': 'Goat', 'image': 'assets/goat (2).png'},
@@ -232,8 +232,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         _currentFieldLabels = _categoryFieldLabels[cat]!;
       });
     }
-  } 
-
+  }
 
   Widget _buildStep0() {
     final Map<String, String> categoryImages = {
@@ -244,95 +243,95 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     };
 
     return SingleChildScrollView(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      //mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        SizedBox(
-          height: 450,
-          child: GridView.count(
-          crossAxisCount: 2,
-          //shrinkWrap: true,
-          //physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          children: _categoryFieldLabels.keys.map((cat) {
-            final String key = cat.toLowerCase();
-            final isSelected = _selectedCategory == key;
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        //mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 450,
+            child: GridView.count(
+              crossAxisCount: 2,
+              //shrinkWrap: true,
+              //physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: _categoryFieldLabels.keys.map((cat) {
+                final String key = cat.toLowerCase();
+                final isSelected = _selectedCategory == key;
 
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedCategory = key;
-                  _updateFieldLabels(key);
-                  // Clear product details when category changes
-                  _cropName = null;
-                  _description = null;
-                  _price = null;
-                  _quantity = null;
-                });
-              },
-              
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.green[100]
-                      : const Color.fromARGB(255, 255, 255, 255),
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.green
-                        : const Color.fromARGB(255, 255, 255, 255),
-                    width: isSelected ? 2 : 1,
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCategory = key;
+                      _updateFieldLabels(key);
+                      // Clear product details when category changes
+                      _cropName = null;
+                      _description = null;
+                      _price = null;
+                      _quantity = null;
+                    });
+                    _handleNext();
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.green[100]
+                          : const Color.fromARGB(255, 255, 255, 255),
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.green
+                            : const Color.fromARGB(255, 255, 255, 255),
+                        width: isSelected ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.all(12),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 80,
+                          child: categoryImages.containsKey(key)
+                              ? Image.asset(categoryImages[key]!,
+                                  fit: BoxFit.contain)
+                              : Icon(Icons.image_not_supported, size: 160),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          key[0].toUpperCase() + key.substring(1),
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding: EdgeInsets.all(12),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: 80,
-                      child: categoryImages.containsKey(key)
-                          ? Image.asset(categoryImages[key]!,
-                              fit: BoxFit.contain)
-                          : Icon(Icons.image_not_supported, size: 160),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      key[0].toUpperCase() + key.substring(1),
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-        ),
-        SizedBox(height: 90),
-        _GradientButton(
-          text: "Next",
-          onPressed: () {
-            if (_selectedCategory == null) {
-              showDialog(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: Text("Error"),
-                  content: Text("Please select a category."),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text("OK")),
-                  ],
-                ),
-              );
-            } else {
-              _handleNext();
-            }
-          },
-        ),
-      ],
-    ),
+                );
+              }).toList(),
+            ),
+          ),
+/*          SizedBox(height: 90),
+          _GradientButton(
+            text: "Next",
+            onPressed: () {
+              if (_selectedCategory == null) {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text("Error"),
+                    content: Text("Please select a category."),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text("OK")),
+                    ],
+                  ),
+                );
+              } else {
+                _handleNext();
+              }
+            },
+          ),*/
+        ],
+      ),
     );
   }
 
@@ -342,28 +341,99 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         _categoryOptions[_selectedCategory!] ?? [];
 
     return SingleChildScrollView(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(height: 20),
-        Center(
-          child: Text(
-            "Enter Your Details",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(height: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          //SizedBox(height: 20),
+          Center(),
+          SizedBox(height: 20),
 
-        // -------------------------------------------------------------------
-        // MODIFIED: DropdownSearch for Product/Cattle Name with Images
-        // -------------------------------------------------------------------
-        DropdownSearch<String>(
-          items: currentOptions.map((e) => e['name']!).toList(),
-          dropdownDecoratorProps: DropDownDecoratorProps(
-            dropdownSearchDecoration: InputDecoration(
-              labelText: _currentFieldLabels['cropName'] ?? "Title",
+          // -------------------------------------------------------------------
+          // MODIFIED: DropdownSearch for Product/Cattle Name with Images
+          // -------------------------------------------------------------------
+          DropdownSearch<String>(
+            items: currentOptions.map((e) => e['name']!).toList(),
+            dropdownDecoratorProps: DropDownDecoratorProps(
+              dropdownSearchDecoration: InputDecoration(
+                labelText: _currentFieldLabels['cropName'] ?? "Title",
+                labelStyle: TextStyle(color: Colors.grey[600]),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                ),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              ),
+            ),
+            onChanged: (val) {
+              setState(() {
+                _cropName = val;
+              });
+            },
+            selectedItem: _cropName,
+            // Customizing the dropdown list view to show images
+            popupProps: PopupProps.menu(
+              showSearchBox: false,
+              constraints: const BoxConstraints(
+                maxHeight: 400,
+              ),
+              menuProps: MenuProps(
+                borderRadius: BorderRadius.circular(8),
+                elevation: 4,
+                //padding: EdgeInsets.zero,
+              ),
+              itemBuilder: (context, item, isSelected) {
+                final option = currentOptions.firstWhere(
+                    (e) => e['name'] == item,
+                    orElse: () => {
+                          'name': item,
+                          'image': 'assets/default.png'
+                        }); // Fallback
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  color: isSelected ? Colors.green[50] : null,
+                  child: Row(
+                    children: [
+                      // Display image
+                      Image.asset(
+                        option['image']!,
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Icon(Icons.image_not_supported, size: 30),
+                      ),
+                      SizedBox(width: 10),
+                      // Display name
+                      Text(
+                        item,
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          // -------------------------------------------------------------------
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: _currentFieldLabels['description'] ?? "Description",
               labelStyle: TextStyle(color: Colors.grey[600]),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.grey.shade400),
@@ -372,156 +442,253 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.red, width: 2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.red, width: 2),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
+            onChanged: (val) => _description = val,
+            initialValue: _description,
           ),
-          onChanged: (val) {
-            setState(() {
-              _cropName = val;
-            });
-          },
-          selectedItem: _cropName,
-          // Customizing the dropdown list view to show images
-          popupProps: PopupProps.menu(
-            showSearchBox: false,
-            constraints: const BoxConstraints(
-              maxHeight: 400,
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: "Phone Number",
+              labelStyle: TextStyle(color: Colors.grey[600]),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade400),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.red, width: 2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.red, width: 2),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
-            menuProps: MenuProps(
-              borderRadius: BorderRadius.circular(8),
-              elevation: 4,
-              //padding: EdgeInsets.zero,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            onChanged: (val) => _phoneNumber = val,
+            initialValue: _phoneNumber,
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: _currentFieldLabels['price'] ?? "Price",
+              labelStyle: TextStyle(color: Colors.grey[600]),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey.shade400),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.red, width: 2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.red, width: 2),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
-            itemBuilder: (context, item, isSelected) {
-              final option = currentOptions.firstWhere((e) => e['name'] == item,
-                  orElse: () => {'name': item, 'image': 'assets/default.png'}); // Fallback
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                color: isSelected ? Colors.green[50] : null,
-                child: Row(
-                  children: [
-                    // Display image
-                    Image.asset(
-                      option['image']!,
-                      width: 90,
-                      height: 90,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Icon(Icons.image_not_supported, size: 30),
+            keyboardType: TextInputType.number,
+            onChanged: (val) => _price = val,
+            initialValue: _price,
+          ),
+          SizedBox(height: 16),
+          if (_selectedCategory != 'machinery') ...[
+            if (_quantityOptions.containsKey(_selectedCategory))
+              DropdownSearch<String>(
+                items: _quantityOptions[_selectedCategory] ?? [],
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: _currentFieldLabels['quantity'] ?? "Quantity",
+                    labelStyle: TextStyle(color: Colors.grey[600]),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade400),
                     ),
-                    SizedBox(width: 10),
-                    // Display name
-                    Text(
-                      item,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          BorderSide(color: Color(0xFF00AD83), width: 2),
                     ),
-                  ],
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
                 ),
-              );
-            },
-          ),
-        ),
-        // -------------------------------------------------------------------
-        SizedBox(height: 16),
-        TextFormField(
-          decoration: InputDecoration(
-            labelText: _currentFieldLabels['description'] ?? "Description",
-            labelStyle: TextStyle(color: Colors.grey[600]),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade400),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-          onChanged: (val) => _description = val,
-          initialValue: _description,
-        ),
-        SizedBox(height: 16),
-        TextFormField(
-          decoration: InputDecoration(
-            labelText: "Phone Number",
-            labelStyle: TextStyle(color: Colors.grey[600]),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade400),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
-          ],
-          onChanged: (val) => _phoneNumber = val,
-          initialValue: _phoneNumber,
-        ),
-        SizedBox(height: 16),
-        TextFormField(
-          decoration: InputDecoration(
-            labelText: _currentFieldLabels['price'] ?? "Price",
-            labelStyle: TextStyle(color: Colors.grey[600]),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade400),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-          keyboardType: TextInputType.number,
-          onChanged: (val) => _price = val,
-          initialValue: _price,
-        ),
-        SizedBox(height: 16),
-        if (_selectedCategory != 'machinery') ...[
-          if (_quantityOptions.containsKey(_selectedCategory))
-            DropdownSearch<String>(
-              items: _quantityOptions[_selectedCategory] ?? [],
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
+                onChanged: (val) {
+                  setState(() {
+                    _quantity = val;
+                  });
+                },
+                selectedItem: _quantity,
+                popupProps: PopupProps.menu(
+                  showSearchBox: false,
+                  menuProps: MenuProps(
+                    borderRadius: BorderRadius.circular(8),
+                    elevation: 4,
+                  ),
+                ),
+              )
+            else
+              TextFormField(
+                decoration: InputDecoration(
                   labelText: _currentFieldLabels['quantity'] ?? "Quantity",
                   labelStyle: TextStyle(color: Colors.grey[600]),
-                  border:
-                      OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (val) => _quantity = val,
+                initialValue: _quantity,
+              ),
+            SizedBox(height: 16),
+          ],
+          GestureDetector(
+            onTap: _pickImage,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.camera_alt, color: Colors.grey.shade400),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: _base64Image == null
+                        ? Text(
+                            "Upload Image",
+                            style: TextStyle(color: Colors.grey.shade400),
+                          )
+                        : Text(
+                            "Image selected: ${_fileName ?? 'Base64'}",
+                            style: TextStyle(color: Colors.grey.shade400),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _GradientButton(
+                text: "Back",
+                onPressed: _handleBack,
+                gradientColors: [Colors.grey, Colors.grey],
+              ),
+              _GradientButton(
+                text: "Next",
+                onPressed: () {
+                  if ((_cropName == null || _cropName!.isEmpty) ||
+                      (_description == null || _description!.isEmpty)) {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: Text("Error"),
+                        content: Text(
+                            "Please select a product name and fill the description."),
+                        actions: [
+                          TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text("OK")),
+                        ],
+                      ),
+                    );
+                    return;
+                  }
+                  _handleNext();
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // location selection and submission
+  Widget _buildStep2() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          //SizedBox(height: 10),
+          Lottie.asset('assets/animations/location.json', height: 180),
+          SizedBox(height: 10),
+          Center(
+            child: Text(
+              "Enter Location & Submit",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(height: 20),
+          //_buildLocationToggle(),
+          //SizedBox(height: 16),
+          if (!_useCurrentLocation) ...[
+            DropdownSearch<String>(
+              items: _states,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: 'State',
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade400),
@@ -543,350 +710,192 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 ),
               ),
               onChanged: (val) {
-                setState(() {
-                  _quantity = val;
-                });
+                _selectedState = val;
+                if (val != null) updateDistricts(val);
               },
-              selectedItem: _quantity,
+              selectedItem: _selectedState,
               popupProps: PopupProps.menu(
-                showSearchBox: false,
+                showSearchBox: true,
                 menuProps: MenuProps(
                   borderRadius: BorderRadius.circular(8),
                   elevation: 4,
                 ),
               ),
-            )
-          else
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: _currentFieldLabels['quantity'] ?? "Quantity",
-                labelStyle: TextStyle(color: Colors.grey[600]),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade400),
+            ),
+            SizedBox(height: 16),
+            DropdownSearch<String>(
+              items: _districts,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: 'District',
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
-              keyboardType: TextInputType.number,
-              onChanged: (val) => _quantity = val,
-              initialValue: _quantity,
-            ),
-          SizedBox(height: 16),
-        ],
-        GestureDetector(
-          onTap: _pickImage,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.camera_alt, color: Colors.grey.shade400),
-                SizedBox(width: 10),
-                Expanded(
-                  child: _base64Image == null
-                      ? Text(
-                          "Upload Image",
-                          style: TextStyle(color: Colors.grey.shade400),
-                        )
-                      : Text(
-                          "Image selected: ${_fileName ?? 'Base64'}",
-                          style: TextStyle(color: Colors.grey.shade400),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _GradientButton(
-              text: "Back",
-              onPressed: _handleBack,
-              gradientColors: [Colors.grey, Colors.grey],
-            ),
-            _GradientButton(
-              text: "Next",
-              onPressed: () {
-                if ((_cropName == null || _cropName!.isEmpty) ||
-                    (_description == null || _description!.isEmpty)) {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: Text("Error"),
-                      content: Text(
-                          "Please select a product name and fill the description."),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text("OK")),
-                      ],
-                    ),
-                  );
-                  return;
-                }
-                _handleNext();
+              onChanged: (val) {
+                _selectedDistrict = val;
+                if (val != null) updateTalukas(val);
               },
+              selectedItem: _selectedDistrict,
+              popupProps: PopupProps.menu(
+                showSearchBox: true,
+                menuProps: MenuProps(
+                  borderRadius: BorderRadius.circular(8),
+                  elevation: 4,
+                ),
+              ),
             ),
+            SizedBox(height: 16),
+            DropdownSearch<String>(
+              items: _talukas,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: 'Taluka',
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+              ),
+              onChanged: (val) {
+                _selectedTaluka = val;
+                if (val != null) updateVillages(val);
+              },
+              selectedItem: _selectedTaluka,
+              popupProps: PopupProps.menu(
+                showSearchBox: true,
+                menuProps: MenuProps(
+                  borderRadius: BorderRadius.circular(8),
+                  elevation: 4,
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            DropdownSearch<String>(
+              items: _villages,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: 'Village',
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+              ),
+              onChanged: (val) => _selectedVillage = val,
+              selectedItem: _selectedVillage,
+              popupProps: PopupProps.menu(
+                showSearchBox: true,
+                menuProps: MenuProps(
+                  borderRadius: BorderRadius.circular(8),
+                  elevation: 4,
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
           ],
-        ),
-      ],
-    ),
-    );
-  }
-  // location selection and submission
-  Widget _buildStep2() {
-    return SingleChildScrollView(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        //SizedBox(height: 10),
-        Lottie.asset('assets/animations/location.json', height: 180),
-        SizedBox(height: 10),
-        Center(
-          child: Text(
-            "Enter Location & Submit",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(height: 20),
-        //_buildLocationToggle(),
-        //SizedBox(height: 16),
-        if (!_useCurrentLocation) ...[
-          DropdownSearch<String>(
-            items: _states,
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                labelText: 'State',
-                labelStyle: TextStyle(color: Colors.grey[600]),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade400),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-            ),
-            onChanged: (val) {
-              _selectedState = val;
-              if (val != null) updateDistricts(val);
-            },
-            selectedItem: _selectedState,
-            popupProps: PopupProps.menu(
-              showSearchBox: true,
-              menuProps: MenuProps(
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: "Pincode",
+              labelStyle: TextStyle(color: Colors.grey[600]),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                elevation: 4,
+                borderSide: BorderSide(color: Colors.grey.shade400),
               ),
-            ),
-          ),
-          SizedBox(height: 16),
-          DropdownSearch<String>(
-            items: _districts,
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                labelText: 'District',
-                labelStyle: TextStyle(color: Colors.grey[600]),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade400),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-            ),
-            onChanged: (val) {
-              _selectedDistrict = val;
-              if (val != null) updateTalukas(val);
-            },
-            selectedItem: _selectedDistrict,
-            popupProps: PopupProps.menu(
-              showSearchBox: true,
-              menuProps: MenuProps(
+              focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                elevation: 4,
+                borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
               ),
-            ),
-          ),
-          SizedBox(height: 16),
-          DropdownSearch<String>(
-            items: _talukas,
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                labelText: 'Taluka',
-                labelStyle: TextStyle(color: Colors.grey[600]),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade400),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-            ),
-            onChanged: (val) {
-              _selectedTaluka = val;
-              if (val != null) updateVillages(val);
-            },
-            selectedItem: _selectedTaluka,
-            popupProps: PopupProps.menu(
-              showSearchBox: true,
-              menuProps: MenuProps(
+              errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                elevation: 4,
+                borderSide: BorderSide(color: Colors.red, width: 2),
               ),
-            ),
-          ),
-          SizedBox(height: 16),
-          DropdownSearch<String>(
-            items: _villages,
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                labelText: 'Village',
-                labelStyle: TextStyle(color: Colors.grey[600]),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade400),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-            ),
-            onChanged: (val) => _selectedVillage = val,
-            selectedItem: _selectedVillage,
-            popupProps: PopupProps.menu(
-              showSearchBox: true,
-              menuProps: MenuProps(
+              focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                elevation: 4,
+                borderSide: BorderSide(color: Colors.red, width: 2),
               ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            onChanged: (val) => _pincode = val,
+            initialValue: _pincode,
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _GradientButton(
+                text: "Back",
+                onPressed: _handleBack,
+                gradientColors: [Colors.grey, Colors.grey],
+              ),
+              _GradientButton(
+                text: "Submit",
+                onPressed: _isSubmitting ? null : _submitMarketPost,
+              ),
+            ],
+          ),
         ],
-        TextFormField(
-          decoration: InputDecoration(
-            labelText: "Pincode",
-            labelStyle: TextStyle(color: Colors.grey[600]),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade400),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(6),
-          ],
-          onChanged: (val) => _pincode = val,
-          initialValue: _pincode,
-        ),
-        SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _GradientButton(
-              text: "Back",
-              onPressed: _handleBack,
-              gradientColors: [Colors.grey, Colors.grey],
-            ),
-            _GradientButton(
-              text: "Submit",
-              onPressed: _isSubmitting ? null : _submitMarketPost,
-            ),
-          ],
-        ),
-      ],
-    ),
+      ),
     );
   }
 
@@ -1157,9 +1166,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => /*HomePage(
+              builder:
+                  (_) => /*HomePage(
                   phoneNumber: widget.phoneNumber, userData: widget.userData),*/
-                  MarketPage(),
+                      MarketPage(),
             ),
           );
           break;
