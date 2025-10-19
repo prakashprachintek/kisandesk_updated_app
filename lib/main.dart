@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:mainproject1/firebase_options.dart';
 
 import 'views/other/welcome.dart';
 import 'views/home/HomePage.dart';
@@ -14,7 +15,9 @@ void main() async {
   // Load stored user session before app starts
   await UserSession.loadUserFromPrefs();
 
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await EasyLocalization.ensureInitialized();
 
   // Set Firebase background message handler (push received when app is killed/background)
