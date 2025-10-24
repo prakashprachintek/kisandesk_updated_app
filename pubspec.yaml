@@ -115,8 +115,7 @@ flutter:
   assets:
     - assets/
     - assets/profile.jpg
-    - assets/oxn.png
-    - assets/oxnew.jpg
+
     - assets/car1.webp
     - assets/car4.jpg
     - assets/Machinen.png
@@ -125,7 +124,7 @@ flutter:
     - assets/propn.jpg
     - assets/NewLogo.png
     - assets/Sheep.png
-    - assets/Ox.png
+
     - assets/goat (2).png
     - assets/Duck.png
     - assets/cow.png
@@ -143,44 +142,27 @@ flutter:
     - assets/Plots.png
     - assets/irrigationland.png
     - assets/DryLand.png
-    - assets/ration.jpg
+
     - assets/machines.webp
-    - assets/pesticide.webp
-    - assets/Agricultural Land.webp
+
+
     - assets/Labor.jpeg
-    - assets/shop2.webp
+  
     - assets/lang/en.json
     - assets/lang/kn.json
     - assets/lang/hi.json
     - assets/lang/mr.json
     - assets/loadLocation_data.json
-    - assets/image2.2.jpg
+   
     - assets/image1.webp
-    - assets/scrolimage3.jpg
+    
     - assets/image3.jpg
-    - assets/addatiimage3.jpg
-    - assets/addatiimage1.jpg
-    - assets/addatiimage4.jpg
-    - assets/addatiimage2.jpg
-    - assets/rice.jpg
-    - assets/weat.webp
-    - assets/dal.jpg
-    - assets/cattle1.jpg
-    - assets/cattle.jpg
+    
+    
     - assets/New_logo.png
-    - assets/Logo.jpeg
-    - assets/lang.png
-    - assets/machinemm.png
-    - assets/landmm.png
-    - assets/cropmm.png
-    - assets/laboursm.png
-    - assets/labourm.png
-    - assets/tracm.png
-    - assets/cattlemm.png
+
     - assets/language.png
-    - assets/cattle2.webp
-    - assets/machinery1.webp
-    - assets/machinery2.webp
+
     - assets/fertilizers.jpg
     - assets/veterinary.webp
     - assets/loan.webp
@@ -192,43 +174,29 @@ flutter:
     - assets/paddy4.jpg
     - assets/doctor_default.jpg
     - assets/govtschemes.png
-    - assets/pesticides1.webp
-    - assets/pesticide2.webp
+
     - assets/land1.jpg
-    - assets/land2.jpg
-    - assets/slider1.jpg
-    - assets/slider2.webp
-    - assets/slider3.jpg
-    - assets/slider4.PNG
-    - assets/men_labour.PNG
-    - assets/women_labour.PNG
-    - assets/tractor_driver.PNG
-    - assets/rashi_mission.jpg
-    - assets/rice1.jpg
-    - assets/rice3.jpg
-    - assets/menlabour2.webp
+
     - assets/animations/logo.json
     - assets/animations/onb1.json
-    - assets/animations/onb2.json
+    
     - assets/animations/onb3.json
-    - assets/animations/email.json
+    
     - assets/animations/phone.json
-    - assets/animations/google.json
+
     - assets/animations/login.json
     - assets/animations/lock.json
     - assets/animations/location.json
     - assets/animations/coming_soon.json
-    - assets/doctor_placeholder.png 
+ 
     - assets/farmer.png 
     # machinery
     - assets/machinery/machine_type/harvester.jpg
     - assets/machinery/machine_type/JCB.jpeg
     - assets/machinery/machine_type/rotavator.jpg
     - assets/machinery/machine_type/tractor.jpg
-    - assets/machinery/default_image.jpg
 
-    #worktype
-    - assets/machinery/work_type/ploughing.png
+
 
 
 

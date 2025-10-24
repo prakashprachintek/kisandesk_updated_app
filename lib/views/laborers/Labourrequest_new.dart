@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -8,23 +9,22 @@ import '../services/user_session.dart';
 import '../services/api_config.dart';
 
 class LabourrequestNew extends StatefulWidget {
-  const LabourrequestNew({
-    Key? key,
-  }) : super(key: key);
+  const LabourrequestNew({Key? key}) : super(key: key);
 
   @override
   _LabourRequestPageState createState() => _LabourRequestPageState();
 }
 
 class _LabourRequestPageState extends State<LabourrequestNew> {
-  final TextEditingController _workDescriptionController =
-      TextEditingController();
+  final TextEditingController _workDescriptionController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   DateTime? _fromDate;
   bool _isMaleSelected = false;
   bool _isFemaleSelected = false;
+  bool hasSubmitted = false;
 
-  final Color _primaryColor = const Color.fromARGB(255, 29, 108, 92); // Original primary color
-  final Color _accentColor = const Color.fromARGB(255, 29, 108, 92); // Lighter shade for accents
+  final Color _primaryColor = const Color.fromARGB(255, 29, 108, 92);
+  final Color _accentColor = const Color.fromARGB(255, 29, 108, 92);
 
   @override
   void dispose() {
@@ -33,7 +33,21 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
   }
 
   Future<void> _submitLabourRequest() async {
-    if (!_validateForm()) return;
+    setState(() {
+      hasSubmitted = true;
+    });
+
+    bool isValid = _formKey.currentState!.validate();
+    if (!(_isMaleSelected || _isFemaleSelected)) {
+      isValid = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("Please select at least one labour type"))),
+      );
+    }
+    if (_fromDate == null) {
+      isValid = false;
+    }
+    if (!isValid) return;
 
     String labourType = '';
     if (_isMaleSelected && !_isFemaleSelected) {
@@ -47,8 +61,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
     Map<String, dynamic> requestBody = {
       'farmer_id': UserSession.userId?.toString() ?? UserSession.userId.toString(),
       'labour_type': labourType,
-      'work_date_from':
-          _fromDate != null ? DateFormat('yyy-MM-dd').format(_fromDate!) : '',
+      'work_date_from': _fromDate != null ? DateFormat('yyyy-MM-dd').format(_fromDate!) : '',
       'work': _workDescriptionController.text,
     };
 
@@ -69,13 +82,13 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  "Failed to submit request: ${response.statusCode} ${response.body}")),
+            content: Text(tr("Failed to submit request: ${response.statusCode} ${response.body}")),
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to submit request: $e")),
+        SnackBar(content: Text(tr("Failed to submit request: $e"))),
       );
     }
   }
@@ -91,10 +104,10 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
             children: [
               Icon(Icons.check_circle, color: _primaryColor),
               SizedBox(width: 10),
-              Text('Success!', style: TextStyle(color: _primaryColor)),
+              Text(tr('Success'), style: TextStyle(color: _primaryColor)),
             ],
           ),
-          content: Text('Request submitted successfully!'),
+          content: Text(tr('Labour Request Initiated Successfully')),
         );
       },
     );
@@ -108,31 +121,15 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
     });
   }
 
-  bool _validateForm() {
-    if (!_isMaleSelected && !_isFemaleSelected) {
-      _showError("Please select at least one labour type.");
-      return false;
-    }
-    if (_fromDate == null) {
-      _showError("Please select a date.");
-      return false;
-    }
-    return true;
-  }
-
-  void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
-  }
-
   void _resetForm() {
     setState(() {
       _workDescriptionController.clear();
       _fromDate = null;
       _isMaleSelected = false;
       _isFemaleSelected = false;
+      hasSubmitted = false;
     });
+    _formKey.currentState!.reset();
   }
 
   Future<void> _pickDate() async {
@@ -146,6 +143,9 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
     if (picked != null) {
       setState(() {
         _fromDate = picked;
+        if (hasSubmitted) {
+          _formKey.currentState!.validate();
+        }
       });
     }
   }
@@ -153,87 +153,124 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
   Widget _buildLabourForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Text(
-                      "Create Labour Request",
-                      style: TextStyle(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Text(
+                        tr("Create Labour Request"),
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: _primaryColor),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  Text(
-                    "Select Labour Type:",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildGenderSelection("Male", _isMaleSelected, (value) {
-                        setState(() {
-                          _isMaleSelected = value!;
-                        });
-                      }, 'assets/Male.png'),
-                      _buildGenderSelection("Female", _isFemaleSelected, (value) {
-                        setState(() {
-                          _isFemaleSelected = value!;
-                        });
-                      }, 'assets/Female.png'),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  Text(
-                    "Work Details:",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildDatePickerButton(),
-                  const SizedBox(height: 20),
-                  _buildWorkDescriptionField(),
-                  const SizedBox(height: 40),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _submitLabourRequest,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryColor,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 50, vertical: 18),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                        elevation: 5,
+                          color: _primaryColor,
+                        ),
                       ),
-                      child: const Text(
-                        "Submit Request",
-                        style: TextStyle(
+                    ),
+                    const SizedBox(height: 30),
+                    Text(
+                      tr("Select Labour Type"),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildGenderSelection(
+                          tr("Male"),
+                          _isMaleSelected,
+                          (value) {
+                            setState(() {
+                              _isMaleSelected = value!;
+                              if (hasSubmitted) {
+                                _formKey.currentState!.validate();
+                              }
+                            });
+                          },
+                          'assets/Male.png',
+                        ),
+                        _buildGenderSelection(
+                          tr("Female"),
+                          _isFemaleSelected,
+                          (value) {
+                            setState(() {
+                              _isFemaleSelected = value!;
+                              if (hasSubmitted) {
+                                _formKey.currentState!.validate();
+                              }
+                            });
+                          },
+                          'assets/Female.png',
+                        ),
+                      ],
+                    ),
+                    if (hasSubmitted && !_isMaleSelected && !_isFemaleSelected)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8, left: 4),
+                        child: Text(
+                          tr("Please select at least one labour type"),
+                          style: TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      ),
+                    const SizedBox(height: 30),
+                    Text(
+                      tr("Work Details"),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildDatePickerButton(),
+                    if (hasSubmitted && _fromDate == null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8, left: 4),
+                        child: Text(
+                          tr("Please select a work date"),
+                          style: TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    _buildWorkDescriptionField(),
+                    const SizedBox(height: 40),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: _submitLabourRequest,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _primaryColor,
+                          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          elevation: 5,
+                        ),
+                        child: Text(
+                          tr("Submit Request"),
+                          style: TextStyle(
                             fontSize: 18,
                             color: Colors.white,
-                            fontWeight: FontWeight.bold),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                  )
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -250,8 +287,12 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
           color: isSelected ? _accentColor.withOpacity(0.8) : Colors.grey[200],
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: isSelected ? _primaryColor : Colors.transparent,
-            width: 2,
+            color: isSelected
+                ? _primaryColor
+                : (hasSubmitted && !_isMaleSelected && !_isFemaleSelected)
+                    ? Colors.red
+                    : Colors.transparent,
+            width: (hasSubmitted && !_isMaleSelected && !_isFemaleSelected) ? 2 : (isSelected ? 2 : 1),
           ),
           boxShadow: [
             if (isSelected)
@@ -265,11 +306,12 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(imagePath, color: isSelected ? Colors.white : Colors.black87,
-            width: 48,
-            height: 48,
+            Image.asset(
+              imagePath,
+              color: isSelected ? Colors.white : Colors.black87,
+              width: 48,
+              height: 48,
             ),
-            //Icon(icon, color: isSelected ? Colors.white : Colors.black87),
             SizedBox(width: 10),
             Text(
               label,
@@ -292,7 +334,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
       label: Text(
         _fromDate != null
             ? DateFormat('yyyy-MM-dd').format(_fromDate!)
-            : "Select Work Date",
+            : tr("Select Work Date"),
         style: const TextStyle(fontSize: 16, color: Colors.white),
       ),
       style: ElevatedButton.styleFrom(
@@ -300,16 +342,19 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
         backgroundColor: _primaryColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         elevation: 3,
+        side: hasSubmitted && _fromDate == null
+            ? BorderSide(color: Colors.red, width: 2)
+            : BorderSide.none,
       ),
     );
   }
 
   Widget _buildWorkDescriptionField() {
-    return TextField(
+    return TextFormField(
       controller: _workDescriptionController,
       maxLines: 2,
       decoration: InputDecoration(
-        labelText: 'Work Description',
+        labelText: tr('Work Description'),
         labelStyle: TextStyle(color: _primaryColor),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         enabledBorder: OutlineInputBorder(
@@ -320,10 +365,25 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: _primaryColor, width: 2),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.red, width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.red, width: 2),
+        ),
         filled: true,
         fillColor: Colors.grey[50],
         alignLabelWithHint: true,
       ),
+      validator: (value) => value == null || value.trim().isEmpty ? tr("Please enter a work description") : null,
+      onChanged: (value) {
+        if (hasSubmitted) {
+          _formKey.currentState!.validate();
+        }
+        setState(() {});
+      },
     );
   }
 
@@ -331,8 +391,8 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Labour Request",
+        title: Text(
+          tr("Labour Request"),
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: _primaryColor,

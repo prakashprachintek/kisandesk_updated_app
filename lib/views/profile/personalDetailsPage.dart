@@ -130,8 +130,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .spaceBetween, // Spreads children across available space
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               "Your Information",
@@ -150,7 +149,12 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                               tooltip: "Edit Profile",
                               onPressed: () async {
                                 await profileUpdateDialog(
-                                    context, UserSession.user?['phone']);
+                                  context,
+                                  UserSession.user?['phone'],
+                                  onSuccess: () {
+                                    setState(() {}); // Trigger rebuild to reflect updated UserSession
+                                  },
+                                );
                               },
                             ),
                           ],
@@ -170,8 +174,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                         SizedBox(height: 15),
                         _buildInfoItem("Village", UserSession.user?['village']),
                         SizedBox(height: 15),
-                        _buildInfoItem(
-                            "District", UserSession.user?['district']),
+                        _buildInfoItem("District", UserSession.user?['district']),
                         SizedBox(height: 15),
                         _buildInfoItem("State", UserSession.user?['state']),
                         SizedBox(height: 15),
@@ -182,30 +185,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                     ),
                   ),
                 ),
-                /*
-                SizedBox(height: 15),
-                //Edit button
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await profileUpdateDialog(
-                          context, UserSession.user?['phone']);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 29, 108, 92),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Edit Personal Details'.tr(),
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
-                */
               ],
             ),
           ),
@@ -214,5 +193,3 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
     );
   }
 }
-
-

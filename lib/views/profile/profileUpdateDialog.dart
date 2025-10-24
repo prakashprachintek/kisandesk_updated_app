@@ -12,12 +12,19 @@ Future<Map<String, dynamic>> loadLocationJson() async {
   return json.decode(jsonString);
 }
 
-Future<void> profileUpdateDialog(BuildContext context, String phone) async {
+Future<void> profileUpdateDialog(
+  BuildContext context,
+  String phone, {
+  VoidCallback? onSuccess, // Added callback parameter
+}) async {
   print("Dialog loaded");
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _stateController = TextEditingController();
   final TextEditingController _pincodeController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool hasSubmitted = false; // Track submission attempt
+  bool isSubmitting = false;
 
   // Prepopulate fields with existing user data
   _nameController.text = UserSession.user?['full_name'] ?? "";
@@ -29,9 +36,9 @@ Future<void> profileUpdateDialog(BuildContext context, String phone) async {
   String? selectedTaluk = UserSession.user?['taluka'];
   String? selectedVillage = UserSession.user?['village'];
   String? selectedGender = UserSession.user?['gender'];
-if (selectedGender != null && selectedGender.trim().isEmpty) {
-  selectedGender = null;
-}
+  if (selectedGender != null && selectedGender.trim().isEmpty) {
+    selectedGender = null;
+  }
   DateTime? selectedDateOfBirth;
   if (UserSession.user?['dob'] != null) {
     try {
@@ -62,7 +69,6 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
     value.sort((a, b) => a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
   });
 
-  // Sort the districts list
   districts = List<String>.from(locationData['districts']['Karnataka'] ?? []);
   districts.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
@@ -103,10 +109,8 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
   print('DEBUG: selectedDistrict=$selectedDistrict, taluks=$taluks, selectedTaluk=$selectedTaluk');
   print('DEBUG: selectedTaluk=$selectedTaluk, villagesList=$villagesList, selectedVillage=$selectedVillage');
 
-  bool isSubmitting = false;
-
   // Define consistent InputDecoration for TextFields and Dropdowns
-  InputDecoration _inputDecoration(String label, {bool hasError = false, String? errorText}) {
+  InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: Colors.grey[600]),
@@ -133,8 +137,21 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
         borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide(color: Colors.red, width: 2),
       ),
-      errorText: hasError ? (errorText ?? 'This field is invalid') : null,
     );
+  }
+
+  // Function to check if all required fields are valid
+  bool isFormValid() {
+    return _nameController.text.trim().isNotEmpty &&
+        _stateController.text.trim().isNotEmpty &&
+        _addressController.text.trim().isNotEmpty &&
+        _pincodeController.text.trim().isNotEmpty &&
+        _pincodeController.text.length == 6 &&
+        selectedDistrict != null &&
+        selectedTaluk != null &&
+        selectedVillage != null &&
+        selectedGender != null &&
+        selectedDateOfBirth != null;
   }
 
   await showDialog(
@@ -143,246 +160,235 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
     builder: (_) {
       return StatefulBuilder(
         builder: (context, setState) {
-          // Track error states for all fields
-          bool _nameError = false;
-          bool _stateError = false;
-          bool _addressError = false;
-          bool _pincodeError = false;
-          bool _districtError = false;
-          bool _talukError = false;
-          bool _villageError = false;
-          bool _genderError = false;
-          bool _dobError = false;
-
           return AlertDialog(
             title: Text(
               tr("Edit Personal Information"),
               style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),
             ),
             content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Name
-                  TextField(
-                    controller: _nameController,
-                    decoration: _inputDecoration('Name', hasError: _nameError),
-                    onChanged: (value) {
-                      setState(() {
-                        _nameError = value.isEmpty;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  // Date of Birth
-                  InkWell(
-                    onTap: () async {
-                      final DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDateOfBirth ?? DateTime.now(),
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          selectedDateOfBirth = picked;
-                          _dobError = false;
-                        });
-                      }
-                    },
-                    child: InputDecorator(
-                      decoration: _inputDecoration('Date of Birth', hasError: _dobError),
-                      child: Text(
-                        selectedDateOfBirth == null
-                            ? 'Select Date'
-                            : DateFormat('dd-MM-yyyy').format(selectedDateOfBirth!),
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // Gender
-                  InputDecorator(
-                    decoration: _inputDecoration('Gender', hasError: _genderError),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        hint: Text('Select Gender', style: TextStyle(color: Colors.grey[600])),
-                        value: selectedGender,
-                        isExpanded: true,
-                        items: genders.map((gender) {
-                          return DropdownMenuItem(
-                            value: gender,
-                            child: Text(gender, style: TextStyle(color: Colors.black87)),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedGender = value;
-                            _genderError = false;
-                          });
-                        },
-                        style: TextStyle(color: Colors.black87),
-                        dropdownColor: Colors.grey[100],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // State
-                  TextField(
-                    controller: _stateController,
-                    decoration: _inputDecoration('State', hasError: _stateError),
-                    onChanged: (value) {
-                      setState(() {
-                        _stateError = value.isEmpty;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  // District
-                  InputDecorator(
-                    decoration: _inputDecoration('District', hasError: _districtError),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        hint: Text('Select District', style: TextStyle(color: Colors.grey[600])),
-                        value: selectedDistrict,
-                        isExpanded: true,
-                        items: districts.map((district) {
-                          return DropdownMenuItem(
-                            value: district,
-                            child: Text(district, style: TextStyle(color: Colors.black87)),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedDistrict = value;
-                            _districtError = false;
-                            taluks = List<String>.from(talukasMap[selectedDistrict!] ?? []);
-                            selectedTaluk = null;
-                            _talukError = false;
-                            villagesList = [];
-                            selectedVillage = null;
-                            _villageError = false;
-                          });
-                        },
-                        style: TextStyle(color: Colors.black87),
-                        dropdownColor: Colors.grey[100],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // Taluka
-                  InputDecorator(
-                    decoration: _inputDecoration(
-                      'Taluka',
-                      hasError: _talukError,
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        hint: Text(
-                          selectedDistrict == null 
-                              ? 'Select District first' 
-                              : 'Select Taluka',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        value: selectedTaluk,
-                        isExpanded: true,
-                        items: taluks
-                            .where((taluk) => taluk != null && taluk.isNotEmpty)
-                            .map((taluk) {
-                              return DropdownMenuItem(
-                                value: taluk,
-                                child: Text(taluk, style: TextStyle(color: Colors.black87)),
-                              );
-                            })
-                            .toList(),
-                        onChanged: selectedDistrict == null
-                            ? null // disables dropdown
-                            : (value) {
-                                setState(() {
-                                  selectedTaluk = value;
-                                  _talukError = false;
-                                  villagesList = List<String>.from(villagesMap[selectedTaluk!] ?? []);
-                                  selectedVillage = null;
-                                  _villageError = false;
-                                });
-                              },
-                        style: TextStyle(color: Colors.black87),
-                        dropdownColor: Colors.grey[100],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // Village
-                  InputDecorator(
-                    decoration: _inputDecoration(
-                      'Village',
-                      hasError: _villageError,
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        hint: Text(
-                          selectedTaluk == null 
-                              ? 'Select Taluka first' 
-                              : 'Select Village',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        value: selectedVillage,
-                        isExpanded: true,
-                        items: villagesList
-                            .where((village) => village != null && village.isNotEmpty)
-                            .map((village) {
-                              return DropdownMenuItem(
-                                value: village,
-                                child: Text(village, style: TextStyle(color: Colors.black87)),
-                              );
-                            })
-                            .toList(),
-                        onChanged: selectedTaluk == null
-                            ? null // disables dropdown
-                            : (value) {
-                                setState(() {
-                                  selectedVillage = value;
-                                  _villageError = false;
-                                });
-                              },
-                        style: TextStyle(color: Colors.black87),
-                        dropdownColor: Colors.grey[100],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // Address
-                  TextField(
-                    controller: _addressController,
-                    decoration: _inputDecoration('Address', hasError: _addressError),
-                    onChanged: (value) {
-                      setState(() {
-                        _addressError = value.isEmpty;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  // Pincode
-                  TextField(
-                    controller: _pincodeController,
-                    decoration: _inputDecoration(
-                      'Pincode',
-                      hasError: _pincodeError,
-                      errorText: _pincodeController.text.isNotEmpty && _pincodeController.text.length != 6
-                          ? 'Pincode must be 6 digits'
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Name
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: _inputDecoration(tr('Name')),
+                      onChanged: (value) {
+                        if (hasSubmitted) {
+                          _formKey.currentState!.validate();
+                        }
+                        setState(() {}); // Update button state
+                      },
+                      validator: (value) => value == null || value.trim().isEmpty
+                          ? tr('Please enter your name')
                           : null,
                     ),
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    onChanged: (value) {
-                      setState(() {
-                        _pincodeError = value.isNotEmpty && value.length != 6;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 10),
-                ],
+                    SizedBox(height: 10),
+                    // Date of Birth
+                    InkWell(
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDateOfBirth ?? DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            selectedDateOfBirth = picked;
+                            if (hasSubmitted) {
+                              _formKey.currentState!.validate();
+                            }
+                          });
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: _inputDecoration(tr('Date of Birth')),
+                        child: Text(
+                          selectedDateOfBirth == null
+                              ? tr('Select Date')
+                              : DateFormat('dd-MM-yyyy').format(selectedDateOfBirth!),
+                          style: TextStyle(color: Colors.black87),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    // Gender
+                    DropdownButtonFormField<String>(
+                      value: selectedGender,
+                      decoration: _inputDecoration(tr('Gender')),
+                      hint: Text(tr('Select Gender'), style: TextStyle(color: Colors.grey[600])),
+                      isExpanded: true,
+                      items: genders.map((gender) {
+                        return DropdownMenuItem(
+                          value: gender,
+                          child: Text(gender, style: TextStyle(color: Colors.black87)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedGender = value;
+                          if (hasSubmitted) {
+                            _formKey.currentState!.validate();
+                          }
+                        });
+                      },
+                      validator: (value) => value == null ? tr('Please select a gender') : null,
+                    ),
+                    SizedBox(height: 10),
+                    // State
+                    TextFormField(
+                      controller: _stateController,
+                      decoration: _inputDecoration(tr('State')),
+                      onChanged: (value) {
+                        if (hasSubmitted) {
+                          _formKey.currentState!.validate();
+                        }
+                        setState(() {}); // Update button state
+                      },
+                      validator: (value) => value == null || value.trim().isEmpty
+                          ? tr('Please enter a state')
+                          : null,
+                    ),
+                    SizedBox(height: 10),
+                    // District
+                    DropdownButtonFormField<String>(
+                      value: selectedDistrict,
+                      decoration: _inputDecoration(tr('District')),
+                      hint: Text(tr('Select District'), style: TextStyle(color: Colors.grey[600])),
+                      isExpanded: true,
+                      items: districts.map((district) {
+                        return DropdownMenuItem(
+                          value: district,
+                          child: Text(district, style: TextStyle(color: Colors.black87)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedDistrict = value;
+                          taluks = List<String>.from(talukasMap[selectedDistrict!] ?? []);
+                          selectedTaluk = null;
+                          villagesList = [];
+                          selectedVillage = null;
+                          if (hasSubmitted) {
+                            _formKey.currentState!.validate();
+                          }
+                        });
+                      },
+                      validator: (value) => value == null ? tr('Please select a district') : null,
+                    ),
+                    SizedBox(height: 10),
+                    // Taluka
+                    DropdownButtonFormField<String>(
+                      value: selectedTaluk,
+                      decoration: _inputDecoration(tr('Taluka')),
+                      hint: Text(
+                        selectedDistrict == null ? tr('Select District first') : tr('Select Taluka'),
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      isExpanded: true,
+                      items: taluks
+                          .where((taluk) => taluk != null && taluk.isNotEmpty)
+                          .map((taluk) {
+                            return DropdownMenuItem(
+                              value: taluk,
+                              child: Text(taluk, style: TextStyle(color: Colors.black87)),
+                            );
+                          })
+                          .toList(),
+                      onChanged: selectedDistrict == null
+                          ? null
+                          : (value) {
+                              setState(() {
+                                selectedTaluk = value;
+                                villagesList = List<String>.from(villagesMap[selectedTaluk!] ?? []);
+                                print('DEBUG: Updated villagesList for taluk $selectedTaluk: $villagesList');
+                                selectedVillage = null;
+                                if (hasSubmitted) {
+                                  _formKey.currentState!.validate();
+                                }
+                              });
+                            },
+                      validator: (value) =>
+                          selectedDistrict != null && value == null ? tr('Please select a taluka') : null,
+                    ),
+                    SizedBox(height: 10),
+                    // Village
+                    DropdownButtonFormField<String>(
+                      value: selectedVillage,
+                      decoration: _inputDecoration(tr('Village')),
+                      hint: Text(
+                        selectedTaluk == null ? tr('Select Taluka first') : tr('Select Village'),
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      isExpanded: true,
+                      items: villagesList
+                          .where((village) => village != null)
+                          .map((village) {
+                            return DropdownMenuItem(
+                              value: village,
+                              child: Text(village, style: TextStyle(color: Colors.black87)),
+                            );
+                          })
+                          .toList(),
+                      onChanged: selectedTaluk == null
+                          ? null
+                          : (value) {
+                              setState(() {
+                                selectedVillage = value;
+                                print('DEBUG: Selected village: $selectedVillage');
+                                if (hasSubmitted) {
+                                  _formKey.currentState!.validate();
+                                }
+                              });
+                            },
+                      validator: (value) =>
+                          selectedTaluk != null && value == null ? tr('Please select a village') : null,
+                    ),
+                    SizedBox(height: 10),
+                    // Address
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: _inputDecoration(tr('Address')),
+                      onChanged: (value) {
+                        if (hasSubmitted) {
+                          _formKey.currentState!.validate();
+                        }
+                        setState(() {}); // Update button state
+                      },
+                      validator: (value) => value == null || value.trim().isEmpty
+                          ? tr('Please enter an address')
+                          : null,
+                    ),
+                    SizedBox(height: 10),
+                    // Pincode
+                    TextFormField(
+                      controller: _pincodeController,
+                      decoration: _inputDecoration(tr('Pincode')),
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      onChanged: (value) {
+                        if (hasSubmitted) {
+                          _formKey.currentState!.validate();
+                        }
+                        setState(() {}); // Update button state
+                      },
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return tr('Please enter a pincode');
+                        }
+                        if (value.length != 6) {
+                          return tr('Pincode must be 6 digits');
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 10),
+                  ],
+                ),
               ),
             ),
             actions: [
@@ -402,7 +408,12 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
                   ),
                   TextButton(
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color.fromARGB(255, 29, 108, 92),
+                      foregroundColor: isFormValid()
+                          ? const Color.fromARGB(255, 29, 108, 92)
+                          : Colors.grey[400],
+                      backgroundColor: isFormValid()
+                          ? Colors.transparent
+                          : Colors.grey[200]?.withOpacity(0.5),
                     ),
                     child: isSubmitting
                         ? const SizedBox(
@@ -412,21 +423,21 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
                           )
                         : Text(
                             tr("Update Details"),
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: isFormValid() ? null : Colors.grey[600],
+                            ),
                           ),
                     onPressed: () async {
                       setState(() {
-                        isSubmitting = true;
-                        _nameError = _nameController.text.isEmpty;
-                        _stateError = _stateController.text.isEmpty;
-                        _addressError = _addressController.text.isEmpty;
-                        _pincodeError = _pincodeController.text.isNotEmpty && _pincodeController.text.length != 6;
-                        _districtError = selectedDistrict == null;
-                        _talukError = selectedDistrict != null && selectedTaluk == null;
-                        _villageError = selectedTaluk != null && selectedVillage == null;
-                        _genderError = selectedGender == null;
-                        _dobError = selectedDateOfBirth == null;
+                        hasSubmitted = true;
                       });
+
+                      if (!_formKey.currentState!.validate()) {
+                        setState(() => isSubmitting = false);
+                        return;
+                      }
 
                       // Check if at least one field has been provided or changed
                       bool hasChanges = _nameController.text.isNotEmpty ||
@@ -439,35 +450,35 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
                           selectedGender != null ||
                           selectedDateOfBirth != null;
 
-                      // Validate only provided fields
                       if (!hasChanges) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(tr("Please update at least one field"))),
-                        );
-                        setState(() => isSubmitting = false);
-                        return;
-                      }
-
-                      // Validate pincode if provided
-                      if (_pincodeController.text.isNotEmpty && _pincodeController.text.length != 6) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(tr("Pincode must be 6 digits"))),
-                        );
-                        setState(() => isSubmitting = false);
-                        return;
-                      }
-
-                      // Validate taluka and village if district or taluka is provided
-                      if (selectedDistrict != null && selectedTaluk == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(tr("Please select a taluka"))),
-                        );
-                        setState(() => isSubmitting = false);
-                        return;
-                      }
-                      if (selectedTaluk != null && selectedVillage == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(tr("Please select a village"))),
+                        await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text(
+                                tr("Error"),
+                                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),
+                              ),
+                              content: Text(
+                                tr("Please update at least one field"),
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              actions: [
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: const Color.fromARGB(255, 29, 108, 92),
+                                  ),
+                                  child: Text(
+                                    tr("OK"),
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
                         );
                         setState(() => isSubmitting = false);
                         return;
@@ -505,6 +516,7 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
 
                       // API Call to submit the data
                       try {
+                        setState(() => isSubmitting = true);
                         final url = Uri.parse("${KD.api}/user/update_user");
                         final response = await http.post(
                           url,
@@ -517,20 +529,85 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
                         final data = jsonDecode(response.body);
 
                         if (response.statusCode == 200 && data["status"] == "success") {
-                          // Close the profile update dialog
-                          Navigator.of(context).pop();
-                          // Show new alert dialog
-                          showDialog(
+                          // Update UserSession with new user data
+                          if (data["userDataVal"] != null) {
+                            await UserSession.setUser(data["userDataVal"]);
+                            // Close the profile update dialog
+                            Navigator.of(context).pop();
+                            // Invoke callback to notify parent of success
+                            onSuccess?.call();
+                            // Show success alert dialog
+                            await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text(
+                                    tr("Success"),
+                                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),
+                                  ),
+                                  content: Text(
+                                    tr("Profile updated successfully"),
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: const Color.fromARGB(255, 29, 108, 92),
+                                      ),
+                                      child: Text(
+                                        tr("OK"),
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          } else {
+                            await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text(
+                                    tr("Error"),
+                                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),
+                                  ),
+                                  content: Text(
+                                    tr("Error: Updated user data not found"),
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: const Color.fromARGB(255, 29, 108, 92),
+                                      ),
+                                      child: Text(
+                                        tr("OK"),
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        } else {
+                          await showDialog(
                             context: context,
-                            barrierDismissible: false,
                             builder: (BuildContext context) {
                               return AlertDialog(
                                 title: Text(
-                                  tr("Profile Updated"),
+                                  tr("Error"),
                                   style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),
                                 ),
                                 content: Text(
-                                  tr("Profile updated. Please re-login to see the changes"),
+                                  data["message"] ?? tr("Update failed"),
                                   style: TextStyle(fontSize: 16),
                                 ),
                                 actions: [
@@ -539,29 +616,47 @@ if (selectedGender != null && selectedGender.trim().isEmpty) {
                                       foregroundColor: const Color.fromARGB(255, 29, 108, 92),
                                     ),
                                     child: Text(
-                                      tr("Login"),
+                                      tr("OK"),
                                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                                     ),
                                     onPressed: () {
-                                      Navigator.of(context).pop(); // Close the alert
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(builder: (_) => MobileVerificationScreen()),
-                                      );
+                                      Navigator.of(context).pop();
                                     },
                                   ),
                                 ],
                               );
                             },
                           );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(data["message"] ?? "Update failed")),
-                          );
                         }
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Error: $e")),
+                        await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text(
+                                tr("Error"),
+                                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22),
+                              ),
+                              content: Text(
+                                tr("Error: $e"),
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              actions: [
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: const Color.fromARGB(255, 29, 108, 92),
+                                  ),
+                                  child: Text(
+                                    tr("OK"),
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
                         );
                       } finally {
                         setState(() => isSubmitting = false);

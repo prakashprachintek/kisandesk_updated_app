@@ -11,7 +11,7 @@ import '../services/api_config.dart';
 import '../home/HomePage.dart';
 import '../widgets/GradientAuthButton.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:sms_autofill/sms_autofill.dart'; // Only for app signature
+import 'package:sms_autofill/sms_autofill.dart'; // For autofill
 
 class OTPVerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -25,7 +25,8 @@ class OTPVerificationScreen extends StatefulWidget {
   _OTPVerificationScreenState createState() => _OTPVerificationScreenState();
 }
 
-class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
+class _OTPVerificationScreenState extends State<OTPVerificationScreen>
+    with CodeAutoFill {
   final TextEditingController otpController = TextEditingController();
   bool isLoading = false;
   bool isResendLoading = false;
@@ -34,12 +35,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   int secondsRemaining = 30;
   bool resendEnabled = false;
   late Timer timer;
+  String? _appSignature; // Store app signature
 
   @override
   void initState() {
     super.initState();
     startTimer();
-    _logAppSignature(); // Log signature for backend
+    _initializeAutoFill();
   }
 
   void startTimer() {
@@ -62,12 +64,36 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     });
   }
 
-  Future<void> _logAppSignature() async {
+  Future<void> _initializeAutoFill() async {
     try {
-      String? appSignature = await SmsAutoFill().getAppSignature;
-      print("App Signature: $appSignature (Share this with SMS provider for auto-fill)");
+      // Get app signature for SMS Retriever API
+      _appSignature = await SmsAutoFill().getAppSignature;
+      print("App Signature: $_appSignature (Share this with SMS provider)");
+
+      // Start listening for incoming SMS
+      await SmsAutoFill().listenForCode();
+
+      // Update UI when OTP is received
+      listenForCode();
     } catch (e) {
-      print("Error getting app signature: $e");
+      print("Error initializing autofill: $e");
+      setState(() {
+        errorMessage = tr("Failed to initialize autofill. Enter OTP manually.");
+      });
+    }
+  }
+
+  @override
+  void codeUpdated() {
+    // Called when an OTP is detected from SMS
+    if (code != null && code!.length == 4) {
+      setState(() {
+        otpController.text = code!;
+        isOtpValid = true;
+        errorMessage = null;
+      });
+      // Optionally auto-verify the OTP
+      verifyOTP();
     }
   }
 
@@ -96,6 +122,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           SnackBar(content: Text(tr("OTP resent successfully"))),
         );
         startTimer();
+        // Restart listening for new OTP
+        await SmsAutoFill().listenForCode();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -175,6 +203,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   void dispose() {
     otpController.dispose();
     timer.cancel();
+    cancel(); // Cancel SMS listener to prevent memory leaks
     super.dispose();
   }
 
@@ -242,7 +271,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         length: 4,
                         controller: otpController,
                         keyboardType: TextInputType.number,
-                        showCursor: false,
+                        showCursor: true, // Enable cursor for manual input
                         textStyle: TextStyle(fontSize: 20),
                         animationType: AnimationType.scale,
                         cursorColor: Colors.green.shade800,
@@ -270,6 +299,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         ),
                         animationDuration: const Duration(milliseconds: 250),
                         enableActiveFill: true,
+                        autoDismissKeyboard: false, // Allow manual input
+                        autoFocus: true, // Focus for iOS autofill suggestions
                       ),
                       const SizedBox(height: 20),
                       GradientAuthButton(

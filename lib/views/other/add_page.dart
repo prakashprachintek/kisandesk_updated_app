@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
@@ -51,6 +52,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   String? _selectedVillage;
   String? _pincode;
   bool _isSubmitting = false;
+  bool _hasSubmitted = false; // Track submission attempt
+  final _formKey = GlobalKey<FormState>();
 
   final Map<String, Map<String, String>> _categoryFieldLabels = {
     'cattle': {
@@ -112,7 +115,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
   final Map<String, List<String>> _quantityOptions = {
     'cattle': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'],
-    'Properties': [
+    'land': [
       '1 Acre',
       '2 Acres',
       '3 Acres',
@@ -175,12 +178,20 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
   Future<void> _loadLocationData() async {
     try {
-      final String response =
-          await rootBundle.loadString('assets/loadLocation_data.json');
+      final String response = await rootBundle.loadString('assets/loadLocation_data.json');
       final data = json.decode(response);
       setState(() {
         _locationData = data;
         _states = List<String>.from(_locationData['states']);
+        if (_selectedState != null) {
+          _districts = List<String>.from(_locationData['districts'][_selectedState] ?? []);
+          if (_selectedDistrict != null) {
+            _talukas = List<String>.from(_locationData['talukas'][_selectedDistrict] ?? []);
+            if (_selectedTaluka != null) {
+              _villages = List<String>.from(_locationData['villages'][_selectedTaluka] ?? []);
+            }
+          }
+        }
       });
     } catch (e) {
       print("Failed to load location data: $e");
@@ -195,6 +206,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       _districts = List<String>.from(_locationData['districts'][state] ?? []);
       _talukas = [];
       _villages = [];
+      if (_hasSubmitted) {
+        _formKey.currentState!.validate();
+      }
     });
   }
 
@@ -204,6 +218,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       _selectedVillage = null;
       _talukas = List<String>.from(_locationData['talukas'][district] ?? []);
       _villages = [];
+      if (_hasSubmitted) {
+        _formKey.currentState!.validate();
+      }
     });
   }
 
@@ -211,10 +228,27 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     setState(() {
       _selectedVillage = null;
       _villages = List<String>.from(_locationData['villages'][taluka] ?? []);
+      if (_hasSubmitted) {
+        _formKey.currentState!.validate();
+      }
     });
   }
 
   void _handleNext() {
+    if (_currentStep == 0) {
+      if (_selectedCategory == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr("Please select a category"))),
+        );
+        return;
+      }
+      _updateFieldLabels(_selectedCategory);
+    } else if (_currentStep == 1) {
+      if (!_formKey.currentState!.validate()) {
+        setState(() => _hasSubmitted = true);
+        return;
+      }
+    }
     if (_currentStep < 2) {
       setState(() => _currentStep++);
     }
@@ -234,6 +268,30 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
   }
 
+  bool isFormValid() {
+    return _selectedCategory != null &&
+        _cropName != null &&
+        _cropName!.isNotEmpty &&
+        _description != null &&
+        _description!.isNotEmpty &&
+        _phoneNumber != null &&
+        _phoneNumber!.length == 10 &&
+        _price != null &&
+        _price!.isNotEmpty &&
+        (_quantity != null || _selectedCategory == 'machinery') &&
+        _quantity!.isNotEmpty &&
+        _base64Image != null &&
+        _base64Image!.isNotEmpty &&
+        (_useCurrentLocation
+            ? (_latitude != null && _longitude != null)
+            : (_selectedState != null &&
+                _selectedDistrict != null &&
+                _selectedTaluka != null &&
+                _selectedVillage != null &&
+                _pincode != null &&
+                _pincode!.length == 6));
+  }
+
   Widget _buildStep0() {
     final Map<String, String> categoryImages = {
       'cattle': 'assets/cattlen.png',
@@ -245,14 +303,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        //mainAxisAlignment: MainAxisAlignment.start,
         children: [
           SizedBox(
             height: 450,
             child: GridView.count(
               crossAxisCount: 2,
-              //shrinkWrap: true,
-              //physics: const NeverScrollableScrollPhysics(),
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
               children: _categoryFieldLabels.keys.map((cat) {
@@ -264,7 +319,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                     setState(() {
                       _selectedCategory = key;
                       _updateFieldLabels(key);
-                      // Clear product details when category changes
                       _cropName = null;
                       _description = null;
                       _price = null;
@@ -274,13 +328,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? Colors.green[100]
-                          : const Color.fromARGB(255, 255, 255, 255),
+                      color: isSelected ? Colors.green[100] : Colors.white,
                       border: Border.all(
-                        color: isSelected
-                            ? Colors.green
-                            : const Color.fromARGB(255, 255, 255, 255),
+                        color: isSelected ? Colors.green : Colors.white,
                         width: isSelected ? 2 : 1,
                       ),
                       borderRadius: BorderRadius.circular(10),
@@ -292,8 +342,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                         SizedBox(
                           height: 80,
                           child: categoryImages.containsKey(key)
-                              ? Image.asset(categoryImages[key]!,
-                                  fit: BoxFit.contain)
+                              ? Image.asset(categoryImages[key]!, fit: BoxFit.contain)
                               : Icon(Icons.image_not_supported, size: 160),
                         ),
                         SizedBox(height: 10),
@@ -308,57 +357,100 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               }).toList(),
             ),
           ),
-/*          SizedBox(height: 90),
-          _GradientButton(
-            text: "Next",
-            onPressed: () {
-              if (_selectedCategory == null) {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: Text("Error"),
-                    content: Text("Please select a category."),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text("OK")),
-                    ],
-                  ),
-                );
-              } else {
-                _handleNext();
-              }
-            },
-          ),*/
         ],
       ),
     );
   }
 
-  // Product Details (MODIFIED TO USE DROPDOWNSEARCH FOR CROP NAME)
   Widget _buildStep1() {
-    final List<Map<String, String>> currentOptions =
-        _categoryOptions[_selectedCategory!] ?? [];
+    final List<Map<String, String>> currentOptions = _categoryOptions[_selectedCategory!] ?? [];
 
     return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          //SizedBox(height: 20),
-          Center(),
-          SizedBox(height: 20),
-
-          // -------------------------------------------------------------------
-          // MODIFIED: DropdownSearch for Product/Cattle Name with Images
-          // -------------------------------------------------------------------
-          DropdownSearch<String>(
-            items: currentOptions.map((e) => e['name']!).toList(),
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                labelText: _currentFieldLabels['cropName'] ?? "Title",
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DropdownSearch<String>(
+              items: currentOptions.map((e) => e['name']!).toList(),
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  labelText: tr(_currentFieldLabels['cropName'] ?? "Title"),
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                ),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  _cropName = val;
+                  if (_hasSubmitted) {
+                    _formKey.currentState!.validate();
+                  }
+                });
+              },
+              selectedItem: _cropName,
+              validator: (value) => value == null ? tr('Please select a title') : null,
+              popupProps: PopupProps.menu(
+                showSearchBox: false,
+                constraints: const BoxConstraints(maxHeight: 400),
+                menuProps: MenuProps(
+                  borderRadius: BorderRadius.circular(8),
+                  elevation: 4,
+                ),
+                itemBuilder: (context, item, isSelected) {
+                  final option = currentOptions.firstWhere(
+                    (e) => e['name'] == item,
+                    orElse: () => {'name': item, 'image': 'assets/default.png'},
+                  );
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    color: isSelected ? Colors.green[50] : null,
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          option['image']!,
+                          width: 90,
+                          height: 90,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Icon(Icons.image_not_supported, size: 30),
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          item,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: tr(_currentFieldLabels['description'] ?? "Description"),
                 labelStyle: TextStyle(color: Colors.grey[600]),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Colors.grey.shade400),
@@ -367,175 +459,168 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
                 ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
+              onChanged: (val) {
+                _description = val;
+                if (_hasSubmitted) {
+                  _formKey.currentState!.validate();
+                }
+                setState(() {});
+              },
+              initialValue: _description,
+              validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a description') : null,
             ),
-            onChanged: (val) {
-              setState(() {
-                _cropName = val;
-              });
-            },
-            selectedItem: _cropName,
-            // Customizing the dropdown list view to show images
-            popupProps: PopupProps.menu(
-              showSearchBox: false,
-              constraints: const BoxConstraints(
-                maxHeight: 400,
+            SizedBox(height: 16),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: tr("Phone Number"),
+                labelStyle: TextStyle(color: Colors.grey[600]),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
-              menuProps: MenuProps(
-                borderRadius: BorderRadius.circular(8),
-                elevation: 4,
-                //padding: EdgeInsets.zero,
-              ),
-              itemBuilder: (context, item, isSelected) {
-                final option = currentOptions.firstWhere(
-                    (e) => e['name'] == item,
-                    orElse: () => {
-                          'name': item,
-                          'image': 'assets/default.png'
-                        }); // Fallback
-                return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  color: isSelected ? Colors.green[50] : null,
-                  child: Row(
-                    children: [
-                      // Display image
-                      Image.asset(
-                        option['image']!,
-                        width: 90,
-                        height: 90,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Icon(Icons.image_not_supported, size: 30),
-                      ),
-                      SizedBox(width: 10),
-                      // Display name
-                      Text(
-                        item,
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal),
-                      ),
-                    ],
-                  ),
-                );
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              onChanged: (val) {
+                _phoneNumber = val;
+                if (_hasSubmitted) {
+                  _formKey.currentState!.validate();
+                }
+                setState(() {});
+              },
+              initialValue: _phoneNumber,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return tr('Please enter a phone number');
+                }
+                if (value.length != 10) {
+                  return tr('Phone number must be 10 digits');
+                }
+                return null;
               },
             ),
-          ),
-          // -------------------------------------------------------------------
-          SizedBox(height: 16),
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: _currentFieldLabels['description'] ?? "Description",
-              labelStyle: TextStyle(color: Colors.grey[600]),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400),
+            SizedBox(height: 16),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: tr(_currentFieldLabels['price'] ?? "Price"),
+                labelStyle: TextStyle(color: Colors.grey[600]),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.red, width: 2),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.red, width: 2),
-              ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              keyboardType: TextInputType.number,
+              onChanged: (val) {
+                _price = val;
+                if (_hasSubmitted) {
+                  _formKey.currentState!.validate();
+                }
+                setState(() {});
+              },
+              initialValue: _price,
+              validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a price') : null,
             ),
-            onChanged: (val) => _description = val,
-            initialValue: _description,
-          ),
-          SizedBox(height: 16),
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: "Phone Number",
-              labelStyle: TextStyle(color: Colors.grey[600]),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.red, width: 2),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.red, width: 2),
-              ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            ),
-            keyboardType: TextInputType.phone,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(10),
-            ],
-            onChanged: (val) => _phoneNumber = val,
-            initialValue: _phoneNumber,
-          ),
-          SizedBox(height: 16),
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: _currentFieldLabels['price'] ?? "Price",
-              labelStyle: TextStyle(color: Colors.grey[600]),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.red, width: 2),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.red, width: 2),
-              ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            ),
-            keyboardType: TextInputType.number,
-            onChanged: (val) => _price = val,
-            initialValue: _price,
-          ),
-          SizedBox(height: 16),
-          if (_selectedCategory != 'machinery') ...[
-            if (_quantityOptions.containsKey(_selectedCategory))
-              DropdownSearch<String>(
-                items: _quantityOptions[_selectedCategory] ?? [],
-                dropdownDecoratorProps: DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                    labelText: _currentFieldLabels['quantity'] ?? "Quantity",
+            SizedBox(height: 16),
+            if (_selectedCategory != 'machinery') ...[
+              if (_quantityOptions.containsKey(_selectedCategory))
+                DropdownSearch<String>(
+                  items: _quantityOptions[_selectedCategory] ?? [],
+                  dropdownDecoratorProps: DropDownDecoratorProps(
+                    dropdownSearchDecoration: InputDecoration(
+                      labelText: tr(_currentFieldLabels['quantity'] ?? "Quantity"),
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      _quantity = val;
+                      if (_hasSubmitted) {
+                        _formKey.currentState!.validate();
+                      }
+                    });
+                  },
+                  selectedItem: _quantity,
+                  validator: (value) => value == null ? tr('Please select a quantity') : null,
+                  popupProps: PopupProps.menu(
+                    showSearchBox: false,
+                    menuProps: MenuProps(
+                      borderRadius: BorderRadius.circular(8),
+                      elevation: 4,
+                    ),
+                  ),
+                )
+              else
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: tr(_currentFieldLabels['quantity'] ?? "Quantity"),
                     labelStyle: TextStyle(color: Colors.grey[600]),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: Colors.grey.shade400),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide:
-                          BorderSide(color: Color(0xFF00AD83), width: 2),
+                      borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -545,31 +630,306 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: Colors.red, width: 2),
                     ),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (val) {
+                    _quantity = val;
+                    if (_hasSubmitted) {
+                      _formKey.currentState!.validate();
+                    }
+                    setState(() {});
+                  },
+                  initialValue: _quantity,
+                  validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a quantity') : null,
+                ),
+              SizedBox(height: 16),
+            ],
+            GestureDetector(
+              onTap: _base64Image == null ? _pickImage : null,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: _hasSubmitted && _base64Image == null ? Colors.red : Colors.grey.shade400,
+                    width: _hasSubmitted && _base64Image == null ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.camera_alt,
+                        color: _hasSubmitted && _base64Image == null ? Colors.red : Colors.grey.shade400),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _base64Image == null
+                            ? tr("Upload Image")
+                            : tr("Image selected: ${_fileName ?? 'Base64'}"),
+                        style: TextStyle(
+                          color: _hasSubmitted && _base64Image == null ? Colors.red : Colors.grey.shade400,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (_base64Image != null)
+                      IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey.shade400),
+                        onPressed: () {
+                          setState(() {
+                            _base64Image = null;
+                            _fileName = null;
+                            if (_hasSubmitted) {
+                              _formKey.currentState!.validate();
+                            }
+                          });
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            if (_hasSubmitted && _base64Image == null)
+              Padding(
+                padding: EdgeInsets.only(top: 8, left: 12),
+                child: Text(
+                  tr('Please upload an image'),
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+            SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _GradientButton(
+                  text: tr("Back"),
+                  onPressed: _handleBack,
+                  gradientColors: [Colors.grey, Colors.grey],
+                ),
+                _GradientButton(
+                  text: tr("Next"),
+                  onPressed: _handleNext,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStep2() {
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Lottie.asset('assets/animations/location.json', height: 180),
+            SizedBox(height: 10),
+            Center(
+              child: Text(
+                tr("Enter Location & Submit"),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(height: 20),
+            _buildLocationToggle(),
+            SizedBox(height: 16),
+            if (!_useCurrentLocation) ...[
+              DropdownSearch<String>(
+                items: _states,
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: tr('State'),
+                    labelStyle: TextStyle(color: Colors.grey[600]),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade400),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 ),
                 onChanged: (val) {
                   setState(() {
-                    _quantity = val;
+                    _selectedState = val;
+                    if (val != null) updateDistricts(val);
+                    if (_hasSubmitted) {
+                      _formKey.currentState!.validate();
+                    }
                   });
                 },
-                selectedItem: _quantity,
+                selectedItem: _selectedState,
+                validator: (value) => !_useCurrentLocation && value == null ? tr('Please select a state') : null,
                 popupProps: PopupProps.menu(
-                  showSearchBox: false,
+                  showSearchBox: true,
                   menuProps: MenuProps(
                     borderRadius: BorderRadius.circular(8),
                     elevation: 4,
                   ),
                 ),
-              )
-            else
+              ),
+              SizedBox(height: 16),
+              DropdownSearch<String>(
+                items: _districts,
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: tr('District'),
+                    labelStyle: TextStyle(color: Colors.grey[600]),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade400),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedDistrict = val;
+                    if (val != null) updateTalukas(val);
+                    if (_hasSubmitted) {
+                      _formKey.currentState!.validate();
+                    }
+                  });
+                },
+                selectedItem: _selectedDistrict,
+                validator: (value) =>
+                    !_useCurrentLocation && _selectedState != null && value == null ? tr('Please select a district') : null,
+                popupProps: PopupProps.menu(
+                  showSearchBox: true,
+                  menuProps: MenuProps(
+                    borderRadius: BorderRadius.circular(8),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              DropdownSearch<String>(
+                items: _talukas,
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: tr('Taluka'),
+                    labelStyle: TextStyle(color: Colors.grey[600]),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade400),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedTaluka = val;
+                    if (val != null) updateVillages(val);
+                    if (_hasSubmitted) {
+                      _formKey.currentState!.validate();
+                    }
+                  });
+                },
+                selectedItem: _selectedTaluka,
+                validator: (value) => !_useCurrentLocation && _selectedDistrict != null && value == null
+                    ? tr('Please select a taluka')
+                    : null,
+                popupProps: PopupProps.menu(
+                  showSearchBox: true,
+                  menuProps: MenuProps(
+                    borderRadius: BorderRadius.circular(8),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              DropdownSearch<String>(
+                items: _villages,
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: tr('Village'),
+                    labelStyle: TextStyle(color: Colors.grey[600]),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey.shade400),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.red, width: 2),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedVillage = val;
+                    if (_hasSubmitted) {
+                      _formKey.currentState!.validate();
+                    }
+                  });
+                },
+                selectedItem: _selectedVillage,
+                validator: (value) => !_useCurrentLocation && _selectedTaluka != null && value == null
+                    ? tr('Please select a village')
+                    : null,
+                popupProps: PopupProps.menu(
+                  showSearchBox: true,
+                  menuProps: MenuProps(
+                    borderRadius: BorderRadius.circular(8),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: _currentFieldLabels['quantity'] ?? "Quantity",
+                  labelText: tr("Pincode"),
                   labelStyle: TextStyle(color: Colors.grey[600]),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade400),
@@ -586,315 +946,54 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.red, width: 2),
                   ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
                 keyboardType: TextInputType.number,
-                onChanged: (val) => _quantity = val,
-                initialValue: _quantity,
-              ),
-            SizedBox(height: 16),
-          ],
-          GestureDetector(
-            onTap: _pickImage,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade400),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.camera_alt, color: Colors.grey.shade400),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: _base64Image == null
-                        ? Text(
-                            "Upload Image",
-                            style: TextStyle(color: Colors.grey.shade400),
-                          )
-                        : Text(
-                            "Image selected: ${_fileName ?? 'Base64'}",
-                            style: TextStyle(color: Colors.grey.shade400),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                  ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(6),
                 ],
-              ),
-            ),
-          ),
-          SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _GradientButton(
-                text: "Back",
-                onPressed: _handleBack,
-                gradientColors: [Colors.grey, Colors.grey],
-              ),
-              _GradientButton(
-                text: "Next",
-                onPressed: () {
-                  if ((_cropName == null || _cropName!.isEmpty) ||
-                      (_description == null || _description!.isEmpty)) {
-                    showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: Text("Error"),
-                        content: Text(
-                            "Please select a product name and fill the description."),
-                        actions: [
-                          TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text("OK")),
-                        ],
-                      ),
-                    );
-                    return;
+                onChanged: (val) {
+                  _pincode = val;
+                  if (_hasSubmitted) {
+                    _formKey.currentState!.validate();
                   }
-                  _handleNext();
+                  setState(() {});
+                },
+                initialValue: _pincode,
+                validator: (value) {
+                  if (!_useCurrentLocation) {
+                    if (value == null || value.trim().isEmpty) {
+                      return tr('Please enter a pincode');
+                    }
+                    if (value.length != 6) {
+                      return tr('Pincode must be 6 digits');
+                    }
+                  }
+                  return null;
                 },
               ),
+              SizedBox(height: 24),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // location selection and submission
-  Widget _buildStep2() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          //SizedBox(height: 10),
-          Lottie.asset('assets/animations/location.json', height: 180),
-          SizedBox(height: 10),
-          Center(
-            child: Text(
-              "Enter Location & Submit",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _GradientButton(
+                  text: tr("Back"),
+                  onPressed: _handleBack,
+                  gradientColors: [Colors.grey, Colors.grey],
+                ),
+                _GradientButton(
+                  text: tr("Submit"),
+                  onPressed: _submitMarketPost,
+                  gradientColors: isFormValid()
+                      ? [Color.fromARGB(255, 29, 108, 92), Color.fromARGB(255, 29, 108, 92)]
+                      : [Colors.grey[400]!, Colors.grey[400]!],
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: 20),
-          //_buildLocationToggle(),
-          //SizedBox(height: 16),
-          if (!_useCurrentLocation) ...[
-            DropdownSearch<String>(
-              items: _states,
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                  labelText: 'State',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
-                  ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-              ),
-              onChanged: (val) {
-                _selectedState = val;
-                if (val != null) updateDistricts(val);
-              },
-              selectedItem: _selectedState,
-              popupProps: PopupProps.menu(
-                showSearchBox: true,
-                menuProps: MenuProps(
-                  borderRadius: BorderRadius.circular(8),
-                  elevation: 4,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            DropdownSearch<String>(
-              items: _districts,
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                  labelText: 'District',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
-                  ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-              ),
-              onChanged: (val) {
-                _selectedDistrict = val;
-                if (val != null) updateTalukas(val);
-              },
-              selectedItem: _selectedDistrict,
-              popupProps: PopupProps.menu(
-                showSearchBox: true,
-                menuProps: MenuProps(
-                  borderRadius: BorderRadius.circular(8),
-                  elevation: 4,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            DropdownSearch<String>(
-              items: _talukas,
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                  labelText: 'Taluka',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
-                  ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-              ),
-              onChanged: (val) {
-                _selectedTaluka = val;
-                if (val != null) updateVillages(val);
-              },
-              selectedItem: _selectedTaluka,
-              popupProps: PopupProps.menu(
-                showSearchBox: true,
-                menuProps: MenuProps(
-                  borderRadius: BorderRadius.circular(8),
-                  elevation: 4,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            DropdownSearch<String>(
-              items: _villages,
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                  labelText: 'Village',
-                  labelStyle: TextStyle(color: Colors.grey[600]),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade400),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
-                  ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-              ),
-              onChanged: (val) => _selectedVillage = val,
-              selectedItem: _selectedVillage,
-              popupProps: PopupProps.menu(
-                showSearchBox: true,
-                menuProps: MenuProps(
-                  borderRadius: BorderRadius.circular(8),
-                  elevation: 4,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
           ],
-          TextFormField(
-            decoration: InputDecoration(
-              labelText: "Pincode",
-              labelStyle: TextStyle(color: Colors.grey[600]),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade400),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.red, width: 2),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.red, width: 2),
-              ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            ),
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(6),
-            ],
-            onChanged: (val) => _pincode = val,
-            initialValue: _pincode,
-          ),
-          SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _GradientButton(
-                text: "Back",
-                onPressed: _handleBack,
-                gradientColors: [Colors.grey, Colors.grey],
-              ),
-              _GradientButton(
-                text: "Submit",
-                onPressed: _isSubmitting ? null : _submitMarketPost,
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -915,6 +1014,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               } else {
                 _useCurrentLocation = true;
               }
+              if (_hasSubmitted) {
+                _formKey.currentState!.validate();
+              }
             });
             if (_useCurrentLocation) {
               await _fetchCurrentLocation();
@@ -923,11 +1025,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text("Manual"),
+              child: Text(tr("Manual")),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text("Current"),
+              child: Text(tr("Current")),
             ),
           ],
         ),
@@ -938,106 +1040,61 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   Future<void> _fetchCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Location Error"),
-          content: Text("Location services are disabled."),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
-          ],
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("Location services are disabled"))),
       );
+      setState(() => _useCurrentLocation = false);
       return;
     }
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text("Permission Denied"),
-            content: Text("Location permission is denied."),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text("OK"))
-            ],
-          ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr("Location permission is denied"))),
         );
+        setState(() => _useCurrentLocation = false);
         return;
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Permission Error"),
-          content: Text("Location permission is permanently denied."),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
-          ],
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("Location permission is permanently denied"))),
       );
+      setState(() => _useCurrentLocation = false);
       return;
     }
-    Position pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _latitude = pos.latitude;
       _longitude = pos.longitude;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Current location: $_latitude, $_longitude")),
+      SnackBar(content: Text(tr("Current location: $_latitude, $_longitude"))),
     );
   }
 
   Future<void> _submitMarketPost() async {
-    // Validation checks
+    setState(() => _hasSubmitted = true);
+
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _isSubmitting = false);
+      return;
+    }
+
     if (_selectedCategory == null) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Submission Error"),
-          content: Text("Category is missing."),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
-          ],
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("Please select a category"))),
       );
+      setState(() => _isSubmitting = false);
       return;
     }
-    if ((_cropName == null || _cropName!.isEmpty) ||
-        (_description == null || _description!.isEmpty)) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Submission Error"),
-          content: Text("Title/description is missing."),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
-          ],
-        ),
+
+    if (_useCurrentLocation && (_latitude == null || _longitude == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("Unable to fetch current location"))),
       );
-      return;
-    }
-    if (_base64Image == null || _base64Image!.isEmpty || _fileName == null) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Submission Error"),
-          content: Text("Please select an image."),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
-          ],
-        ),
-      );
+      setState(() => _isSubmitting = false);
       return;
     }
 
@@ -1060,11 +1117,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         );
 
         var imageResponse = await imageRequest.send();
-        final responseData =
-            jsonDecode(await imageResponse.stream.bytesToString());
+        final responseData = jsonDecode(await imageResponse.stream.bytesToString());
 
-        if (imageResponse.statusCode == 200 ||
-            imageResponse.statusCode == 201) {
+        if (imageResponse.statusCode == 200 || imageResponse.statusCode == 201) {
           if (responseData['message'] == 'File uploaded successfully') {
             imageUploaded = true;
             break;
@@ -1072,20 +1127,13 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         }
 
         if (attempt < 3) {
-          await Future.delayed(
-              Duration(milliseconds: 500)); // Short delay between retries
+          await Future.delayed(Duration(milliseconds: 500));
         } else {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text("Image Upload Error"),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
               content: Text(
-                  "Failed to upload image: ${responseData['message'] ?? 'Status ${imageResponse.statusCode}'}"),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text("OK"))
-              ],
+                tr("Failed to upload image: ${responseData['message'] ?? 'Status ${imageResponse.statusCode}'}"),
+              ),
             ),
           );
           setState(() => _isSubmitting = false);
@@ -1102,9 +1150,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         "cropName": _cropName ?? '',
         "description": _description ?? '',
         "price": int.tryParse(_price ?? '0') ?? 0,
-        "quantity":
-            int.tryParse(_quantity?.replaceAll(RegExp(r'[^0-9]'), '') ?? '0') ??
-                0,
+        "quantity": int.tryParse(_quantity?.replaceAll(RegExp(r'[^0-9]'), '') ?? '0') ?? 0,
         "state": _selectedState ?? '',
         "district": _selectedDistrict ?? '',
         "taluka": _selectedTaluka ?? '',
@@ -1115,22 +1161,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       };
 
       if (_useCurrentLocation) {
-        if (_latitude == null || _longitude == null) {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text("Location Error"),
-              content: Text("Unable to fetch current location."),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text("OK"))
-              ],
-            ),
-          );
-          setState(() => _isSubmitting = false);
-          return;
-        }
         postData["latitude"] = _latitude;
         postData["longitude"] = _longitude;
       }
@@ -1152,24 +1182,20 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             context: context,
             barrierDismissible: false,
             builder: (_) => AlertDialog(
-              title: Text("Submission Successful"),
-              content: Text(
-                  "Market post added successfully! Redirecting to HomePage..."),
+              title: Text(tr("Submission Successful")),
+              content: Text(tr("Market Post Initiated Successfully. Redirecting to Marketplace...")),
               actions: [
                 TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text("OK"))
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => MarketPage()),
+                    );
+                  },
+                  child: Text(tr("OK")),
+                ),
               ],
-            ),
-          );
-          await Future.delayed(Duration(seconds: 2));
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (_) => /*HomePage(
-                  phoneNumber: widget.phoneNumber, userData: widget.userData),*/
-                      MarketPage(),
             ),
           );
           break;
@@ -1179,17 +1205,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
           await Future.delayed(Duration(milliseconds: 500));
         } else {
           final responseData = jsonDecode(postResponse.body);
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text("Submission Error"),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
               content: Text(
-                  "Failed to add post: ${responseData['message'] ?? 'Status ${postResponse.statusCode}'}"),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text("OK"))
-              ],
+                tr("Failed to add post: ${responseData['message'] ?? 'Status ${postResponse.statusCode}'}"),
+              ),
             ),
           );
         }
@@ -1200,29 +1220,13 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         return;
       }
     } on SocketException {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Network Error"),
-          content: Text("Please check your internet connection."),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
-          ],
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("Please check your internet connection"))),
       );
     } catch (e) {
       print("Submission error: $e");
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Submission Error"),
-          content: Text("An unexpected error occurred: $e"),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(), child: Text("OK"))
-          ],
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("An unexpected error occurred: $e"))),
       );
     } finally {
       setState(() => _isSubmitting = false);
@@ -1239,8 +1243,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             children: [
               ListTile(
                 leading: Icon(Icons.camera_alt, color: Colors.black54),
-                title: Text('Take Picture',
-                    style: TextStyle(color: Colors.black54)),
+                title: Text(tr('Take Picture'), style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -1253,8 +1256,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: Colors.black54),
-                title: Text('Select from Gallery',
-                    style: TextStyle(color: Colors.black54)),
+                title: Text(tr('Select from Gallery'), style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -1275,7 +1277,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   Future<void> _handleImageSelection(XFile? pickedFile) async {
     if (pickedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No image selected.")),
+        SnackBar(content: Text(tr("No image selected"))),
       );
       return;
     }
@@ -1286,11 +1288,14 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       setState(() {
         _base64Image = base64Str;
         _fileName = pickedFile.name;
+        if (_hasSubmitted) {
+          _formKey.currentState!.validate();
+        }
       });
     } catch (e) {
       print("Error reading file: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to convert image.")),
+        SnackBar(content: Text(tr("Failed to convert image"))),
       );
     }
   }
@@ -1308,7 +1313,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Add Market Post (Step ${_currentStep + 1}/3)"),
+        title: Text(tr("Add Market Post (Step ${_currentStep + 1}/3)")),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -1333,16 +1338,13 @@ class _GradientButton extends StatelessWidget {
     Key? key,
     required this.text,
     required this.onPressed,
-    this.gradientColors = const [
-      Color.fromARGB(255, 29, 108, 92),
-      Color.fromARGB(255, 29, 108, 92),
-    ],
+    this.gradientColors = const [Color.fromARGB(255, 29, 108, 92), Color.fromARGB(255, 29, 108, 92)],
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final bool isEnabled = onPressed != null;
-    final colors = isEnabled ? gradientColors : [Colors.grey, Colors.grey];
+    final colors = isEnabled ? gradientColors : [Colors.grey[400]!, Colors.grey[400]!];
 
     return InkWell(
       onTap: onPressed,
