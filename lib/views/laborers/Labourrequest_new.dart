@@ -82,13 +82,13 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(tr("Failed to submit request: ${response.statusCode} ${response.body}")),
+            content: Text(tr("Server error, please try again later")),
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Failed to submit request: $e"))),
+        SnackBar(content: Text(tr("Network error, please check your connection"))),
       );
     }
   }
