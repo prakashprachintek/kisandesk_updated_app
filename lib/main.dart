@@ -113,6 +113,7 @@ class _MyAppState extends State<MyApp> {
         ),
         labelStyle: TextStyle(color: Colors.grey[700]),
       ),
+      fontFamily: 'DMSans',
     );
   }
 }

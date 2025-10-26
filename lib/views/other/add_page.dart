@@ -10,6 +10,7 @@ import 'package:lottie/lottie.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 import 'package:mainproject1/views/services/api_config.dart';
+import 'package:mainproject1/views/services/image_compression.dart';
 import '../services/user_session.dart';
 
 class AddMarketPostPage extends StatefulWidget {
@@ -985,7 +986,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 ),
                 _GradientButton(
                   text: tr("Submit"),
-                  onPressed: _submitMarketPost,
+                  onPressed: _isSubmitting ? null : _submitMarketPost,
                   gradientColors: isFormValid()
                       ? [Color.fromARGB(255, 29, 108, 92), Color.fromARGB(255, 29, 108, 92)]
                       : [Colors.grey[400]!, Colors.grey[400]!],
@@ -1281,21 +1282,32 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       );
       return;
     }
+
+    File originalImageFile = File(pickedFile.path);
+    File processedImageFile = originalImageFile;
+
     try {
-      final file = File(pickedFile.path);
-      final bytes = await file.readAsBytes();
+      processedImageFile = await optimizeImage(originalImageFile);
+      final bytes = await processedImageFile.readAsBytes();
       String base64Str = base64Encode(bytes);
       setState(() {
         _base64Image = base64Str;
-        _fileName = pickedFile.name;
+        _fileName = processedImageFile.uri.pathSegments.last;
         if (_hasSubmitted) {
           _formKey.currentState!.validate();
         }
       });
+      if (processedImageFile.path != originalImageFile.path) {
+        try {
+          await processedImageFile.delete();
+        } catch (e) {
+          print('Error deleting temporary file: $e');
+        }
+      }
     } catch (e) {
-      print("Error reading file: $e");
+      print("Error processing image: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Failed to convert image"))),
+        SnackBar(content: Text(tr("Failed to process and convert image"))),
       );
     }
   }

@@ -7,7 +7,8 @@ import '../services/api_config.dart';
 import 'OTPVerificationScreen.dart';
 
 Future<Map<String, dynamic>> loadLocationJson() async {
-  final String jsonString = await rootBundle.loadString('assets/loadLocation_data.json');
+  final String jsonString =
+      await rootBundle.loadString('assets/loadLocation_data.json');
   return json.decode(jsonString);
 }
 
@@ -33,11 +34,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
   Map<String, List<dynamic>> villagesMap = Map.from(locationData['villages']);
 
   talukasMap.forEach((key, value) {
-    value.sort((a, b) => a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
+    value.sort((a, b) =>
+        a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
   });
 
   villagesMap.forEach((key, value) {
-    value.sort((a, b) => a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
+    value.sort((a, b) =>
+        a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
   });
 
   districts = List<String>.from(locationData['districts']['Karnataka'] ?? []);
@@ -76,7 +79,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         labelText: tr("Full Name"),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -87,11 +91,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -100,12 +106,15 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                       ),
                       onChanged: (value) {
                         if (hasSubmitted) {
-                          _formKey.currentState!.validate(); // Revalidate to clear error
+                          _formKey.currentState!
+                              .validate(); // Revalidate to clear error
                           setState(() {}); // Update UI
                         }
                       },
                       validator: (value) =>
-                          value == null || value.trim().isEmpty ? tr("Please enter your full name") : null,
+                          value == null || value.trim().isEmpty
+                              ? tr("Please enter your full name")
+                              : null,
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
@@ -114,7 +123,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         labelText: tr("District"),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -125,11 +135,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -153,7 +165,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                               : [];
                           villagesList = [];
                           if (hasSubmitted) {
-                            _formKey.currentState!.validate(); // Revalidate to clear error
+                            _formKey.currentState!
+                                .validate(); // Revalidate to clear error
                           }
                         });
                       },
@@ -164,11 +177,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                     if (selectedDistrict != null)
                       DropdownButtonFormField<String>(
                         value: selectedTaluk,
+                        isExpanded: true,
                         decoration: InputDecoration(
                           labelText: tr("Taluk"),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                            borderSide: const BorderSide(
+                                color: Colors.grey, width: 1.0),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -179,11 +194,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                            borderSide:
+                                const BorderSide(color: Colors.red, width: 2.0),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                            borderSide:
+                                const BorderSide(color: Colors.red, width: 2.0),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -192,9 +209,16 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         ),
                         hint: Text(tr("Select Taluk")),
                         items: taluks.map((taluk) {
-                          return DropdownMenuItem(
+                          return DropdownMenuItem<String>(
                             value: taluk,
-                            child: Text(taluk),
+                            child: Container(
+                              width: double.infinity,
+                              child: Text(
+                                taluk,
+                                overflow: TextOverflow
+                                    .ellipsis, // 👈 Prevents overflow in menu item
+                              ),
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -205,7 +229,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                                 ? List<String>.from(villagesMap[value] ?? [])
                                 : [];
                             if (hasSubmitted) {
-                              _formKey.currentState!.validate(); // Revalidate to clear error
+                              _formKey.currentState!
+                                  .validate(); // Revalidate to clear error
                             }
                           });
                         },
@@ -216,11 +241,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                     if (selectedTaluk != null)
                       DropdownButtonFormField<String>(
                         value: selectedVillage,
+                        isExpanded: true,
                         decoration: InputDecoration(
                           labelText: tr("Village"),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                            borderSide: const BorderSide(
+                                color: Colors.grey, width: 1.0),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -231,11 +258,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                            borderSide:
+                                const BorderSide(color: Colors.red, width: 2.0),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                            borderSide:
+                                const BorderSide(color: Colors.red, width: 2.0),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -244,21 +273,30 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         ),
                         hint: Text(tr("Select Village")),
                         items: villagesList.map((village) {
-                          return DropdownMenuItem(
+                          return DropdownMenuItem<String>(
                             value: village,
-                            child: Text(village),
+                            child: Container(
+                              width: double.infinity,
+                              child: Text(
+                                village,
+                                overflow: TextOverflow
+                                    .ellipsis, // 👈 Prevents overflow in menu item
+                              ),
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) {
                           setState(() {
                             selectedVillage = value;
                             if (hasSubmitted) {
-                              _formKey.currentState!.validate(); // Revalidate to clear error
+                              _formKey.currentState!
+                                  .validate(); // Revalidate to clear error
                             }
                           });
                         },
-                        validator: (value) =>
-                            value == null ? tr("Please select a village") : null,
+                        validator: (value) => value == null
+                            ? tr("Please select a village")
+                            : null,
                       ),
                     const SizedBox(height: 10),
                     TextFormField(
@@ -267,7 +305,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         labelText: tr("Pincode"),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -278,11 +317,13 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -293,7 +334,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                       maxLength: 6,
                       onChanged: (value) {
                         if (hasSubmitted) {
-                          _formKey.currentState!.validate(); // Revalidate to clear error
+                          _formKey.currentState!
+                              .validate(); // Revalidate to clear error
                           setState(() {}); // Update UI
                         }
                       },
@@ -325,7 +367,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                     setState(() => isSubmitting = true);
 
                     try {
-                      final userInsertUrl = Uri.parse("${KD.api}/user/insert_user");
+                      final userInsertUrl =
+                          Uri.parse("${KD.api}/user/insert_user");
                       final userInsertResponse = await http.post(
                         userInsertUrl,
                         headers: {"Content-Type": "application/json"},
@@ -340,7 +383,8 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         }),
                       );
 
-                      final userInsertData = jsonDecode(userInsertResponse.body);
+                      final userInsertData =
+                          jsonDecode(userInsertResponse.body);
 
                       if (userInsertResponse.statusCode == 200 &&
                           userInsertData["status"] == "success") {
@@ -353,35 +397,38 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                             "phoneNumber": phone,
                           }),
                         );
-                        final generateOtpData = jsonDecode(generateOtpResponse.body);
+                        final generateOtpData =
+                            jsonDecode(generateOtpResponse.body);
 
                         if (generateOtpResponse.statusCode == 200 &&
                             generateOtpData["status"] == "success") {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(tr("Sign Up Initiated Successfully")),
+                              content:
+                                  Text(tr("Sign Up Initiated Successfully")),
                             ),
                           );
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => OTPVerificationScreen(phoneNumber: phone),
+                              builder: (_) =>
+                                  OTPVerificationScreen(phoneNumber: phone),
                             ),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                  generateOtpData["message"] ?? tr("Failed to generate OTP")),
+                              content: Text(generateOtpData["message"] ??
+                                  tr("Failed to generate OTP")),
                             ),
                           );
                         }
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                                userInsertData["message"] ?? tr("Registration failed")),
+                            content: Text(userInsertData["message"] ??
+                                tr("Registration failed")),
                           ),
                         );
                       }
