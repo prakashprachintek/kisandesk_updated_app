@@ -205,7 +205,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 16),
-                      Lottie.asset("assets/animations/lock.json",
+                      Lottie.asset(
+                        "assets/animations/lock.json",
                           width: 180, height: 180),
                       const SizedBox(height: 20),
                       Text(

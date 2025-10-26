@@ -9,6 +9,7 @@ import 'package:lottie/lottie.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 import 'package:mainproject1/views/services/api_config.dart';
+import 'package:mainproject1/views/services/image_compression.dart';
 import '../services/user_session.dart';
 
 class AddMarketPostPage extends StatefulWidget {
@@ -91,7 +92,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     ],
     'crop': [
       {'name': 'Pulses', 'image': 'assets/pulses.png'},
-      {'name': 'Oil Seeds', 'image': 'assets/oil_seedsm.png'},
+      {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'},
       {'name': 'Fruits', 'image': 'assets/fruitsm.png'},
       {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'},
       {'name': 'Cereals', 'image': 'assets/cerealsm.png'},
@@ -1229,9 +1230,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
   }
 
+  final ImagePicker picker = ImagePicker();
   Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       builder: (ctx) {
         return SafeArea(
@@ -1279,18 +1280,32 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       );
       return;
     }
+
+    File originalImageFile = File(pickedFile.path);
+    File processedImageFile = originalImageFile;
+
     try {
-      final file = File(pickedFile.path);
-      final bytes = await file.readAsBytes();
+      processedImageFile = await optimizeImage(originalImageFile);
+
+      final bytes = await processedImageFile.readAsBytes();
+      //final file = File(pickedFile.path);
+      //final bytes = await file.readAsBytes();
       String base64Str = base64Encode(bytes);
       setState(() {
         _base64Image = base64Str;
-        _fileName = pickedFile.name;
+        _fileName = processedImageFile.uri.pathSegments.last;
       });
+      if (processedImageFile.path != originalImageFile.path) {
+        try {
+          await processedImageFile.delete();
+        } catch (e) {
+          print('Error: $e');
+        }
+      }
     } catch (e) {
-      print("Error reading file: $e");
+      print("Error processing Image: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to convert image.")),
+        SnackBar(content: Text("Failed to process and convert image.")),
       );
     }
   }
