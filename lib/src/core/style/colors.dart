@@ -6,5 +6,7 @@ class AppColors {
   static const background = Color(0xFFF5F5F5);
   static const textPrimary = Colors.black87;
   static const textSecondary = Colors.black54;
+  static const buttonPrimary = Color(0xFF2E7D32);
+  static const buttonSecondary = Colors.white;
   static const error = Colors.red;
 }
