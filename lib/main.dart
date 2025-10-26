@@ -4,10 +4,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:mainproject1/firebase_options.dart';
 
+
 import 'views/other/welcome.dart';
 import 'views/home/HomePage.dart';
 import 'views/services/user_session.dart';
 import 'views/notification module/push_notification_service.dart';
+import 'views/services/version_control_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +60,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    // Trigger version check after the first frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      VersionControlService.checkAppVersion(context);
+    });
   }
 
   @override
@@ -81,9 +87,9 @@ class _MyAppState extends State<MyApp> {
           .copyWith(secondary: Color(0xFFFFA000)),
       scaffoldBackgroundColor: Colors.white,
       appBarTheme: AppBarTheme(
-        backgroundColor: Color.fromARGB(255, 29, 108, 92),//appbar color
+        backgroundColor: Color.fromARGB(255, 29, 108, 92), // appbar color
         foregroundColor: Colors.white,
-        elevation: 4, 
+        elevation: 4,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

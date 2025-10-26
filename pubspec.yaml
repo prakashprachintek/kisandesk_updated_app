@@ -53,6 +53,7 @@ dependencies:
   hive: ^2.2.3
   path: ^1.8.2
   sms_autofill: ^2.3.0
+  package_info_plus: ^8.3.0
 
 
 
