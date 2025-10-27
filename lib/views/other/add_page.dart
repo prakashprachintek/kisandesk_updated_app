@@ -95,7 +95,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     ],
     'crop': [
       {'name': 'Pulses', 'image': 'assets/pulses.png'},
-      {'name': 'Oil Seeds', 'image': 'assets/oil_seedsm.png'},
+      {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'},
       {'name': 'Fruits', 'image': 'assets/fruitsm.png'},
       {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'},
       {'name': 'Cereals', 'image': 'assets/cerealsm.png'},
@@ -1234,9 +1234,9 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
   }
 
+  final ImagePicker picker = ImagePicker();
   Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       builder: (ctx) {
         return SafeArea(
@@ -1288,7 +1288,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
     try {
       processedImageFile = await optimizeImage(originalImageFile);
+
       final bytes = await processedImageFile.readAsBytes();
+      //final file = File(pickedFile.path);
+      //final bytes = await file.readAsBytes();
       String base64Str = base64Encode(bytes);
       setState(() {
         _base64Image = base64Str;

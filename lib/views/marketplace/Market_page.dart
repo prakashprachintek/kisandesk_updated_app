@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mainproject1/views/services/image_caching.dart';
 import '../services/api_config.dart';
 import 'Postdetailspage.dart'; 
 
@@ -53,9 +54,9 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       'duck': {'name': 'Duck', 'image': 'assets/Duck.png'}, 
     },
     'machinery': {
-      'machines': {'name': 'Machines', 'image':'assets/FarmingMachine.png'},
+      'machines': {'name': 'Farming Machines', 'image':'assets/FarmingMachine.png'},
       'farming_equipment': {'name': 'Farming Equipment', 'image': 'assets/FarmingEqui.png'}, 
-      'transport': {'name': 'Transport', 'image': 'assets/Transportm.png'}, 
+      'transport': {'name': 'Transport Vehicles', 'image': 'assets/Transportm.png'}, 
     },
     'crop': {
       'oil_seed': {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'}, 
@@ -771,13 +772,13 @@ class MarketCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 topRight: Radius.circular(10),
               ),
-              child: Image.network(
-                imagePath,
+              child: CachedImageWidget(
+                imageUrl: imagePath,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Image.asset(
-                  'assets/land1.jpg', 
-                  fit: BoxFit.cover,
-                ),
+                //errorBuilder: (context, error, stackTrace) => Image.asset(
+                  //'assets/land1.jpg', 
+                  //fit: BoxFit.cover,
+                //),
               ),
             ),
           ),
