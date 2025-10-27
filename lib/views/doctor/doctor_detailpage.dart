@@ -16,7 +16,6 @@ class DoctorDetailPage extends StatefulWidget {
 class _DoctorDetailPageState extends State<DoctorDetailPage> {
   int _selectedTabIndex = 0;
 
-  // This function decodes the base64 string and returns a Uint8List.
   Uint8List? _decodeBase64Image(String? base64String) {
     if (base64String == null || base64String.isEmpty) {
       return null;
@@ -35,9 +34,129 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     }
   }
 
+  static Future<void> _launchPhone(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (!await launchUrl(launchUri)) {
+      print('Could not launch $launchUri');
+    }
+  }
+
+
+  Widget _buildTabButton(String text, int index) {
+    final bool isSelected = _selectedTabIndex == index;
+    const primaryColor = Color.fromARGB(255, 29, 108, 92);
+    
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          _selectedTabIndex = index;
+        });
+      },
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? primaryColor : Colors.black54,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonalDetails() {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(), 
+      crossAxisCount: 2,
+      childAspectRatio: 2.0, 
+      crossAxisSpacing: 20,
+      //mainAxisSpacing: 1,  
+      padding: EdgeInsets.zero,
+
+      children: [
+        _detailItem("Phone", widget.doctor.phone, Icons.phone, isPhone: true),
+        _detailItem("Gender", widget.doctor.gender, Icons.person),
+        _detailItem("District", widget.doctor.district, Icons.map),
+        _detailItem("Taluka", widget.doctor.taluka, Icons.location_city),
+        _detailItem("Village", widget.doctor.village, Icons.home),
+        _detailItem("Address", widget.doctor.address, Icons.location_on),
+      ],
+    );
+  }
+
+  Widget _buildProfessionalDetails() {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      childAspectRatio: 2.0,
+      crossAxisSpacing: 20,
+      //mainAxisSpacing: 1,
+      padding: EdgeInsets.zero,
+      children: [
+        _detailItem("Specialization", widget.doctor.designation, Icons.medical_services),
+        _detailItem("Status", widget.doctor.status, Icons.info_outline),
+      ],
+    );
+  }
+
+
+  Widget _detailItem(String label, String value, IconData icon, {bool isPhone = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: Colors.black54, size: 18), 
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        isPhone
+            ? InkWell(
+                onTap: () => _launchPhone(value),
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              )
+            : Text(
+                value,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[800],
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+      ],
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    // Decode the base64 image data once here
     final Uint8List? imageData = _decodeBase64Image(widget.doctor.image);
 
     return Scaffold(
@@ -76,6 +195,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
               ),
             ),
           ),
+
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25 - 80,
             left: 0,
@@ -109,6 +229,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
               ),
             ),
           ),
+
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25 + 80,
             left: 0,
@@ -162,106 +283,5 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
         ],
       ),
     );
-  }
-
-  Widget _buildTabButton(String text, int index) {
-    final bool isSelected = _selectedTabIndex == index;
-    return TextButton(
-      onPressed: () {
-        setState(() {
-          _selectedTabIndex = index;
-        });
-      },
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected
-              ? const Color.fromARGB(255, 29, 108, 92)
-              : Colors.black54,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPersonalDetails() {
-    return Column(
-      children: [
-        _detailRow("Phone", widget.doctor.phone, Icons.phone),
-        _detailRow("Address", widget.doctor.address, Icons.location_on),
-        _detailRow("District", widget.doctor.district, Icons.map),
-        _detailRow("Taluka", widget.doctor.taluka, Icons.location_city),
-        _detailRow("Village", widget.doctor.village, Icons.home),
-        _detailRow("Gender", widget.doctor.gender, Icons.person),
-      ],
-    );
-  }
-
-  Widget _buildProfessionalDetails() {
-    return Column(
-      children: [
-        _detailRow("Specialization", widget.doctor.designation,
-            Icons.medical_services),
-        _detailRow("Status", widget.doctor.status, Icons.info_outline),
-      ],
-    );
-  }
-
-  Widget _detailRow(String label, String value, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: const Color.fromARGB(255, 0, 0, 0), size: 23),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "$label:",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                label == "Phone"
-                    ? InkWell(
-                        onTap: () => _launchPhone(value),
-                        child: Text(
-                          value,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      )
-                    : Text(
-                        value,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Future<void> _launchPhone(String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
-    );
-    if (!await launchUrl(launchUri)) {
-      print('Could not launch $launchUri');
-    }
   }
 }
