@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mainproject1/firebase_options.dart';
+import 'package:mainproject1/src/core/di/dependency_injection.dart';
 
 
 import 'views/other/welcome.dart';
@@ -16,7 +18,7 @@ void main() async {
 
   // Load stored user session before app starts
   await UserSession.loadUserFromPrefs();
-
+  await DependencyInjection.init(); // Initialize DI
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -86,6 +88,9 @@ class _MyAppState extends State<MyApp> {
       colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.teal)
           .copyWith(secondary: Color(0xFFFFA000)),
       scaffoldBackgroundColor: Colors.white,
+      textTheme: GoogleFonts.dmSansTextTheme(
+        Theme.of(context).textTheme,
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: Color.fromARGB(255, 29, 108, 92), // appbar color
         foregroundColor: Colors.white,
