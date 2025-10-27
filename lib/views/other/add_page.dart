@@ -86,7 +86,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   final Map<String, List<Map<String, String>>> _categoryOptions = {
     'cattle': [
       {'name': 'Cow', 'image': 'assets/cow.png'},
-      {'name': 'Ox', 'image': 'assets/oxnew.jpg'},
+      {'name': 'Ox', 'image': 'assets/oxnew.png'},
       {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
       {'name': 'Sheep', 'image': 'assets/Sheep.png'},
       {'name': 'Goat', 'image': 'assets/goat (2).png'},
@@ -102,7 +102,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
     ],
     'land': [
-      {'name': 'Home', 'image': 'assets/house.jpg'},
+      {'name': 'Home', 'image': 'assets/Home.png'},
       {'name': 'Plots', 'image': 'assets/Plots.png'},
       {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
       {'name': 'Irrigation Land', 'image': 'assets/irrigationland.png'}

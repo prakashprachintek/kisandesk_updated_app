@@ -81,8 +81,6 @@ dependencies:
   firebase_messaging: ^16.0.2
   flutter_local_notifications: ^19.4.2
   permission_handler: ^12.0.1
-  flutter_image_compress: ^2.4.0
-  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:
@@ -120,6 +118,7 @@ flutter:
   assets:
     - assets/
     - assets/profile.jpg
+    - assets/doctor_placeholder.png
 
     - assets/car1.webp
     - assets/car4.jpg
@@ -129,7 +128,8 @@ flutter:
     - assets/propn.jpg
     - assets/NewLogo.png
     - assets/Sheep.png
-
+    - assets/oxnew.png
+    - assets/home.png
     - assets/goat (2).png
     - assets/Duck.png
     - assets/cow.png
@@ -165,7 +165,7 @@ flutter:
     
     
     - assets/New_logo.png
-
+    - assets/lang.png
     - assets/language.png
 
     - assets/fertilizers.jpg

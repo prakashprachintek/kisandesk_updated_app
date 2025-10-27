@@ -36,3 +36,6 @@ google-services.json
 .flutter-plugins-dependencies
 # Android Profiling
 *.hprof
+
+#flutter dependency lock file
+pubspec.lock
