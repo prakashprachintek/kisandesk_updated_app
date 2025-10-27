@@ -46,7 +46,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   final Map<String, Map<String, Map<String, String>>> subCategoriesData = {
     'cattle': {
       'cow': {'name': 'Cow', 'image': 'assets/cow.png'}, 
-      'ox': {'name': 'Ox', 'image': 'assets/oxn.png'}, 
+      'ox': {'name': 'Ox', 'image': 'assets/oxnew.png'}, 
       'buffalo': {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
       'sheep': {'name': 'Sheep', 'image': 'assets/Sheep.png'},
       'goat': {'name': 'Goat', 'image': 'assets/goat (2).png'},
@@ -54,7 +54,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       'duck': {'name': 'Duck', 'image': 'assets/Duck.png'}, 
     },
     'machinery': {
-      'machines': {'name': 'Farming Machines', 'image':'assets/FarmingMachine.png'},
+      'farming_machines': {'name': 'Farming Machines', 'image':'assets/FarmingMachine.png'},
       'farming_equipment': {'name': 'Farming Equipment', 'image': 'assets/FarmingEqui.png'}, 
       'transport': {'name': 'Transport Vehicles', 'image': 'assets/Transportm.png'}, 
     },
@@ -67,7 +67,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       'dry_fruits': {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'} 
     },
     'land': {
-      'home': {'name': 'Home', 'image': 'assets/house.jpg'},
+      'home': {'name': 'Home', 'image': 'assets/Home.png'},
       'dry_land': {'name': 'Dry Land', 'image': 'assets/DryLand.png'}, 
       'irrigation_land': {'name': 'Irrigation Land', 'image': 'assets/irrigationland.png'}, 
       'plots': {'name': 'Plots', 'image': 'assets/Plots.png'}, 
