@@ -68,7 +68,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
     try {
       // Get app signature for SMS Retriever API
       _appSignature = await SmsAutoFill().getAppSignature;
-      print("⭐App Signature: $_appSignature (Share this with SMS provider)");
+
+      print("😊App Signature: $_appSignature (Share this with SMS provider)");
 
       // Start listening for incoming SMS
       await SmsAutoFill().listenForCode();
