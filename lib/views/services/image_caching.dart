@@ -21,10 +21,8 @@ class CachedImageWidget extends StatelessWidget {
       imageUrl: imageUrl,
       width: width,
       height: height,
-      //fit: fit,
-      // --- Custom Builders for better User Experience ---
-
-      // 1. Placeholder while the image is loading (e.g., a simple loading indicator)
+      fit: fit,
+ 
       placeholder: (context, url) => Container(
         width: width,
         height: height,
