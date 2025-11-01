@@ -2,36 +2,36 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mainproject1/views/marketplace/mypostdetails.dart';
 import 'package:mainproject1/views/services/image_caching.dart';
 import '../services/api_config.dart';
-import 'Postdetailspage.dart'; 
-
+import 'Postdetailspage.dart';
 
 class MarketPage extends StatefulWidget {
   @override
   _MarketPageState createState() => _MarketPageState();
 }
 
-class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMixin {
+class _MarketPageState extends State<MarketPage>
+    with AutomaticKeepAliveClientMixin {
   List<Map<String, dynamic>> marketItems = [];
   List<Map<String, dynamic>> originalMarketItems = [];
   bool isLoading = true;
   bool isOffline = false;
   String? lastUpdated;
-  String selectedCategory = ''; 
-  String selectedSubCategory = ''; 
+  String selectedCategory = '';
+  String selectedSubCategory = '';
 
   TextEditingController searchController = TextEditingController();
   String selectedFilter = '';
   late Box cacheBox;
 
-  // --- Category Data ---
   final Map<String, String> categoryImages = {
-    '': 'assets/all_market.jpg', 
-    'crop': 'assets/cropn.png', 
-    'cattle': 'assets/cattlen.png', 
+    '': 'assets/all_market.jpg',
+    'crop': 'assets/cropn.png',
+    'cattle': 'assets/cattlen.png',
     'machinery': 'assets/Machinen.png',
-    'land': 'assets/propn.jpg' 
+    'land': 'assets/propn.jpg'
   };
 
   final Map<String, String> categoryNames = {
@@ -45,32 +45,44 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   // CENTRALIZED MAP for all subcategories
   final Map<String, Map<String, Map<String, String>>> subCategoriesData = {
     'cattle': {
-      'cow': {'name': 'Cow', 'image': 'assets/cow.png'}, 
-      'ox': {'name': 'Ox', 'image': 'assets/oxnew.png'}, 
+      'cow': {'name': 'Cow', 'image': 'assets/cow.png'},
+      'ox': {'name': 'Ox', 'image': 'assets/oxnew.png'},
       'buffalo': {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
       'sheep': {'name': 'Sheep', 'image': 'assets/Sheep.png'},
       'goat': {'name': 'Goat', 'image': 'assets/goat (2).png'},
       'hen': {'name': 'Hen', 'image': 'assets/Henm.png'},
-      'duck': {'name': 'Duck', 'image': 'assets/Duck.png'}, 
+      'duck': {'name': 'Duck', 'image': 'assets/Duck.png'},
     },
     'machinery': {
-      'farming_machines': {'name': 'Farming Machines', 'image':'assets/FarmingMachine.png'},
-      'farming_equipment': {'name': 'Farming Equipment', 'image': 'assets/FarmingEqui.png'}, 
-      'transport': {'name': 'Transport Vehicles', 'image': 'assets/Transportm.png'}, 
+      'farming_machines': {
+        'name': 'Farming Machines',
+        'image': 'assets/FarmingMachine.png'
+      },
+      'farming_equipment': {
+        'name': 'Farming Equipment',
+        'image': 'assets/FarmingEqui.png'
+      },
+      'transport': {
+        'name': 'Transport Vehicles',
+        'image': 'assets/Transportm.png'
+      },
     },
     'crop': {
-      'oil_seed': {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'}, 
-      'vegetables': {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'}, 
-      'fruits': {'name': 'Fruits', 'image': 'assets/fruitsm.png'}, 
-      'pulses': {'name': 'Pulses', 'image': 'assets/pulses.png'}, 
+      'oil_seed': {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'},
+      'vegetables': {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'},
+      'fruits': {'name': 'Fruits', 'image': 'assets/fruitsm.png'},
+      'pulses': {'name': 'Pulses', 'image': 'assets/pulses.png'},
       'cerals': {'name': 'Cerals', 'image': 'assets/cerealsm.png'},
-      'dry_fruits': {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'} 
+      'dry_fruits': {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
     },
     'land': {
       'home': {'name': 'Home', 'image': 'assets/Home.png'},
-      'dry_land': {'name': 'Dry Land', 'image': 'assets/DryLand.png'}, 
-      'irrigation_land': {'name': 'Irrigation Land', 'image': 'assets/irrigationland.png'}, 
-      'plots': {'name': 'Plots', 'image': 'assets/Plots.png'}, 
+      'dry_land': {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
+      'irrigation_land': {
+        'name': 'Irrigation Land',
+        'image': 'assets/irrigationland.png'
+      },
+      'plots': {'name': 'Plots', 'image': 'assets/Plots.png'},
     },
   };
 
@@ -90,12 +102,11 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
     _closeHiveBox();
     super.dispose();
   }
-  
+
   String _normalizePostName(String? postName) {
     if (postName == null) return '';
     return postName.toLowerCase().replaceAll(' ', '_');
   }
-
 
   Future<void> _initHiveAndFetch() async {
     await Hive.initFlutter();
@@ -105,7 +116,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   }
 
   Future<void> _closeHiveBox() async {
-    if (cacheBox.isOpen) {
+    if (Hive.isBoxOpen('market_posts_box')) {
       await cacheBox.close();
       print('📕 Cache box closed');
     }
@@ -115,7 +126,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
     if (selectedCategory != category) {
       setState(() {
         selectedCategory = category;
-        selectedSubCategory = ''; 
+        selectedSubCategory = '';
         print('🔄 Switching to category: $selectedCategory');
       });
       _loadFromCacheOrFetch();
@@ -123,15 +134,15 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   }
 
   void _selectSubCategory(String subCategory) {
-
-    final newSubCategory = selectedSubCategory == subCategory ? '' : subCategory;
+    final newSubCategory =
+        selectedSubCategory == subCategory ? '' : subCategory;
 
     if (selectedSubCategory != newSubCategory) {
       setState(() {
         selectedSubCategory = newSubCategory;
         print('🔄 Switching to subcategory: $selectedSubCategory');
       });
-      _performSearchAndFilter(); 
+      _performSearchAndFilter();
     }
   }
 
@@ -140,14 +151,19 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       isLoading = true;
     });
 
-    final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
-    final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+    final cacheKey =
+        'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+    final timestampKey =
+        'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
 
     try {
       final cachedData = cacheBox.get(cacheKey);
       final cachedTimestamp = cacheBox.get(timestampKey);
 
-      if (cachedData != null && cachedTimestamp != null && cachedData is List && cachedTimestamp is String) {
+      if (cachedData != null &&
+          cachedTimestamp != null &&
+          cachedData is List &&
+          cachedTimestamp is String) {
         final lastUpdatedTime = DateTime.tryParse(cachedTimestamp);
         if (lastUpdatedTime != null) {
           final now = DateTime.now();
@@ -155,7 +171,9 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
 
           if (now.difference(lastUpdatedTime) < cacheDuration) {
             print('✅ Cache hit for $cacheKey, timestamp: $cachedTimestamp');
-            final castedData = (cachedData as List).map((item) => (item as Map).cast<String, dynamic>()).toList();
+            final castedData = (cachedData as List)
+                .map((item) => (item as Map).cast<String, dynamic>())
+                .toList();
             if (mounted) {
               setState(() {
                 originalMarketItems = castedData;
@@ -164,10 +182,11 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                 isLoading = false;
                 isOffline = false;
               });
-              _performSearchAndFilter(); 
+              _performSearchAndFilter();
             }
             if (now.difference(lastUpdatedTime) > const Duration(hours: 23)) {
-              print('🔄 Cache near expiration, fetching in background for $selectedCategory');
+              print(
+                  '🔄 Cache near expiration, fetching in background for $selectedCategory');
               _fetchMarketPosts(isBackground: true);
             }
             return;
@@ -190,17 +209,19 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       });
     }
 
-    const String url = '${KD.api}/admin/getAll_market_post'; 
+    const String url = '${KD.api}/admin/getAll_market_post';
     print('🌐 Fetching from API for category: $selectedCategory');
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "category": selectedCategory,
-          "search": "",
-        }),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              "category": selectedCategory,
+              "search": "",
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -208,26 +229,28 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         if (results != null) {
           final fetchedItems = List<Map<String, dynamic>>.from(
               results.map<Map<String, dynamic>>((item) {
-                final farmerDetails =
-                    (item['farmerDetails'] as List?)?.isNotEmpty == true
-                        ? item['farmerDetails'][0]
-                        : null;
-                return {
-                  'name': item['post_name'] ?? 'Unknown market',
-                  'price': item['price'] ?? 0,
-                  'description': item['description'] ?? 'No description available',
-                  'location': item['village'] ?? 'Unknown location',
-                  'fileName': item['post_url'] ?? 'assets/market1.webp',
-                  'quantity': item['quantity'] ?? 'N/A',
-                  'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
-                  'Phone': farmerDetails?['phone'] ?? 'N/A',
-                  'taluka': farmerDetails?['taluka'] ?? 'N/A',
-                  'postType': _normalizePostName(item['post_name']), 
-                };
-              }).toList());
+            final farmerDetails =
+                (item['farmerDetails'] as List?)?.isNotEmpty == true
+                    ? item['farmerDetails'][0]
+                    : null;
+            return {
+              'name': item['post_name'] ?? 'Unknown market',
+              'price': item['price'] ?? 0,
+              'description': item['description'] ?? 'No description available',
+              'location': item['village'] ?? 'Unknown location',
+              'fileName': item['post_url'] ?? 'assets/market1.webp',
+              'quantity': item['quantity'] ?? 'N/A',
+              'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
+              'Phone': farmerDetails?['phone'] ?? 'N/A',
+              'taluka': farmerDetails?['taluka'] ?? 'N/A',
+              'postType': _normalizePostName(item['post_name']),
+            };
+          }).toList());
 
-          final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
-          final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+          final cacheKey =
+              'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+          final timestampKey =
+              'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
           await cacheBox.put(cacheKey, fetchedItems);
           final now = DateTime.now().toString();
           await cacheBox.put(timestampKey, now);
@@ -241,7 +264,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
               isOffline = false;
               lastUpdated = now;
             });
-            _performSearchAndFilter(); 
+            _performSearchAndFilter();
           }
         } else {
           print('⚠️ No results found in API response: ${response.body}');
@@ -267,15 +290,19 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   }
 
   void _loadCachedDataOnFailure() {
-    final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
-    final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+    final cacheKey =
+        'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+    final timestampKey =
+        'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
     try {
       final cachedData = cacheBox.get(cacheKey);
       final cachedTimestamp = cacheBox.get(timestampKey);
       if (cachedData != null && cachedTimestamp != null && cachedData is List) {
         print('✅ Loaded cached data on failure for $cacheKey');
-        final castedData = (cachedData as List).map((item) => (item as Map).cast<String, dynamic>()).toList();
-        if(mounted) {
+        final castedData = (cachedData as List)
+            .map((item) => (item as Map).cast<String, dynamic>())
+            .toList();
+        if (mounted) {
           setState(() {
             originalMarketItems = castedData;
             marketItems = List.from(originalMarketItems);
@@ -286,7 +313,7 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
         }
       } else {
         print('❌ No valid cached data for $cacheKey');
-        if(mounted) {
+        if (mounted) {
           setState(() {
             marketItems = [];
             originalMarketItems = [];
@@ -295,10 +322,10 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
       }
     } catch (e) {
       print('⚠️ Error loading cache on failure for $cacheKey: $e');
-      if(mounted) {
+      if (mounted) {
         setState(() {
-            marketItems = [];
-            originalMarketItems = [];
+          marketItems = [];
+          originalMarketItems = [];
         });
       }
     }
@@ -307,28 +334,29 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   void _performSearchAndFilter() {
     List<Map<String, dynamic>> filteredList = List.from(originalMarketItems);
 
-
     if (selectedCategory.isNotEmpty && selectedSubCategory.isNotEmpty) {
-      
-      final subcategoryKeys = subCategoriesData[selectedCategory]?.keys.toList() ?? [];
+      final subcategoryKeys =
+          subCategoriesData[selectedCategory]?.keys.toList() ?? [];
 
       if (subcategoryKeys.contains(selectedSubCategory)) {
         filteredList = filteredList
-            .where((item) => 
-                item['postType']?.toString().toLowerCase() == selectedSubCategory.toLowerCase())
+            .where((item) =>
+                item['postType']?.toString().toLowerCase() ==
+                selectedSubCategory.toLowerCase())
             .toList();
-        print('⚙️ Sub-filter applied: $selectedSubCategory, ${filteredList.length} items found');
+        print(
+            '⚙️ Sub-filter applied: $selectedSubCategory, ${filteredList.length} items found');
       }
     }
 
     String query = searchController.text.toLowerCase();
     if (query.isNotEmpty) {
       filteredList = filteredList
-          .where((item) => item['name'].toString().toLowerCase().contains(query))
+          .where(
+              (item) => item['name'].toString().toLowerCase().contains(query))
           .toList();
       print('🔍 Search applied: $query, ${filteredList.length} items found');
     }
-
 
     if (selectedFilter == 'Price: Low to High') {
       filteredList.sort((a, b) {
@@ -404,7 +432,8 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
     super.build(context);
 
     final currentSubCategories = subCategoriesData[selectedCategory];
-    final bool showSubCategories = currentSubCategories != null && currentSubCategories.isNotEmpty;
+    final bool showSubCategories =
+        currentSubCategories != null && currentSubCategories.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -439,21 +468,47 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
           ),
         ],
       ),
-      body: Stack( 
+
+      // ---Button for My Posts ---
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MyPostsPage(),
+            ),
+          );
+        },
+        label: const Text(
+          'My Posts',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        icon: const Icon(Icons.person),
+        backgroundColor: const Color.fromARGB(255, 29, 108, 92),
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+      ),
+
+      
+      body: Stack(
         children: [
           Positioned.fill(
-            child: Opacity( 
-              opacity: 0.1, 
+            child: Opacity(
+              opacity: 0.1,
               child: Image.asset(
                 'assets/NewLogo.png',
-                fit: BoxFit.contain, 
+                fit: BoxFit.contain,
               ),
             ),
           ),
           RefreshIndicator(
             onRefresh: () async {
-              final cacheKey = 'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
-              final timestampKey = 'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+              final cacheKey =
+                  'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+              final timestampKey =
+                  'last_updated_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
               await cacheBox.delete(cacheKey);
               await cacheBox.delete(timestampKey);
               print('🗑️ Cache cleared for $cacheKey on refresh');
@@ -461,7 +516,6 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
             },
             child: Column(
               children: [
-
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: SizedBox(
@@ -488,12 +542,11 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                     ),
                   ),
                 ),
-
                 if (showSubCategories)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: SizedBox(
-                      height: 80, 
+                      height: 80,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -501,7 +554,8 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                           ...currentSubCategories!.entries.map((entry) {
                             final subCategoryKey = entry.key;
                             final subCategoryData = entry.value;
-                            final isSelected = selectedSubCategory == subCategoryKey;
+                            final isSelected =
+                                selectedSubCategory == subCategoryKey;
 
                             return Padding(
                               padding: const EdgeInsets.only(right: 12.0),
@@ -517,7 +571,6 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                       ),
                     ),
                   ),
-
                 if (lastUpdated != null)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -531,17 +584,18 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                       ),
                     ),
                   ),
-
-
                 Expanded(
                   child: isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : marketItems.isEmpty
-                          ? Center(child: Text('No market posts found for ${categoryNames[selectedCategory]}${selectedSubCategory.isNotEmpty ? ' (${subCategoriesData[selectedCategory]?[selectedSubCategory]?['name'] ?? selectedSubCategory})' : ''}.'))
+                          ? Center(
+                              child: Text(
+                                  'No market posts found for ${categoryNames[selectedCategory]}${selectedSubCategory.isNotEmpty ? ' (${subCategoriesData[selectedCategory]?[selectedSubCategory]?['name'] ?? selectedSubCategory})' : ''}.'))
                           : Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: GridView.builder(
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
                                   childAspectRatio: 2 / 2.7,
                                   mainAxisSpacing: 8.0,
@@ -559,9 +613,13 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
                                             name: marketItem['name'],
                                             price: '₹${marketItem['price']}',
                                             imagePath: marketItem['fileName'],
-                                            location: marketItem['location'] ?? 'Unknown location',
-                                            description: marketItem['description'] ?? 'No description available',
-                                            FarmerName: marketItem['FarmerName'],
+                                            location: marketItem['location'] ??
+                                                'Unknown location',
+                                            description:
+                                                marketItem['description'] ??
+                                                    'No description available',
+                                            FarmerName:
+                                                marketItem['FarmerName'],
                                             Phone: marketItem['Phone'],
                                             review: 'This is a sample review.',
                                           ),
@@ -588,8 +646,6 @@ class _MarketPageState extends State<MarketPage> with AutomaticKeepAliveClientMi
   }
 }
 
-
-
 class SubCategoryCard extends StatelessWidget {
   final String? imagePath;
   final String categoryName;
@@ -611,8 +667,8 @@ class SubCategoryCard extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 60, 
-            height: 50, 
+            width: 60,
+            height: 50,
             decoration: BoxDecoration(
               color: Colors.grey.shade100,
               borderRadius: BorderRadius.circular(8),
@@ -638,8 +694,9 @@ class SubCategoryCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Center(
                         child: Text(
-                          categoryName[0], 
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          categoryName[0],
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                     )
@@ -647,7 +704,11 @@ class SubCategoryCard extends StatelessWidget {
                       child: Text(
                         categoryName,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 10, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal),
                       ),
                     ),
             ),
@@ -739,12 +800,12 @@ class CategoryImageCard extends StatelessWidget {
     );
   }
 }
-
 class MarketCard extends StatelessWidget {
   final String name;
   final String price;
   final String imagePath;
   final String taluka;
+  final VoidCallback? onDelete;
 
   const MarketCard({
     super.key,
@@ -752,6 +813,7 @@ class MarketCard extends StatelessWidget {
     required this.price,
     required this.imagePath,
     required this.taluka,
+    this.onDelete,
   });
 
   @override
@@ -772,13 +834,9 @@ class MarketCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 topRight: Radius.circular(10),
               ),
-              child: CachedImageWidget(
+              child: CachedImageWidget( 
                 imageUrl: imagePath,
                 fit: BoxFit.cover,
-                //errorBuilder: (context, error, stackTrace) => Image.asset(
-                  //'assets/land1.jpg', 
-                  //fit: BoxFit.cover,
-                //),
               ),
             ),
           ),
@@ -788,14 +846,34 @@ class MarketCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    
+                    if (onDelete != null)
+                      SizedBox(
+                        width: 30, 
+                        height: 30,
+                        child: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red, size: 22),
+                          onPressed: onDelete,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          tooltip: 'Delete Post',
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -807,7 +885,7 @@ class MarketCard extends StatelessWidget {
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),
+                ),        
                 const SizedBox(height: 4),
                 Row(
                   children: [

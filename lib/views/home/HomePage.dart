@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_localization/easy_localization.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/views/home/app_settings.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
@@ -30,6 +32,133 @@ import 'dart:io';
 import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
+
+class _CategoryCard extends StatelessWidget {
+  final String imageUrl;
+  final String label;
+  final VoidCallback onTap;
+
+  const _CategoryCard({
+    Key? key,
+    required this.imageUrl,
+    required this.label,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 280,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(3, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // top image
+            Expanded(
+              flex: 7,
+              child: Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                ),
+              ),
+            ),
+            // label
+            Expanded(
+              flex: 3,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                alignment: Alignment.center,
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A small item model for "Deals"/"Recommended"
+class _SimpleItem {
+  final String title;
+  final String price;
+  final String image;
+
+  _SimpleItem({
+    required this.title,
+    required this.price,
+    required this.image,
+  });
+}
+
+class MarketPost {
+  final String title;
+  final String price;
+  final String imageUrl;
+  final String location;
+  final String description;
+  final String review;
+  final String FarmerName;
+  final String phone;
+
+  MarketPost({
+    required this.title,
+    required this.price,
+    required this.imageUrl,
+    required this.location,
+    required this.description,
+    required this.review,
+    required this.FarmerName,
+    required this.phone,
+  });
+
+  factory MarketPost.fromJson(Map<String, dynamic> json) {
+    var farmer =
+        (json['farmerDetails'] != null && json['farmerDetails'].isNotEmpty)
+            ? json['farmerDetails'][0]
+            : null;
+
+    String imageUrl =
+        json['post_url'] ?? 'assets/market1.webp'; // Use post_url with fallback
+    return MarketPost(
+      title: json['post_name'] ?? 'No Title',
+      price: (json['price'] ?? '0').toString(),
+      imageUrl: imageUrl,
+      location: json['village'] ?? 'Unknown',
+      description: json['description'] ?? 'No description',
+      review: json['review'] ?? 'N/A',
+      FarmerName: farmer != null ? farmer['full_name'] ?? 'N/A' : 'N/A',
+      phone: farmer != null ? farmer['phone'] ?? 'N/A' : 'N/A',
+    );
+  }
+}
 
 /// A placeholder cart page if you don't have one
 Future<List<MarketPost>> fetchMarketPosts() async {
@@ -1408,8 +1537,65 @@ class _HomePageState extends State<HomePage> {
   */
 
   /// Category Tapped
-  void _handleCategoryTap(int index) {
-    if (index == 0) {
+  final Map<int, Map<String, dynamic>> _categoryMap = {
+    0: {'page': LabourBookingPage(), 'key': 'labours'},
+    1: {'page': MachineryRentPage(), 'key': 'machinery'},
+    2: {'page': ComingSoonPage(), 'key': ''},
+    3: {'page': DoctorPage(), 'key': 'doctors'},
+    4: {'page': ComingSoonPage(), 'key': ''},
+    5: {'page': ComingSoonPage(), 'key': ''},
+  };
+  void _showMaintenancePopup(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Service Status 🛠️'),
+            content: const Text(
+              'This module is Under Maintenance. \n We will be back soon!...',
+              textAlign: TextAlign.center,
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _handleCategoryTap(int index) async {
+    final Category = _categoryMap[index];
+
+    if (Category == null) return;
+    final destinationPage = Category['page'] as Widget;
+    final moduleKey = Category['key'] as String;
+
+    if (moduleKey.isEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => destinationPage),
+      );
+      return;
+    }
+    final statusMap = await ModuleService().fetchModuleStatus();
+
+    final isModuleActive = statusMap[moduleKey] ?? false;
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    if (isModuleActive) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => destinationPage),
+      );
+    } else {
+      _showMaintenancePopup(context);
+    }
+  }
+}
+   /* if (index == 0) {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => LabourBookingPage()));
       //userData: widget.userData ?? {}, phoneNumber: "")));
@@ -1429,11 +1615,12 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => ComingSoonPage()));
     }
-  }
-}
+  }*/
+
+ 
 
 /// A simple card for categories
-class _CategoryCard extends StatelessWidget {
+/*class _CategoryCard extends StatelessWidget {
   final String imageUrl;
   final String label;
   final VoidCallback onTap;
@@ -1558,4 +1745,4 @@ class MarketPost {
       phone: farmer != null ? farmer['phone'] ?? 'N/A' : 'N/A',
     );
   }
-}
+}*/
