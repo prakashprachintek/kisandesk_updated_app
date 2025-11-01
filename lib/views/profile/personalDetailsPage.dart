@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:mainproject1/views/profile/uploadImageDialog.dart';
 
 import '../services/user_session.dart';
 import 'profileUpdateDialog.dart';
@@ -84,28 +87,127 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
               children: [
                 // Profile Image (centered)
                 Center(
-                  child: Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          blurRadius: 5,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/farmer.png', // Replace with actual image path
-                        fit: BoxFit.cover,
+                  child: Stack(
+                    children: [
+                      // Profile Image
+                      Container(
                         width: 150,
                         height: 150,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              blurRadius: 5,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Builder(
+                            builder: (context) {
+                              final profilePic =
+                                  UserSession.user?['profile_pic'];
+
+                              if (profilePic != null &&
+                                  profilePic.toString().isNotEmpty) {
+                                try {
+                                  // Check if it's base64 or a normal URL
+                                  if (profilePic.startsWith('http')) {
+                                    // Regular image URL
+                                    return Image.network(
+                                      profilePic,
+                                      fit: BoxFit.cover,
+                                      width: 150,
+                                      height: 150,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Image.asset(
+                                          'assets/farmer.png',
+                                          fit: BoxFit.cover,
+                                          width: 150,
+                                          height: 150,
+                                        );
+                                      },
+                                    );
+                                  } else {
+                                    // Base64 string → decode it
+                                    final decodedBytes =
+                                        base64Decode(profilePic);
+                                    return Image.memory(
+                                      decodedBytes,
+                                      fit: BoxFit.cover,
+                                      width: 150,
+                                      height: 150,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Image.asset(
+                                          'assets/farmer.png',
+                                          fit: BoxFit.cover,
+                                          width: 150,
+                                          height: 150,
+                                        );
+                                      },
+                                    );
+                                  }
+                                } catch (e) {
+                                  // Fallback for decoding error
+                                  return Image.asset(
+                                    'assets/farmer.png',
+                                    fit: BoxFit.cover,
+                                    width: 150,
+                                    height: 150,
+                                  );
+                                }
+                              } else {
+                                // Fallback if no image data at all
+                                return Image.asset(
+                                  'assets/farmer.png',
+                                  fit: BoxFit.cover,
+                                  width: 150,
+                                  height: 150,
+                                );
+                              }
+                            },
+                          ),
+                        ),
                       ),
-                    ),
+
+                      // Pencil Button (bottom-right)
+                      Positioned(
+                        bottom: 8,
+                        right: 8,
+                        child: InkWell(
+                          onTap: () async {
+                            await uploadImageDialog(
+                              context: context,
+                              userId: UserSession.user?["_id"],
+                            );
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(255, 29, 108, 92),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -152,7 +254,8 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                                   context,
                                   UserSession.user?['phone'],
                                   onSuccess: () {
-                                    setState(() {}); // Trigger rebuild to reflect updated UserSession
+                                    setState(
+                                        () {}); // Trigger rebuild to reflect updated UserSession
                                   },
                                 );
                               },
@@ -174,7 +277,8 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                         SizedBox(height: 15),
                         _buildInfoItem("Village", UserSession.user?['village']),
                         SizedBox(height: 15),
-                        _buildInfoItem("District", UserSession.user?['district']),
+                        _buildInfoItem(
+                            "District", UserSession.user?['district']),
                         SizedBox(height: 15),
                         _buildInfoItem("State", UserSession.user?['state']),
                         SizedBox(height: 15),

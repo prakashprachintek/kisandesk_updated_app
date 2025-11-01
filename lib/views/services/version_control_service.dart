@@ -51,10 +51,7 @@ class VersionControlService {
        }
       } else {
         // Handle API failure (optional: show error or proceed silently)
-        print('❕❕❕Failed to fetch version info: ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch version info. Please try again later.')),
-        );
+        print('Failed to fetch version info: ${response.statusCode}');
       }
     } catch (e) {
       // Handle errors (e.g., network issues)

@@ -11,11 +11,36 @@ class UserSession {
 
   /// Persists user data to both memory and disk
   /// Warning: Overwrites existing data completely
+  // static Future<void> setUser(Map<String, dynamic> userData) async {
+  //   currentUser = userData; // Update memory cache
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setString('userData', jsonEncode(userData)); // Atomic write
+  // }
+
   static Future<void> setUser(Map<String, dynamic> userData) async {
-    currentUser = userData; // Update memory cache
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userData', jsonEncode(userData)); // Atomic write
+  final prefs = await SharedPreferences.getInstance();
+
+  // Load existing user (if any)
+  String? existingJson = prefs.getString('userData');
+  Map<String, dynamic> mergedData = {};
+
+  if (existingJson != null) {
+    try {
+      mergedData = jsonDecode(existingJson);
+    } catch (_) {
+      // If existing data is corrupted, ignore it
+      mergedData = {};
+    }
   }
+
+  // Merge old + new data (new values overwrite old ones)
+  mergedData.addAll(userData);
+
+  // Update in-memory + persistent
+  currentUser = mergedData;
+  await prefs.setString('userData', jsonEncode(mergedData));
+}
+
 
   /// Loads user from disk to memory (call at app startup)
   /// Silent failure - returns null if no user exists/corrupted data
