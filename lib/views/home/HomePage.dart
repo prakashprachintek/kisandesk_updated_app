@@ -7,6 +7,8 @@ import 'package:easy_localization/easy_localization.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/src/core/constant/api_constants.dart';
+import 'package:mainproject1/src/shared/presentation/widgets/flutter_inappwebview.dart';
 import 'package:mainproject1/views/home/app_settings.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
@@ -631,6 +633,32 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _openTerms() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AppWebView(
+          url: ApiConstants.termsAndConditionURL,
+          title: "Terms & Condition",
+        ),
+      ),
+    );
+
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AppWebView(
+          url:ApiConstants.privacyPolicyURL,
+          title: "Privacy Policy",
+        ),
+      ),
+    );
+
+  }
+
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
@@ -699,11 +727,7 @@ class _HomePageState extends State<HomePage> {
             title: Text(tr("Privacy Policy")),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const PrivacyPolicyPage()),
-              );
+              _openPrivacyPolicy();
             },
           ),
           ListTile(
@@ -711,11 +735,7 @@ class _HomePageState extends State<HomePage> {
             title: Text(tr("Terms & Conditions")),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const TermsAndConditionsPage()),
-              );
+              _openTerms();
             },
           ),
           ListTile(

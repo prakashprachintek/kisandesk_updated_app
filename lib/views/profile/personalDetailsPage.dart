@@ -62,7 +62,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
         children: [
           // Green Background Gradient
           Container(
-            height: 180,
+            height: 140,
             color: Color.fromARGB(255, 29, 108, 92),
             child: SafeArea(
               child: Padding(
@@ -77,7 +77,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
           // Content Area
           SingleChildScrollView(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).size.width > 360 ? 100 : 80,
+              top: MediaQuery.of(context).size.width > 360 ? 40 : 80,
               left: 20,
               right: 20,
               bottom: 20,
@@ -211,7 +211,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                   ),
                 ),
 
-                SizedBox(height: 30),
+                SizedBox(height: 10),
 
                 // Your Information Section
                 Container(

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:get/get_navigation/src/routes/get_route.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mainproject1/firebase_options.dart';
 import 'package:mainproject1/src/core/di/dependency_injection.dart';
+import 'package:mainproject1/src/core/routes/app_routes.dart';
 
 
 import 'views/other/welcome.dart';
@@ -67,18 +70,23 @@ class _MyAppState extends State<MyApp> {
       VersionControlService.checkAppVersion(context);
     });
   }
-
+  static final navigatorKey = GlobalKey<NavigatorState>();
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Kisan Desk'.tr(),
       debugShowCheckedModeBanner: false,
       theme: _buildThemeData(),
-      navigatorKey: MyApp.navigatorKey, // Needed for navigation from service
+      navigatorKey: navigatorKey, // Optional, GetX manages this internally
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
+
+      // 👇 GetX handles routes and navigation
       home: UserSession.user != null ? HomePage() : KisanDeskScreen(),
+
+      // Optional named route setup if needed
+      getPages:AppRoutes.routes,
     );
   }
 

@@ -1,6 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mainproject1/src/core/constant/api_constants.dart';
+import 'package:mainproject1/src/core/style/colors.dart';
+import 'package:mainproject1/src/features/auth/view/signup_bottom_sheet.dart';
+import 'package:mainproject1/src/shared/presentation/widgets/flutter_inappwebview.dart';
 import '../services/api_config.dart';
 import '../widgets/GradientAuthButton.dart';
 import 'OTPVerificationScreen.dart';
@@ -70,7 +75,19 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
           );
         } else if (data["status"] == "failed") {
           try {
-            await showSignupDialog(context, phone);
+            // await showSignupDialog(context, phone);
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.white,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
+                ),
+              ),
+              builder: (_) => SignupBottomSheet(phone: phone),
+            );
           } catch (e) {
             print("Signup dialog error: $e");
             ScaffoldMessenger.of(context).showSnackBar(
@@ -192,6 +209,39 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                   ),
                   opacity: isLoading || !isPhoneValid ? 0.5 : 1.0,
                 ),
+                SizedBox(height: 5),
+                // Terms and Conditions text
+                Text.rich(
+                  TextSpan(
+                    text: "By continuing, you agree to our ",
+                    style: const TextStyle(fontSize: 13, color: Colors.black54),
+                    children: [
+                      TextSpan(
+                        text: "Terms & Conditions",
+                        style:  TextStyle(
+                          color: AppColors.buttonPrimary,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()..onTap = _openTerms,
+                      ),
+                      const TextSpan(text: " and "),
+                      TextSpan(
+                        text: "Privacy Policy",
+                        style: const TextStyle(
+                          color: AppColors.buttonPrimary,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            _openPrivacyPolicy();
+                          },
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 SizedBox(height: 16),
               ],
             ),
@@ -200,4 +250,33 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
       ),
     );
   }
+
+  final String termsUrl = "https://yourdomain.com/terms";
+
+  Future<void> _openTerms() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AppWebView(
+          url: ApiConstants.termsAndConditionURL,
+          title: "Terms & Condition",
+        ),
+      ),
+    );
+
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AppWebView(
+          url:ApiConstants.privacyPolicyURL,
+          title: "Privacy Policy",
+        ),
+      ),
+    );
+
+  }
+
 }
