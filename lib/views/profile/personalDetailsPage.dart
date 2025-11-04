@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:mainproject1/views/profile/profile_update_page.dart';
 import 'package:mainproject1/views/profile/uploadImageDialog.dart';
 
 import '../services/user_session.dart';
@@ -78,7 +79,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
           SingleChildScrollView(
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).size.width > 360 ? 40 : 80,
-
               left: 20,
               right: 20,
               bottom: 20,
@@ -250,6 +250,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                                 size: 24,
                               ),
                               tooltip: "Edit Profile",
+                              /*
                               onPressed: () async {
                                 await profileUpdateDialog(
                                   context,
@@ -259,6 +260,27 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                                         () {}); // Trigger rebuild to reflect updated UserSession
                                   },
                                 );
+                              },
+                              */
+                              onPressed: () async {
+                                // Push the new full-screen profile-edit page
+                                final result = await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => ProfileUpdatePage(
+                                      phone: UserSession.user?['phone'] ?? '',
+                                      onSuccess: () {
+                                        // This will be called **inside** ProfileUpdatePage when the API succeeds
+                                        // (you can also remove it from the page if you prefer to handle it here)
+                                      },
+                                    ),
+                                  ),
+                                );
+
+                                // `result` will be `true` only when the update succeeded
+                                if (result == true) {
+                                  setState(
+                                      () {}); // Rebuild the current screen with the fresh UserSession data
+                                }
                               },
                             ),
                           ],
