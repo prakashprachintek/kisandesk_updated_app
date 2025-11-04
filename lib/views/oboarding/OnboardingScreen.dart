@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mainproject1/src/features/auth/view/login_screen.dart';
 import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
 
 import '../../main.dart';
@@ -79,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => MobileVerificationScreen()),
+                            MaterialPageRoute(builder: (_) => LoginScreen()),
                           );
                         },
                       )
