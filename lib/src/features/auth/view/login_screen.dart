@@ -11,6 +11,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("🔄 MobileVerificationScreen build triggered");
     return Scaffold(
       appBar: AppBar(
         title: Text("Mobile Verification",
@@ -46,36 +47,48 @@ class LoginScreen extends StatelessWidget {
 
               //  Phone input
               Obx(() => TextField(
-                controller: controller.phoneController,
-                keyboardType: TextInputType.phone,
-                maxLength: 10,
-                decoration: InputDecoration(
-                  labelText: "10-digit number",
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                  prefixIcon:
-                  Icon(Icons.phone, color: Colors.grey[700]),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                    BorderSide(color: Theme.of(context).primaryColor.withAlpha(110), width: 1.0),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor,
-                      width: 2.0,
-                    ),
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  errorText: controller.isPhoneValid.value
-                      ? null
-                      : controller.phoneError,
-                  suffixIcon: controller.isPhoneValid.value
-                      ? const Icon(Icons.check, color: Colors.green)
-                      : null,
-                ),
-              )),
+  controller: controller.phoneController,
+  keyboardType: TextInputType.phone,
+  maxLength: 10,
+  onChanged: (value) {
+    // Remove any non-digit characters
+    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.length == 10 && controller.isPhoneValid.value && !controller.isLoading.value) {
+
+      //Dismiss Keyboard
+      FocusScope.of(context).unfocus();
+
+      // Auto-trigger OTP send
+      Future.microtask(() {
+        controller.verifyPhoneNumber(context);
+      });
+    }
+  },
+  decoration: InputDecoration(
+    labelText: "10-digit number",
+    floatingLabelBehavior: FloatingLabelBehavior.always,
+    prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(
+        color: Theme.of(context).primaryColor.withAlpha(110),
+        width: 1.0,
+      ),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(
+        color: Theme.of(context).primaryColor,
+        width: 2.0,
+      ),
+    ),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+    errorText: controller.isPhoneValid.value ? null : controller.phoneError,
+    suffixIcon: controller.isPhoneValid.value
+        ? const Icon(Icons.check, color: Colors.green)
+        : null,
+  ),
+)),
 
               const SizedBox(height: 24),
 
