@@ -62,9 +62,14 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Trigger version check after the first frame is rendered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      VersionControlService.checkAppVersion(context);
+   // Wait until the Navigator overlay is ready, then check version
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // ---- robust wait for overlay ----
+      while (MyApp.navigatorKey.currentState?.overlay == null) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+      // ---------------------------------
+      VersionControlService.checkAppVersion();
     });
   }
 

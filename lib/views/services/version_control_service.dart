@@ -1,129 +1,167 @@
-import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:http/http.dart' as http;
+// lib/services/version_control_service.dart
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
+
+import '../../main.dart';
 import 'api_config.dart';
 
 class VersionControlService {
-  // API endpoint for version control
-  static const String _versionControlUrl = "${KD.api}/app/get_master_data"; // Replace with your actual API endpoint
+  // -----------------------------------------------------------------
+  // API
+  // -----------------------------------------------------------------
+  static const String _versionControlUrl = "${KD.api}/app/get_master_data";
 
-  // Function to check app version
-  static Future<void> checkAppVersion(BuildContext context) async {
+  // -----------------------------------------------------------------
+  // Public entry point – no BuildContext needed
+  // -----------------------------------------------------------------
+  static Future<void> checkAppVersion() async {
     try {
-      // Get current app version from package_info_plus
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      String currentVersion = packageInfo.version;
-      print('❕❕❕Current app version: $currentVersion');
-      
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = packageInfo.version;
+      debugPrint('Current app version: $currentVersion');
 
-      // Make API call to get version information
       final response = await http.post(
         Uri.parse(_versionControlUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'type': 'versionControl'}),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        // Check if response structure is as expected
-        if (data['status'] == 'success' && data['results'] is List && data['results'].isNotEmpty) {
-          final versionData = data['results'][0]['version'];
-          String latestVersion = versionData['latest_version'] ?? '1.0.0'; // Fallback if null
-          String minSupportedVersion = versionData['min_supported_version'] ?? '1.0.0'; // Fallback if null
-          print('❕❕❕API response - Latest: $latestVersion, Min Supported: $minSupportedVersion'); // Debug log
+      if (response.statusCode != 200) {
+        _showSnackBar('Failed to fetch version info: ${response.statusCode}');
+        return;
+      }
 
-          if (_isVersionLower(currentVersion, minSupportedVersion)) {
-            print('❕❕❕Triggering force update dialog');
-            _showForceUpdateDialog(context, latestVersion);
-          } else if (_isVersionLower(currentVersion, latestVersion)) {
-            print('❕❕❕Triggering optional update dialog');
-            _showOptionalUpdateDialog(context, latestVersion);
-          } else {
-            print('No update required');
-          }
-        } else {
-          print('Invalid API response structure');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to validate app version. Please try again later.')),
-          );
-       }
+      final data = jsonDecode(response.body);
+
+      if (data['status'] != 'success' ||
+          data['results'] is! List ||
+          data['results'].isEmpty) {
+        _showSnackBar('Invalid API response structure');
+        return;
+      }
+
+      final versionData = data['results'][0]['version'];
+
+      // For testing force-update:
+      // final latestVersion = '1.5.0';
+      // final minSupportedVersion = '2.0.0';
+
+      final latestVersion =
+          versionData['latest_version']?.toString() ?? '1.0.0';
+
+      final minSupportedVersion =
+          versionData['min_supported_version']?.toString() ?? '1.0.0';
+
+      debugPrint(
+          'API response - Latest: $latestVersion, Min Supported: $minSupportedVersion');
+
+      if (_isVersionLower(currentVersion, minSupportedVersion)) {
+        debugPrint('Triggering force update dialog');
+        _showForceUpdateDialog(latestVersion);
+      } else if (_isVersionLower(currentVersion, latestVersion)) {
+        debugPrint('Triggering optional update dialog');
+        _showOptionalUpdateDialog(latestVersion);
       } else {
-        // Handle API failure (optional: show error or proceed silently)
-        print('Failed to fetch version info: ${response.statusCode}');
+        debugPrint('No update required');
       }
     } catch (e) {
-      // Handle errors (e.g., network issues)
-      print('Error checking app version: $e');
+      debugPrint('Error checking app version: $e');
+      _showSnackBar('Network error while checking version');
     }
   }
 
-  // Helper function to compare version strings (e.g., "1.0.0" < "1.1.0")
-  static bool _isVersionLower(String currentVersion, String requiredVersion) {
-    List<int> currentParts = currentVersion.split('.').map(int.parse).toList();
-    List<int> requiredParts = requiredVersion.split('.').map(int.parse).toList();
+  // -----------------------------------------------------------------
+  // Helper: version comparison
+  // -----------------------------------------------------------------
+  static bool _isVersionLower(String current, String required) {
+    final cur = current.split('.').map(int.parse).toList();
+    final req = required.split('.').map(int.parse).toList();
 
-    for (int i = 0; i < currentParts.length && i < requiredParts.length; i++) {
-      if (currentParts[i] < requiredParts[i]) {
-        return true;
-      } else if (currentParts[i] > requiredParts[i]) {
-        return false;
-      }
+    for (int i = 0; i < cur.length && i < req.length; i++) {
+      if (cur[i] < req[i]) return true;
+      if (cur[i] > req[i]) return false;
     }
-    return false;
+    return false; // equal or current has extra segments
   }
 
-  // Show non-dismissible dialog for force update
-  static void _showForceUpdateDialog(BuildContext context, String latestVersion) {
+  // -----------------------------------------------------------------
+  // Dialogs – use the global navigator key
+  // -----------------------------------------------------------------
+  static void _showForceUpdateDialog(String latestVersion) {
+    final ctx = MyApp.navigatorKey.currentState?.overlay?.context;
+    if (ctx == null) return;
+
     showDialog(
-      context: context,
-      barrierDismissible: false, // Prevent dismissing the dialog
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Update Required'),
+      context: ctx,
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+        onWillPop: () async => false, // extra safety for Android back button
+        child: AlertDialog(
+          title: const Text('Update Required'),
           content: Text(
               'Your app version is outdated. Please update to version $latestVersion to continue using the app.'),
           actions: [
             TextButton(
-              onPressed: () {
-                // TODO: Implement update logic
-              },
-              child: Text('Update Now'),
+              onPressed: _launchStore,
+              child:  Text('Update Now', style: TextStyle(color: Color.fromARGB(255, 29, 108, 92), fontWeight: FontWeight.bold)),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
-  // Show dismissible dialog for optional update
-  static void _showOptionalUpdateDialog(BuildContext context, String latestVersion) {
+  static void _showOptionalUpdateDialog(String latestVersion) {
+    final ctx = MyApp.navigatorKey.currentState?.overlay?.context;
+    if (ctx == null) return;
+
     showDialog(
-      context: context,
-      barrierDismissible: true, // Allow dismissing the dialog
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('New Version Available'),
-          content: Text(
-              'A new version ($latestVersion) is available. Would you like to update now?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Dismiss dialog
-              },
-              child: Text('Later'),
-            ),
-            TextButton(
-              onPressed: () {
-                // TODO: Implement update logic
-                Navigator.of(context).pop(); // Dismiss dialog after action
-              },
-              child: Text('Update Now'),
-            ),
-          ],
-        );
-      },
+      context: ctx,
+      barrierDismissible: true,
+      builder: (_) => AlertDialog(
+        title: const Text('New Version Available'),
+        content: Text(
+            'A new version ($latestVersion) is available. Would you like to update now?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Later',style: TextStyle(color: Color.fromARGB(255, 29, 108, 92), fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
+            onPressed: () {
+              _launchStore();
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Update Now',style: TextStyle(color: Color.fromARGB(255, 29, 108, 92), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
+  }
+
+  // -----------------------------------------------------------------
+  // Helper: SnackBar (also uses navigatorKey)
+  // -----------------------------------------------------------------
+  static void _showSnackBar(String message) {
+    final ctx = MyApp.navigatorKey.currentState?.overlay?.context;
+    if (ctx == null) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  // -----------------------------------------------------------------
+  // TODO: Open Play Store / App Store
+  // -----------------------------------------------------------------
+  static void _launchStore() {
+    // Example with url_launcher:
+    // final uri = Uri.parse(
+    //   Platform.isAndroid
+    //       ? 'https://play.google.com/store/apps/details?id=com.your.package'
+    //       : 'https://apps.apple.com/app/idYOUR_APP_ID');
+    // launchUrl(uri);
   }
 }
