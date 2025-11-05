@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mainproject1/src/features/auth/view/login_screen.dart';
 import '../widgets/AuthOptionCard.dart';
 import 'MobileVerificationScreen.dart';
 
@@ -51,7 +52,7 @@ class AuthSelectionScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => MobileVerificationScreen(),
+                              builder: (_) => LoginScreen(),
                             ),
                           );
                         },
