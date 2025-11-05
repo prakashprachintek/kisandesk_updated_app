@@ -50,7 +50,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     const primaryColor = Color.fromARGB(255, 29, 108, 92);
     
     return TextButton(
-      // Use minimal horizontal padding to save space
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 8.0), 
       ),
@@ -70,16 +69,14 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     );
   }
 
-  // Stable Column/Row/Expanded layout
+
   Widget _buildPersonalDetails() {
     const verticalGap = SizedBox(height: 18); 
-    // Consistent horizontal padding for all detail items
     const detailItemPadding = EdgeInsets.symmetric(horizontal: 5.0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Row 1: Phone and Gender
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -100,7 +97,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
         
         verticalGap,
 
-        // Row 2: District and Taluka
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -121,7 +117,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
         
         verticalGap,
 
-        // Row 3: Village and Address
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -143,7 +138,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     );
   }
 
-  // Stable Row/Expanded layout
   Widget _buildProfessionalDetails() {
     const detailItemPadding = EdgeInsets.symmetric(horizontal: 5.0);
     return Row(
@@ -220,7 +214,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
   @override
   Widget build(BuildContext context) {
     final Uint8List? imageData = _decodeBase64Image(widget.doctor.image);
-    const mainContentPadding = EdgeInsets.symmetric(horizontal: 24.0); // Define main horizontal padding
+    const mainContentPadding = EdgeInsets.symmetric(horizontal: 24.0); 
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -236,7 +230,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
       ),
       body: Stack(
         children: [
-          // Background Header Gradient
           Positioned(
             top: 0,
             left: 0,
@@ -260,7 +253,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
             ),
           ),
 
-          // Doctor Profile Image
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25 - 80, 
             left: 0,
@@ -294,20 +286,17 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
               ),
             ),
           ),
-
-          // Content Area
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25 + 80,
             left: 0,
             right: 0,
             bottom: 0,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 24.0), // Removed horizontal padding here
+              padding: const EdgeInsets.only(top: 24.0), 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  // Name (Centered)
                   Padding(
                     padding: mainContentPadding,
                     child: Center(
@@ -323,7 +312,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  // Designation/Specialization (Centered)
                   Padding(
                     padding: mainContentPadding,
                     child: Center(
@@ -338,8 +326,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
-                  // Tabs for Details (No horizontal padding on this Row)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -349,8 +335,6 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                   ),
                   const Divider(
                       height: 20, thickness: 1.5, indent: 20, endIndent: 20),
-                  
-                  // Detail Content (Apply main horizontal padding here)
                   Padding(
                     padding: mainContentPadding,
                     child: _selectedTabIndex == 0
