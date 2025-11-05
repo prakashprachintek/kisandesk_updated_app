@@ -87,7 +87,9 @@
   "Cattle_Feed": "Cattle Feed",
 
   "addMarketPost": "Add Market Post",
-  "category": "Category",
+  "categories": "Categories",
+  "Latest_Posts":"Latest Posts",
+  "See_More": "See More",
   "cattleName": "Cattle Name",
   "cropName": "Crop Name",
   "description": "Description",
@@ -112,6 +114,9 @@
   "Mandi Rate": "Mandi Rate",
   "Account Delete": "Account Delete",
   "Logout": "Logout",
+  "Privacy_Policy": "Privacy Policy",
+  "Terms_&_Conditions": "Terms & Conditions",
+  "Version": "Version",
   "Full Name": "Full Name",
   "Phone Number": "Phone Number",
   "Address": "Address",
@@ -278,7 +283,97 @@
   "name": "Name",
   "phone": "Phone Number",
   "submit": "Submit",
-  "Skip": "Skip"
+  "Skip": "Skip",
+  
+
+  "Personal_Details": "Personal Details",
+  "Your_Information": "Your Information",
+  "Name": "Name",
+  "Number": "Number",
+  "DOB": "DOB",
+  "Gender": "Gender",
+  "Taluq": "Taluq",
+  "State":"State",
+
+
+
+  "Book": "Book",
+  "My_Orders":"My Orders",
+  "Recent_Orders": "Recent Orders",
+  "Create_Labour_Request":"Create Labour Request",
+  "Select_Labour_Type": "Select Labour Type",
+  "Male": "Male",
+  "Female":"Female",
+  "Work_Details":"Work Details",
+  "Select_Work_Date":"Select Work Date",
+  "Work_Description":"Work Description",
+  "Submit_Request":"Submit Request",
+  "Please_select_at_least_one_labour_type":"Please select at least one labour type",
+  "Please_select_a_work_date":"Please select a work date",
+  "Please_enter_a_work_description":"Please enter a work description",
+  "Labour_Request_Initiated_Successfully":"Labour Request Initiated Successfully",
+
+
+  "Service_Status_🛠️":"Service Status 🛠️",
+  "This_module_is_Under_Maintenance._\n_We_will_be_back_soon!...":"This module is Under Maintenance. \n We will be back soon!...",
+
+
+  "Veterinary_Doctors":"Veterinary Doctors",
+  "Search_by_name":"Search by name",
+  "Filter_Doctors":"Filter Doctors",
+  "Cancel":"Cancel",
+  "Apply":"Apply",
+  "Professional_Details":"Professional Details",
+  "Specialization":"Specialization",
+  "Status":"Status",
+
+
+  "All":"All",
+  "Crop":"Crop",
+  "Properties":"Properties",
+  "Oil_Seed":"Oil Seed",
+  "Vegetables":"Vegetables",
+  "Fruits":"Fruits",
+  "Pulses":"Pulses",
+  "Cerals":"Cerals",
+  "Dry_Fruits":"Dry Fruits",
+
+  "Ox":"Ox",
+  "Buffalo":"Buffalo",
+  "Sheep":"Sheep",
+  "Goat":"Goat",
+  "Hen":"Hen",
+  "Duck":"Duck",
+  "Farming_Machines":"Farming Machines",
+  "Farming_Equipment":"Farming Equipment",
+  "Transport_Vehicles":"Transport Vehicles",
+  "Dry_Land":"Dry Land",
+  "Irrigation_Land":"Irrigation Land",
+  "Plots":"Plots",
+  "Search_market":"Search market",
+  "Filter":"Filter",
+  "Price:_Low_to_High":"Price: Low to High",
+  "Price:_High_to_Low":"Price: High to Low",
+  "My_Posts":"My Posts",
+
+  "Cattle_Name":"Cattle Name",
+  "Cattle_Description": "Cattle Description",
+  "Number_of_Cattle": "Number of Cattle",
+  "Upload_Image":"Upload Image",
+  "Back":"Back",
+  "Add_Market_Post":"Add Market Post",
+  "Notifications":"Notifications",
+  "No_notifications_available":"No notifications available",
+  "Location_services_are_disabled.":"Location services are disabled.",
+  "Error_fetching_location:_Location_services_are_disabled.]":"Error fetching location: Location services are disabled.]",
+  "Wallet_Balance":"Wallet Balance",
+
+  "Machinery_Rent":"Machinery Rent",
+  "Machine_Booked":"Machine Booked"
+
+  
+
+
   
 
 

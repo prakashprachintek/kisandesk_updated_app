@@ -50,6 +50,10 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     const primaryColor = Color.fromARGB(255, 29, 108, 92);
     
     return TextButton(
+      // Use minimal horizontal padding to save space
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0), 
+      ),
       onPressed: () {
         setState(() {
           _selectedTabIndex = index;
@@ -66,39 +70,97 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
     );
   }
 
+  // Stable Column/Row/Expanded layout
   Widget _buildPersonalDetails() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(), 
-      crossAxisCount: 2,
-      childAspectRatio: 2.0, 
-      crossAxisSpacing: 20,
-      //mainAxisSpacing: 1,  
-      padding: EdgeInsets.zero,
+    const verticalGap = SizedBox(height: 18); 
+    // Consistent horizontal padding for all detail items
+    const detailItemPadding = EdgeInsets.symmetric(horizontal: 5.0);
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _detailItem("Phone", widget.doctor.phone, Icons.phone, isPhone: true),
-        _detailItem("Gender", widget.doctor.gender, Icons.person),
-        _detailItem("District", widget.doctor.district, Icons.map),
-        _detailItem("Taluka", widget.doctor.taluka, Icons.location_city),
-        _detailItem("Village", widget.doctor.village, Icons.home),
-        _detailItem("Address", widget.doctor.address, Icons.location_on),
+        // Row 1: Phone and Gender
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: detailItemPadding,
+                child: _detailItem("Phone", widget.doctor.phone, Icons.phone, isPhone: true),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: detailItemPadding,
+                child: _detailItem("Gender", widget.doctor.gender, Icons.person),
+              ),
+            ),
+          ],
+        ),
+        
+        verticalGap,
+
+        // Row 2: District and Taluka
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: detailItemPadding,
+                child: _detailItem("District", widget.doctor.district, Icons.map),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: detailItemPadding,
+                child: _detailItem("Taluka", widget.doctor.taluka, Icons.location_city),
+              ),
+            ),
+          ],
+        ),
+        
+        verticalGap,
+
+        // Row 3: Village and Address
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: detailItemPadding,
+                child: _detailItem("Village", widget.doctor.village, Icons.home),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: detailItemPadding,
+                child: _detailItem("Address", widget.doctor.address, Icons.location_on),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
+  // Stable Row/Expanded layout
   Widget _buildProfessionalDetails() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      childAspectRatio: 2.0,
-      crossAxisSpacing: 20,
-      //mainAxisSpacing: 1,
-      padding: EdgeInsets.zero,
+    const detailItemPadding = EdgeInsets.symmetric(horizontal: 5.0);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _detailItem("Specialization", widget.doctor.designation, Icons.medical_services),
-        _detailItem("Status", widget.doctor.status, Icons.info_outline),
+        Expanded(
+          child: Padding(
+            padding: detailItemPadding,
+            child: _detailItem("Specialization", widget.doctor.designation, Icons.medical_services),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: detailItemPadding,
+            child: _detailItem("Status", widget.doctor.status, Icons.info_outline),
+          ),
+        ),
       ],
     );
   }
@@ -158,6 +220,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
   @override
   Widget build(BuildContext context) {
     final Uint8List? imageData = _decodeBase64Image(widget.doctor.image);
+    const mainContentPadding = EdgeInsets.symmetric(horizontal: 24.0); // Define main horizontal padding
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -173,6 +236,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
       ),
       body: Stack(
         children: [
+          // Background Header Gradient
           Positioned(
             top: 0,
             left: 0,
@@ -196,8 +260,9 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
             ),
           ),
 
+          // Doctor Profile Image
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.25 - 80,
+            top: MediaQuery.of(context).size.height * 0.25 - 80, 
             left: 0,
             right: 0,
             child: Center(
@@ -222,7 +287,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                           fit: BoxFit.cover,
                         )
                       : Image.asset(
-                          'assets/doctor_default.jpg',
+                          'assets/doctor_default.jpg', 
                           fit: BoxFit.cover,
                         ),
                 ),
@@ -230,40 +295,51 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
             ),
           ),
 
+          // Content Area
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25 + 80,
             left: 0,
             right: 0,
             bottom: 0,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.only(top: 24.0), // Removed horizontal padding here
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  Center(
-                    child: Text(
-                      widget.doctor.fullname,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                          letterSpacing: 0.2),
+                  // Name (Centered)
+                  Padding(
+                    padding: mainContentPadding,
+                    child: Center(
+                      child: Text(
+                        widget.doctor.fullname,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            letterSpacing: 0.2),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Center(
-                    child: Text(
-                      widget.doctor.designation,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                        fontStyle: FontStyle.italic,
+                  // Designation/Specialization (Centered)
+                  Padding(
+                    padding: mainContentPadding,
+                    child: Center(
+                      child: Text(
+                        widget.doctor.designation,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
+                  
+                  // Tabs for Details (No horizontal padding on this Row)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -273,9 +349,14 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                   ),
                   const Divider(
                       height: 20, thickness: 1.5, indent: 20, endIndent: 20),
-                  _selectedTabIndex == 0
-                      ? _buildPersonalDetails()
-                      : _buildProfessionalDetails(),
+                  
+                  // Detail Content (Apply main horizontal padding here)
+                  Padding(
+                    padding: mainContentPadding,
+                    child: _selectedTabIndex == 0
+                        ? _buildPersonalDetails()
+                        : _buildProfessionalDetails(),
+                  ),
                 ],
               ),
             ),
