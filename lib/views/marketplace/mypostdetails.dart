@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -36,7 +37,6 @@ class _MyPostsPageState extends State<MyPostsPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // VITAL: Trigger load when the page becomes visible (e.g., returning from deletion/creation)
     if (!_isDataInitialized && _isHiveInitialized) {
       _loadDataOnPageOpen();
     }
@@ -50,14 +50,13 @@ class _MyPostsPageState extends State<MyPostsPage> {
       if (mounted) {
         setState(() {
           isLoading = false;
-          errorMessage = 'User not logged in. Cannot access posts.';
+          errorMessage = 'User not logged in. Cannot access posts.'.tr();
         });
       }
       return;
     }
 
     if (!Hive.isBoxOpen('my_posts_box')) {
-      // await Hive.initFlutter(); // Uncomment if not called in main()
     }
     cacheBox = await Hive.openBox('my_posts_box');
     _isHiveInitialized = true;
@@ -367,8 +366,6 @@ class _MyPostsPageState extends State<MyPostsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Posts'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
       ),
       // REFRESH INDICATOR ADDED BACK HERE
       body: RefreshIndicator(
