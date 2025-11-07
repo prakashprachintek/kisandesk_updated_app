@@ -47,78 +47,80 @@ class LoginScreen extends StatelessWidget {
 
               //  Phone input
               Obx(() => TextField(
-  controller: controller.phoneController,
-  keyboardType: TextInputType.phone,
-  maxLength: 10,
-  onChanged: (value) {
-    // Remove any non-digit characters
-    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
-    if (digitsOnly.length == 10 && controller.isPhoneValid.value && !controller.isLoading.value) {
+                    controller: controller.phoneController,
+                    keyboardType: TextInputType.phone,
+                    maxLength: 10,
+                    onChanged: (value) {
+                      // Remove any non-digit characters
+                      final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+                      if (digitsOnly.length == 10 &&
+                          controller.isPhoneValid.value &&
+                          !controller.isLoading.value) {
+                        //Dismiss Keyboard
+                        FocusScope.of(context).unfocus();
 
-      //Dismiss Keyboard
-      FocusScope.of(context).unfocus();
-
-      // Auto-trigger OTP send
-      Future.microtask(() {
-        controller.verifyPhoneNumber(context);
-      });
-    }
-  },
-  decoration: InputDecoration(
-    labelText: "10-digit number",
-    floatingLabelBehavior: FloatingLabelBehavior.always,
-    prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(
-        color: Theme.of(context).primaryColor.withAlpha(110),
-        width: 1.0,
-      ),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(
-        color: Theme.of(context).primaryColor,
-        width: 2.0,
-      ),
-    ),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-    errorText: controller.isPhoneValid.value ? null : controller.phoneError,
-    suffixIcon: controller.isPhoneValid.value
-        ? const Icon(Icons.check, color: Colors.green)
-        : null,
-  ),
-)),
+                        // Auto-trigger OTP send
+                        Future.microtask(() {
+                          controller.verifyPhoneNumber(context);
+                        });
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText: "10-digit number",
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor.withAlpha(110),
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: 2.0,
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      errorText: controller.isPhoneValid.value
+                          ? null
+                          : controller.phoneError,
+                      suffixIcon: controller.isPhoneValid.value
+                          ? const Icon(Icons.check, color: Colors.green)
+                          : null,
+                    ),
+                  )),
 
               const SizedBox(height: 24),
 
               //  Button
               Obx(() => GradientAuthButton(
-                text: controller.isLoading.value
-                    ? "Checking..."
-                    : "Send OTP",
-                onTap: controller.isLoading.value ||
-                    !controller.isPhoneValid.value
-                    ? null
-                    : () => controller.verifyPhoneNumber(context),
-                opacity: controller.isLoading.value ||
-                    !controller.isPhoneValid.value
-                    ? 0.5
-                    : 1.0,
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              )),
+                    text:
+                        controller.isLoading.value ? "Checking..." : "Send OTP",
+                    onTap: controller.isLoading.value ||
+                            !controller.isPhoneValid.value
+                        ? null
+                        : () => controller.verifyPhoneNumber(context),
+                    opacity: controller.isLoading.value ||
+                            !controller.isPhoneValid.value
+                        ? 0.5
+                        : 1.0,
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )),
               const SizedBox(height: 5),
 
               //  Terms
               Text.rich(
                 TextSpan(
                   text: "By continuing, you agree to our ",
-                  style:
-                  const TextStyle(fontSize: 13, color: Colors.black54),
+                  style: const TextStyle(fontSize: 13, color: Colors.black54),
                   children: [
                     TextSpan(
                       text: "Terms & Conditions",
