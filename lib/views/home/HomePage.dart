@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -320,6 +321,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         );
+      },
+    );
+  }
+
+  init() async {
+    final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+    await analytics.logEvent(
+      name: 'Dashboard',
+      parameters: {
+        'status': 'opened',
       },
     );
   }
@@ -799,6 +810,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
