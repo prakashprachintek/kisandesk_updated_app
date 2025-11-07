@@ -1,7 +1,7 @@
 class ApiConstants {
   static const String BASE_URL = 'https://jsonplaceholder.typicode.com';
   static const String privacyPolicyURL = "https://app.kisandesk.com/privacy-policy.html";
-  static const String termsAndConditionURL = "https://app.kisandesk.com/privacy-policy.html";
+  static const String termsAndConditionURL = "https://app.kisandesk.com/terms-and-condition.html";
 
   // Users
   static const String GET_USERS = '/users';
