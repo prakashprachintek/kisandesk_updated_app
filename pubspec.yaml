@@ -122,6 +122,7 @@ flutter:
     - assets/
     - assets/profile.jpg
     - assets/doctor_placeholder.png
+    - assets/homen.webp
 
     - assets/car1.webp
     - assets/car4.jpg
@@ -132,7 +133,6 @@ flutter:
     - assets/NewLogo.png
     - assets/Sheep.png
     - assets/oxnew.png
-    - assets/Home.png
     - assets/goat (2).png
     - assets/Duck.png
     - assets/cow.png
