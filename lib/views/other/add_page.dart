@@ -102,7 +102,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
     ],
     'land': [
-      {'name': 'Home', 'image': 'assets/Home.png'},
+      {'name': 'Home', 'image': 'assets/homen.webp'},
       {'name': 'Plots', 'image': 'assets/Plots.png'},
       {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
       {'name': 'Irrigation Land', 'image': 'assets/irrigationland.png'}

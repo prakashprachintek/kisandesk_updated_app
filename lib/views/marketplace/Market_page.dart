@@ -76,7 +76,7 @@ class _MarketPageState extends State<MarketPage>
       'dry_fruits': {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
     },
     'land': {
-      'home': {'name': 'Home', 'image': 'assets/Home.png'},
+      'home': {'name': 'Home', 'image': 'assets/homen.webp'},
       'dry_land': {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
       'irrigation_land': {
         'name': 'Irrigation Land',
