@@ -26,6 +26,7 @@ import '../redundant files/profile_page.dart';
 
 import '../mandi/mandiRates.dart';
 import '../services/api_config.dart';
+import '../services/support_page.dart';
 import '../services/user_session.dart';
 
 import '../other/add_page.dart';
@@ -743,6 +744,18 @@ class _HomePageState extends State<HomePage> {
             title: Text(tr("Version")),
             subtitle: Text(tr("v1.0.0")),
             onTap: () => Navigator.pop(context),
+          ),
+          ListTile(
+            leading: Icon(Icons.support_agent),
+            title: Text(tr("Support")),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SupportPage()),
+              );
+            },
           ),
           Divider(),
           ListTile(
