@@ -203,7 +203,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
 
   @override
   void dispose() {
-    otpController.dispose();
     timer.cancel();
     cancel(); // Cancel SMS listener to prevent memory leaks
     super.dispose();

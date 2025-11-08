@@ -35,6 +35,7 @@ import 'dart:io';
 import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
+import 'package:get/get.dart' hide Trans;
 
 class _CategoryCard extends StatelessWidget {
   final String imageUrl;
@@ -920,6 +921,7 @@ class _HomePageState extends State<HomePage> {
                                         selectedLocale = Locale('en');
                                     }
                                     context.setLocale(selectedLocale);
+                                    Get.updateLocale(selectedLocale);
                                   }
                                 },
                               ),

@@ -20,6 +20,7 @@ class LoginController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    phoneController.clear();
     phoneController.addListener(_validatePhone);
   }
 
