@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mainproject1/views/auth/OTPVerificationScreen.dart';
@@ -26,10 +27,10 @@ class LoginController extends GetxController {
     final phone = phoneController.text.trim();
     final regex = RegExp(r'^[6-9]\d{9}$');
     if (!regex.hasMatch(phone)) {
-      phoneError = "Please enter a valid phone number";
+      phoneError = tr("Please enter a valid phone number");
       isPhoneValid.value = false;
     } else if (RegExp(r'^(\d)\1{9}$').hasMatch(phone)) {
-      phoneError = "Invalid phone number. Try a different number.";
+      phoneError = tr("Invalid phone number. Try a different number.");
       isPhoneValid.value = false;
     } else {
       phoneError = null;
@@ -41,7 +42,7 @@ class LoginController extends GetxController {
     final phone = phoneController.text.trim();
 
     if (!isPhoneValid.value) {
-      Get.snackbar("Error", phoneError ?? "Invalid phone number");
+      Get.snackbar("Error", phoneError ?? tr("Invalid phone number"));
       return;
     }
 
@@ -63,7 +64,7 @@ class LoginController extends GetxController {
         Get.snackbar("Error", data["message"] ?? "Unknown error");
       }
     } catch (e) {
-      Get.snackbar("Error", "Network error. Try again.");
+      Get.snackbar("Error", tr("Network error. Try again."));
     } finally {
       isLoading.value = false;
     }

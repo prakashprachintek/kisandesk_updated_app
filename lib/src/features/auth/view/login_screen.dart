@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,7 +15,7 @@ class LoginScreen extends StatelessWidget {
     print("🔄 MobileVerificationScreen build triggered");
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mobile Verification",
+        title: Text(tr("Mobile Verification"),
             style: TextStyle(color: Colors.grey[700])),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -29,8 +30,8 @@ class LoginScreen extends StatelessWidget {
               Lottie.asset("assets/animations/phone.json",
                   width: 180, height: 180),
               const SizedBox(height: 20),
-              const Text(
-                "Enter Your Phone Number",
+               Text(
+                tr("Enter Your Phone Number"),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 22,
@@ -39,7 +40,7 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                "We'll send an OTP to verify your number (+91)",
+                tr("We'll send an OTP to verify your number (+91)"),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               ),
@@ -66,7 +67,7 @@ class LoginScreen extends StatelessWidget {
                       }
                     },
                     decoration: InputDecoration(
-                      labelText: "10-digit number",
+                      labelText: tr("10-digit number"),
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                       prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
                       enabledBorder: OutlineInputBorder(
@@ -99,7 +100,7 @@ class LoginScreen extends StatelessWidget {
               //  Button
               Obx(() => GradientAuthButton(
                     text:
-                        controller.isLoading.value ? "Checking..." : "Send OTP",
+                        controller.isLoading.value ? tr("Checking...") : tr("Send OTP"),
                     onTap: controller.isLoading.value ||
                             !controller.isPhoneValid.value
                         ? null
