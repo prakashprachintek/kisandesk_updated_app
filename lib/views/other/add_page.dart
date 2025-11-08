@@ -53,8 +53,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   String? _selectedVillage;
   String? _pincode;
   bool _isSubmitting = false;
-  bool _hasSubmitted = false; // Track submission attempt
-  final _formKey = GlobalKey<FormState>();
+  bool _hasSubmitted = false;
+
+  // Separate form keys for each step
+  final _formKeyStep1 = GlobalKey<FormState>();
+  final _formKeyStep2 = GlobalKey<FormState>();
 
   final Map<String, Map<String, String>> _categoryFieldLabels = {
     'cattle': {
@@ -102,7 +105,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
     ],
     'land': [
-      {'name': 'Home', 'image': 'assets/Home.png'},
+      {'name': 'Home', 'image': 'assets/homen.webp'},
       {'name': 'Plots', 'image': 'assets/Plots.png'},
       {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
       {'name': 'Irrigation Land', 'image': 'assets/irrigationland.png'}
@@ -207,9 +210,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       _districts = List<String>.from(_locationData['districts'][state] ?? []);
       _talukas = [];
       _villages = [];
-      if (_hasSubmitted) {
-        _formKey.currentState!.validate();
-      }
+      if (_hasSubmitted) _validateCurrentStep();
     });
   }
 
@@ -219,9 +220,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       _selectedVillage = null;
       _talukas = List<String>.from(_locationData['talukas'][district] ?? []);
       _villages = [];
-      if (_hasSubmitted) {
-        _formKey.currentState!.validate();
-      }
+      if (_hasSubmitted) _validateCurrentStep();
     });
   }
 
@@ -229,9 +228,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     setState(() {
       _selectedVillage = null;
       _villages = List<String>.from(_locationData['villages'][taluka] ?? []);
-      if (_hasSubmitted) {
-        _formKey.currentState!.validate();
-      }
+      if (_hasSubmitted) _validateCurrentStep();
     });
   }
 
@@ -245,7 +242,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       }
       _updateFieldLabels(_selectedCategory);
     } else if (_currentStep == 1) {
-      if (!_formKey.currentState!.validate()) {
+      if (!_formKeyStep1.currentState!.validate()) {
         setState(() => _hasSubmitted = true);
         return;
       }
@@ -269,20 +266,22 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
   }
 
+  void _validateCurrentStep() {
+    if (_currentStep == 1) {
+      _formKeyStep1.currentState?.validate();
+    } else if (_currentStep == 2) {
+      _formKeyStep2.currentState?.validate();
+    }
+  }
+
   bool isFormValid() {
     return _selectedCategory != null &&
-        _cropName != null &&
-        _cropName!.isNotEmpty &&
-        _description != null &&
-        _description!.isNotEmpty &&
-        _phoneNumber != null &&
-        _phoneNumber!.length == 10 &&
-        _price != null &&
-        _price!.isNotEmpty &&
-        (_quantity != null || _selectedCategory == 'machinery') &&
-        _quantity!.isNotEmpty &&
-        _base64Image != null &&
-        _base64Image!.isNotEmpty &&
+        _cropName != null && _cropName!.isNotEmpty &&
+        _description != null && _description!.isNotEmpty &&
+        _phoneNumber != null && _phoneNumber!.length == 10 &&
+        _price != null && _price!.isNotEmpty &&
+        _quantity != null && _quantity!.isNotEmpty &&  // Required for ALL
+        _base64Image != null && _base64Image!.isNotEmpty &&
         (_useCurrentLocation
             ? (_latitude != null && _longitude != null)
             : (_selectedState != null &&
@@ -324,8 +323,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                       _description = null;
                       _price = null;
                       _quantity = null;
+                      if (_currentStep < 2) _currentStep++;  // Safe auto-advance
                     });
-                    _handleNext();
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -364,16 +363,19 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   }
 
   Widget _buildStep1() {
-    final List<Map<String, String>> currentOptions = _categoryOptions[_selectedCategory!] ?? [];
+    final currentOptions = _categoryOptions[_selectedCategory] ?? [];
 
     return SingleChildScrollView(
       child: Form(
-        key: _formKey,
+        key: _formKeyStep1,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DropdownSearch<String>(
-              items: currentOptions.map((e) => e['name']!).toList(),
+              items: currentOptions
+                  .where((e) => e['name'] != null)
+                  .map((e) => e['name']!)
+                  .toList(),
               dropdownDecoratorProps: DropDownDecoratorProps(
                 dropdownSearchDecoration: InputDecoration(
                   labelText: tr(_currentFieldLabels['cropName'] ?? "Title"),
@@ -401,9 +403,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               onChanged: (val) {
                 setState(() {
                   _cropName = val;
-                  if (_hasSubmitted) {
-                    _formKey.currentState!.validate();
-                  }
+                  if (_hasSubmitted) _validateCurrentStep();
                 });
               },
               selectedItem: _cropName,
@@ -411,10 +411,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               popupProps: PopupProps.menu(
                 showSearchBox: false,
                 constraints: const BoxConstraints(maxHeight: 400),
-                menuProps: MenuProps(
-                  borderRadius: BorderRadius.circular(8),
-                  elevation: 4,
-                ),
                 itemBuilder: (context, item, isSelected) {
                   final option = currentOptions.firstWhere(
                     (e) => e['name'] == item,
@@ -426,18 +422,20 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                     child: Row(
                       children: [
                         Image.asset(
-                          option['image']!,
+                          option['image'] ?? 'assets/default.png',
                           width: 90,
                           height: 90,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(Icons.image_not_supported, size: 30),
+                          errorBuilder: (c, e, s) => Icon(Icons.image_not_supported, size: 30),
                         ),
                         SizedBox(width: 10),
-                        Text(
-                          item,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        Expanded(
+                          child: Text(
+                            item,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
                           ),
                         ),
                       ],
@@ -472,9 +470,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               ),
               onChanged: (val) {
                 _description = val;
-                if (_hasSubmitted) {
-                  _formKey.currentState!.validate();
-                }
+                if (_hasSubmitted) _validateCurrentStep();
                 setState(() {});
               },
               initialValue: _description,
@@ -511,9 +507,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               ],
               onChanged: (val) {
                 _phoneNumber = val;
-                if (_hasSubmitted) {
-                  _formKey.currentState!.validate();
-                }
+                if (_hasSubmitted) _validateCurrentStep();
                 setState(() {});
               },
               initialValue: _phoneNumber,
@@ -554,64 +548,19 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               keyboardType: TextInputType.number,
               onChanged: (val) {
                 _price = val;
-                if (_hasSubmitted) {
-                  _formKey.currentState!.validate();
-                }
+                if (_hasSubmitted) _validateCurrentStep();
                 setState(() {});
               },
               initialValue: _price,
               validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a price') : null,
             ),
             SizedBox(height: 16),
-            if (_selectedCategory != 'machinery') ...[
-              if (_quantityOptions.containsKey(_selectedCategory))
-                DropdownSearch<String>(
-                  items: _quantityOptions[_selectedCategory] ?? [],
-                  dropdownDecoratorProps: DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      labelText: tr(_currentFieldLabels['quantity'] ?? "Quantity"),
-                      labelStyle: TextStyle(color: Colors.grey[600]),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade400),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                  ),
-                  onChanged: (val) {
-                    setState(() {
-                      _quantity = val;
-                      if (_hasSubmitted) {
-                        _formKey.currentState!.validate();
-                      }
-                    });
-                  },
-                  selectedItem: _quantity,
-                  validator: (value) => value == null ? tr('Please select a quantity') : null,
-                  popupProps: PopupProps.menu(
-                    showSearchBox: false,
-                    menuProps: MenuProps(
-                      borderRadius: BorderRadius.circular(8),
-                      elevation: 4,
-                    ),
-                  ),
-                )
-              else
-                TextFormField(
-                  decoration: InputDecoration(
+            // QUANTITY: Always shown
+            if (_quantityOptions.containsKey(_selectedCategory))
+              DropdownSearch<String>(
+                items: _quantityOptions[_selectedCategory] ?? [],
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
                     labelText: tr(_currentFieldLabels['quantity'] ?? "Quantity"),
                     labelStyle: TextStyle(color: Colors.grey[600]),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -633,19 +582,57 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                     ),
                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) {
-                    _quantity = val;
-                    if (_hasSubmitted) {
-                      _formKey.currentState!.validate();
-                    }
-                    setState(() {});
-                  },
-                  initialValue: _quantity,
-                  validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a quantity') : null,
                 ),
-              SizedBox(height: 16),
-            ],
+                onChanged: (val) {
+                  setState(() {
+                    _quantity = val;
+                    if (_hasSubmitted) _validateCurrentStep();
+                  });
+                },
+                selectedItem: _quantity,
+                validator: (value) => value == null ? tr('Please select a quantity') : null,
+                popupProps: PopupProps.menu(
+                  showSearchBox: false,
+                  menuProps: MenuProps(
+                    borderRadius: BorderRadius.circular(8),
+                    elevation: 4,
+                  ),
+                ),
+              )
+            else
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: tr(_currentFieldLabels['quantity'] ?? "Quantity"),
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFF00AD83), width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (val) {
+                  _quantity = val;
+                  if (_hasSubmitted) _validateCurrentStep();
+                  setState(() {});
+                },
+                initialValue: _quantity,
+                validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a quantity') : null,
+              ),
+            SizedBox(height: 16),
             GestureDetector(
               onTap: _base64Image == null ? _pickImage : null,
               child: Container(
@@ -680,9 +667,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                           setState(() {
                             _base64Image = null;
                             _fileName = null;
-                            if (_hasSubmitted) {
-                              _formKey.currentState!.validate();
-                            }
+                            if (_hasSubmitted) _validateCurrentStep();
                           });
                         },
                       ),
@@ -722,7 +707,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   Widget _buildStep2() {
     return SingleChildScrollView(
       child: Form(
-        key: _formKey,
+        key: _formKeyStep2,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -768,9 +753,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   setState(() {
                     _selectedState = val;
                     if (val != null) updateDistricts(val);
-                    if (_hasSubmitted) {
-                      _formKey.currentState!.validate();
-                    }
+                    if (_hasSubmitted) _validateCurrentStep();
                   });
                 },
                 selectedItem: _selectedState,
@@ -814,9 +797,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   setState(() {
                     _selectedDistrict = val;
                     if (val != null) updateTalukas(val);
-                    if (_hasSubmitted) {
-                      _formKey.currentState!.validate();
-                    }
+                    if (_hasSubmitted) _validateCurrentStep();
                   });
                 },
                 selectedItem: _selectedDistrict,
@@ -861,9 +842,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   setState(() {
                     _selectedTaluka = val;
                     if (val != null) updateVillages(val);
-                    if (_hasSubmitted) {
-                      _formKey.currentState!.validate();
-                    }
+                    if (_hasSubmitted) _validateCurrentStep();
                   });
                 },
                 selectedItem: _selectedTaluka,
@@ -908,9 +887,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 onChanged: (val) {
                   setState(() {
                     _selectedVillage = val;
-                    if (_hasSubmitted) {
-                      _formKey.currentState!.validate();
-                    }
+                    if (_hasSubmitted) _validateCurrentStep();
                   });
                 },
                 selectedItem: _selectedVillage,
@@ -956,9 +933,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 ],
                 onChanged: (val) {
                   _pincode = val;
-                  if (_hasSubmitted) {
-                    _formKey.currentState!.validate();
-                  }
+                  if (_hasSubmitted) _validateCurrentStep();
                   setState(() {});
                 },
                 initialValue: _pincode,
@@ -1015,9 +990,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               } else {
                 _useCurrentLocation = true;
               }
-              if (_hasSubmitted) {
-                _formKey.currentState!.validate();
-              }
+              if (_hasSubmitted) _validateCurrentStep();
             });
             if (_useCurrentLocation) {
               await _fetchCurrentLocation();
@@ -1078,15 +1051,12 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   Future<void> _submitMarketPost() async {
     setState(() => _hasSubmitted = true);
 
-    if (!_formKey.currentState!.validate()) {
+    if (!_formKeyStep2.currentState!.validate()) {
       setState(() => _isSubmitting = false);
       return;
     }
 
-    if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Please select a category"))),
-      );
+    if (_selectedCategory == null || !isFormValid()) {
       setState(() => _isSubmitting = false);
       return;
     }
@@ -1102,7 +1072,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     setState(() => _isSubmitting = true);
 
     try {
-      // Step 1: Upload the image with retry
       bool imageUploaded = false;
       for (int attempt = 1; attempt <= 3; attempt++) {
         var imageRequest = http.MultipartRequest(
@@ -1144,7 +1113,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
       if (!imageUploaded) return;
 
-      // Step 2: Immediately call the insert market post API
       Map<String, dynamic> postData = {
         "farmer_id": UserSession.userId,
         "phoneNumber": _phoneNumber ?? '',
@@ -1166,7 +1134,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         postData["longitude"] = _longitude;
       }
 
-      // Retry for market post API
       bool postCreated = false;
       for (int attempt = 1; attempt <= 3; attempt++) {
         final postResponse = await http.post(
@@ -1218,7 +1185,6 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
       if (!postCreated) {
         setState(() => _isSubmitting = false);
-        return;
       }
     } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1290,15 +1256,11 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       processedImageFile = await optimizeImage(originalImageFile);
 
       final bytes = await processedImageFile.readAsBytes();
-      //final file = File(pickedFile.path);
-      //final bytes = await file.readAsBytes();
       String base64Str = base64Encode(bytes);
       setState(() {
         _base64Image = base64Str;
         _fileName = processedImageFile.uri.pathSegments.last;
-        if (_hasSubmitted) {
-          _formKey.currentState!.validate();
-        }
+        if (_hasSubmitted) _validateCurrentStep();
       });
       if (processedImageFile.path != originalImageFile.path) {
         try {

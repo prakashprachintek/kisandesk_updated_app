@@ -82,6 +82,7 @@ dependencies:
   firebase_messaging: ^16.0.2
   flutter_local_notifications: ^19.4.2
   permission_handler: ^12.0.1
+  webview_flutter: ^4.13.0
   get: ^4.7.2
 
 dev_dependencies:
@@ -121,6 +122,7 @@ flutter:
     - assets/
     - assets/profile.jpg
     - assets/doctor_placeholder.png
+    - assets/homen.webp
 
     - assets/car1.webp
     - assets/car4.jpg
@@ -131,7 +133,6 @@ flutter:
     - assets/NewLogo.png
     - assets/Sheep.png
     - assets/oxnew.png
-    - assets/home.png
     - assets/goat (2).png
     - assets/Duck.png
     - assets/cow.png
@@ -195,13 +196,17 @@ flutter:
     - assets/animations/lock.json
     - assets/animations/location.json
     - assets/animations/coming_soon.json
+    - assets/animations/contact_us.json
  
     - assets/farmer.png 
+
     # machinery
     - assets/machinery/machine_type/harvester.jpg
     - assets/machinery/machine_type/JCB.jpeg
     - assets/machinery/machine_type/rotavator.jpg
     - assets/machinery/machine_type/tractor.jpg
+
+    - assets/privacy_policy.txt
 
 
 

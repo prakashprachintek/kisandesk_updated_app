@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
+import 'package:mainproject1/src/features/auth/view/login_screen.dart';
 import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
 import 'dart:convert';
 import '../services/user_session.dart';
@@ -68,7 +69,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
     try {
       // Get app signature for SMS Retriever API
       _appSignature = await SmsAutoFill().getAppSignature;
-      print("App Signature: $_appSignature (Share this with SMS provider)");
+
+      print("😊App Signature: $_appSignature (Share this with SMS provider)");
 
       // Start listening for incoming SMS
       await SmsAutoFill().listenForCode();
@@ -201,7 +203,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
 
   @override
   void dispose() {
-    otpController.dispose();
     timer.cancel();
     cancel(); // Cancel SMS listener to prevent memory leaks
     super.dispose();
@@ -326,7 +327,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        MobileVerificationScreen(),
+                                        LoginScreen(),
                                   ),
                                 );
                               },

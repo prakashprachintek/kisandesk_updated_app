@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter, rootBundle;
-import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
 import 'package:mainproject1/views/services/user_session.dart';
 import '../services/api_config.dart';
 

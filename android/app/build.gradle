@@ -4,52 +4,31 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// ✅ Load local properties (like Flutter version info)
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
+    localProperties.load(new FileInputStream(localPropertiesFile))
 }
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
-
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
-
-//Skipping keystore loading for local debug build
-
+// ✅ Load keystore properties correctly
 def keystoreProperties = new Properties()
-def keystorePropertiesFile = rootProject.file("mykey.properties")
-
+def keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 } else {
-    println("key.properties file not found!")
+    println("⚠️ key.properties file not found!")
 }
 
+// ✅ Flutter version info
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '1'
+def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0'
 
 android {
     namespace "com.example.mainproject1"
     compileSdk 36
     ndkVersion flutter.ndkVersion
 
-    //was having some errors so commenting and adding new
-    /*
-    signingConfigs { 
-        release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
-        }
-    }
-    */
     signingConfigs {
         release {
             if (keystoreProperties['keyAlias'] &&
@@ -62,16 +41,14 @@ android {
                 storeFile file(keystoreProperties['storeFile'])
                 storePassword keystoreProperties['storePassword']
             } else {
-                println("Keystore config is incomplete or missing.")
+                println("⚠️ Keystore config is incomplete or missing.")
             }
         }
     }
 
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-
         coreLibraryDesugaringEnabled true
     }
 
@@ -84,34 +61,29 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.prachintek.kisandesk"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
     buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
-
 //        release {
 //            signingConfig signingConfigs.release
 //            minifyEnabled false
 //            shrinkResources false
 //        }
+        debug {
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+        }
     }
-
 
     packagingOptions {
-        // This flag reverts to the legacy packaging behavior which extracts native libraries.
         jniLibs.useLegacyPackaging = true
     }
-
 }
 
 flutter {
@@ -119,7 +91,5 @@ flutter {
 }
 
 dependencies {
-//    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"
 }
-//apply plugin: 'com.google.gms.google-services'

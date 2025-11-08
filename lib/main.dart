@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:get/get_navigation/src/routes/get_route.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mainproject1/firebase_options.dart';
 import 'package:mainproject1/src/core/di/dependency_injection.dart';
+import 'package:mainproject1/src/core/routes/app_routes.dart';
 
 
 import 'views/other/welcome.dart';
@@ -62,14 +65,35 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Trigger version check after the first frame is rendered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      VersionControlService.checkAppVersion(context);
+   // Wait until the Navigator overlay is ready, then check version
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // ---- robust wait for overlay ----
+      while (MyApp.navigatorKey.currentState?.overlay == null) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+      // ---------------------------------
+      VersionControlService.checkAppVersion();
     });
   }
-
+  static final navigatorKey = GlobalKey<NavigatorState>();
   @override
   Widget build(BuildContext context) {
+    return GetMaterialApp(
+      title: 'Kisan Desk'.tr(),
+      debugShowCheckedModeBanner: false,
+      theme: _buildThemeData(),
+      navigatorKey: MyApp.navigatorKey, // Optional, GetX manages this internally
+      // locale: context.locale,
+      supportedLocales: context.supportedLocales,
+      localizationsDelegates: context.localizationDelegates,
+      locale: EasyLocalization.of(context)!.locale,
+      // 👇 GetX handles routes and navigation
+      home: UserSession.user != null ? HomePage() : KisanDeskScreen(),
+
+      // Optional named route setup if needed
+      getPages:AppRoutes.routes,
+    );
+
     return MaterialApp(
       title: 'Kisan Desk'.tr(),
       debugShowCheckedModeBanner: false,
@@ -92,14 +116,14 @@ class _MyAppState extends State<MyApp> {
         Theme.of(context).textTheme,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: Color.fromARGB(255, 29, 108, 92), // appbar color
+        backgroundColor: Color.fromARGB(255, 29, 108, 92),//appbar color
         foregroundColor: Colors.white,
         elevation: 4,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: Color(0xFF1B5E20),
+          backgroundColor: Color.fromARGB(255, 29, 108, 92),
           minimumSize: Size.fromHeight(48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),

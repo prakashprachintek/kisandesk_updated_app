@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_localization/easy_localization.dart';
 // Location packages
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
+import 'package:mainproject1/src/core/constant/api_constants.dart';
+import 'package:mainproject1/src/shared/presentation/widgets/flutter_inappwebview.dart';
+import 'package:mainproject1/views/home/app_settings.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
@@ -22,6 +26,7 @@ import '../redundant files/profile_page.dart';
 
 import '../mandi/mandiRates.dart';
 import '../services/api_config.dart';
+import '../services/support_page.dart';
 import '../services/user_session.dart';
 
 import '../other/add_page.dart';
@@ -30,6 +35,134 @@ import 'dart:io';
 import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
+import 'package:get/get.dart' hide Trans;
+
+class _CategoryCard extends StatelessWidget {
+  final String imageUrl;
+  final String label;
+  final VoidCallback onTap;
+
+  const _CategoryCard({
+    Key? key,
+    required this.imageUrl,
+    required this.label,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 280,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(3, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // top image
+            Expanded(
+              flex: 7,
+              child: Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                ),
+              ),
+            ),
+            // label
+            Expanded(
+              flex: 3,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                alignment: Alignment.center,
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A small item model for "Deals"/"Recommended"
+class _SimpleItem {
+  final String title;
+  final String price;
+  final String image;
+
+  _SimpleItem({
+    required this.title,
+    required this.price,
+    required this.image,
+  });
+}
+
+class MarketPost {
+  final String title;
+  final String price;
+  final String imageUrl;
+  final String location;
+  final String description;
+  final String review;
+  final String FarmerName;
+  final String phone;
+
+  MarketPost({
+    required this.title,
+    required this.price,
+    required this.imageUrl,
+    required this.location,
+    required this.description,
+    required this.review,
+    required this.FarmerName,
+    required this.phone,
+  });
+
+  factory MarketPost.fromJson(Map<String, dynamic> json) {
+    var farmer =
+        (json['farmerDetails'] != null && json['farmerDetails'].isNotEmpty)
+            ? json['farmerDetails'][0]
+            : null;
+
+    String imageUrl =
+        json['post_url'] ?? 'assets/market1.webp'; // Use post_url with fallback
+    return MarketPost(
+      title: json['post_name'] ?? 'No Title',
+      price: (json['price'] ?? '0').toString(),
+      imageUrl: imageUrl,
+      location: json['village'] ?? 'Unknown',
+      description: json['description'] ?? 'No description',
+      review: json['review'] ?? 'N/A',
+      FarmerName: farmer != null ? farmer['full_name'] ?? 'N/A' : 'N/A',
+      phone: farmer != null ? farmer['phone'] ?? 'N/A' : 'N/A',
+    );
+  }
+}
 
 /// A placeholder cart page if you don't have one
 Future<List<MarketPost>> fetchMarketPosts() async {
@@ -502,6 +635,32 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _openTerms() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AppWebView(
+          url: ApiConstants.termsAndConditionURL,
+          title: "Terms & Condition",
+        ),
+      ),
+    );
+
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AppWebView(
+          url:ApiConstants.privacyPolicyURL,
+          title: "Privacy Policy",
+        ),
+      ),
+    );
+
+  }
+
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
@@ -570,11 +729,7 @@ class _HomePageState extends State<HomePage> {
             title: Text(tr("Privacy Policy")),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const PrivacyPolicyPage()),
-              );
+              _openPrivacyPolicy();
             },
           ),
           ListTile(
@@ -582,11 +737,7 @@ class _HomePageState extends State<HomePage> {
             title: Text(tr("Terms & Conditions")),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const TermsAndConditionsPage()),
-              );
+              _openTerms();
             },
           ),
           ListTile(
@@ -594,6 +745,18 @@ class _HomePageState extends State<HomePage> {
             title: Text(tr("Version")),
             subtitle: Text(tr("v1.0.0")),
             onTap: () => Navigator.pop(context),
+          ),
+          ListTile(
+            leading: Icon(Icons.support_agent),
+            title: Text(tr("Support")),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SupportPage()),
+              );
+            },
           ),
           Divider(),
           ListTile(
@@ -758,6 +921,7 @@ class _HomePageState extends State<HomePage> {
                                         selectedLocale = Locale('en');
                                     }
                                     context.setLocale(selectedLocale);
+                                    Get.updateLocale(selectedLocale);
                                   }
                                 },
                               ),
@@ -1332,84 +1496,67 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// -----------------------------------------
-  /// "Recommended" row
-  /*
-  Widget _buildRecommendedRow() {
-    final List<_SimpleItem> recommendedItems = [
-      _SimpleItem(
-          title: tr("Pesticides"),
-          price: "\$15",
-          image: "assets/pesticide.webp"),
-      _SimpleItem(
-          title: tr("Seeds"), price: "\$20", image: "assets/addatiimage3.jpg"),
-      _SimpleItem(
-          title: tr("Harvest Tools"),
-          price: "\$35",
-          image: "assets/machines.webp"),
-      _SimpleItem(
-          title: tr("Cattle Feed"), price: "\$10", image: "assets/cattle.jpg"),
-    ];
-    return Container(
-      height: 150,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: recommendedItems.length,
-        itemBuilder: (context, index) {
-          final item = recommendedItems[index];
-          return GestureDetector(
-            onTap: () {
-              // Open item details or something
-            },
-            child: Container(
-              width: 130,
-              margin: EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 5,
-                    offset: Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.asset(
-                      item.image,
-                      height: 80,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    item.title,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    item.price,
-                    style: TextStyle(color: Colors.green[700], fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-  */
 
   /// Category Tapped
-  void _handleCategoryTap(int index) {
-    if (index == 0) {
+  final Map<int, Map<String, dynamic>> _categoryMap = {
+    0: {'page': LabourBookingPage(), 'key': 'labours'},
+    1: {'page': MachineryRentPage(), 'key': 'machinery'},
+    2: {'page': ComingSoonPage(), 'key': ''},
+    3: {'page': DoctorPage(), 'key': 'doctors'},
+    4: {'page': ComingSoonPage(), 'key': ''},
+    5: {'page': ComingSoonPage(), 'key': ''},
+  };
+  void _showMaintenancePopup(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Service Status 🛠️'),
+            content: const Text(
+              'This module is Under Maintenance. \n We will be back soon!...',
+              textAlign: TextAlign.center,
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _handleCategoryTap(int index) async {
+    final Category = _categoryMap[index];
+
+    if (Category == null) return;
+    final destinationPage = Category['page'] as Widget;
+    final moduleKey = Category['key'] as String;
+
+    if (moduleKey.isEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => destinationPage),
+      );
+      return;
+    }
+    final statusMap = await ModuleService().fetchModuleStatus();
+
+    final isModuleActive = statusMap[moduleKey] ?? false;
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    if (isModuleActive) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => destinationPage),
+      );
+    } else {
+      _showMaintenancePopup(context);
+    }
+  }
+}
+   /* if (index == 0) {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => LabourBookingPage()));
       //userData: widget.userData ?? {}, phoneNumber: "")));
@@ -1429,11 +1576,12 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => ComingSoonPage()));
     }
-  }
-}
+  }*/
+
+ 
 
 /// A simple card for categories
-class _CategoryCard extends StatelessWidget {
+/*class _CategoryCard extends StatelessWidget {
   final String imageUrl;
   final String label;
   final VoidCallback onTap;
@@ -1558,4 +1706,4 @@ class MarketPost {
       phone: farmer != null ? farmer['phone'] ?? 'N/A' : 'N/A',
     );
   }
-}
+}*/

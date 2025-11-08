@@ -56,6 +56,7 @@ class CustomDropdown<T> extends FormField<T> {
             initialSelection: state.value,
             leadingIcon: prefixIcon,
             hintText: hint,
+
             dropdownMenuEntries: items
                 .map((e) => DropdownMenuEntry<T>(
               value: e,
