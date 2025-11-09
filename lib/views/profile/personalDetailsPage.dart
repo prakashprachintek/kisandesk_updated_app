@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/profile/profile_update_page.dart';
 import 'package:mainproject1/views/profile/uploadImageDialog.dart';
+import 'package:mainproject1/views/services/image_caching.dart';
 
 import '../services/api_config.dart';
 import '../services/user_session.dart';
@@ -96,6 +97,10 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
     }
 
     if (_profilePicUrl != null) {
+      return CachedImageWidget(
+        imageUrl: _profilePicUrl!, fit: BoxFit.cover,
+        width: 150,
+        height: 150,);
       return Image.network(
         _profilePicUrl!,
         fit: BoxFit.cover,

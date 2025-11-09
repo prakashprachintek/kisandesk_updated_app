@@ -286,6 +286,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
                               errorMessage = null;
                             }
                           });
+                          if(isOtpValid){
+                            verifyOTP();
+                          }
                         },
                         pinTheme: PinTheme(
                           shape: PinCodeFieldShape.box,

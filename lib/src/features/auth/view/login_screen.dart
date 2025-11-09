@@ -7,12 +7,22 @@ import 'package:mainproject1/views/widgets/GradientAuthButton.dart';
 import '../../../core/style/colors.dart';
 import '../view_model/login_controller.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final controller = Get.find<LoginController>();
 
   @override
+  void initState() {
+    // TODO: implement initState
+    controller.onInit();
+    super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
-    print("🔄 MobileVerificationScreen build triggered");
     return Scaffold(
       appBar: AppBar(
         title: Text(tr("Mobile Verification"),
