@@ -14,6 +14,7 @@ import 'package:mainproject1/views/home/app_settings.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
+import 'package:mainproject1/views/services/image_caching.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
@@ -27,6 +28,7 @@ import '../redundant files/profile_page.dart';
 
 import '../mandi/mandiRates.dart';
 import '../services/api_config.dart';
+import '../services/support_page.dart';
 import '../services/user_session.dart';
 
 import '../other/add_page.dart';
@@ -35,6 +37,7 @@ import 'dart:io';
 import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
+import 'package:get/get.dart' hide Trans;
 
 class _CategoryCard extends StatelessWidget {
   final String imageUrl;
@@ -755,6 +758,18 @@ class _HomePageState extends State<HomePage> {
             subtitle: Text(tr("v1.0.0")),
             onTap: () => Navigator.pop(context),
           ),
+          ListTile(
+            leading: Icon(Icons.support_agent),
+            title: Text(tr("Support")),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SupportPage()),
+              );
+            },
+          ),
           Divider(),
           ListTile(
             leading: Icon(Icons.logout),
@@ -919,6 +934,7 @@ class _HomePageState extends State<HomePage> {
                                         selectedLocale = Locale('en');
                                     }
                                     context.setLocale(selectedLocale);
+                                    Get.updateLocale(selectedLocale);
                                   }
                                 },
                               ),
@@ -1052,20 +1068,26 @@ class _HomePageState extends State<HomePage> {
                                     elevation: 2,
                                     margin: EdgeInsets.symmetric(vertical: 8),
                                     child: ListTile(
-                                      leading: Image.network(
-                                        post.imageUrl,
-                                        width: 60,
-                                        height: 60,
+                                      leading: CachedImageWidget(
+                                        imageUrl: post.imageUrl,
                                         fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Image.asset(
-                                          'assets/land1.jpg',
                                           width: 60,
                                           height: 60,
-                                          fit: BoxFit.cover,
-                                        ),
                                       ),
+                                      // Image.network(
+                                      //   post.imageUrl,
+                                      //   width: 60,
+                                      //   height: 60,
+                                      //   fit: BoxFit.cover,
+                                      //   errorBuilder:
+                                      //       (context, error, stackTrace) =>
+                                      //           Image.asset(
+                                      //     'assets/land1.jpg',
+                                      //     width: 60,
+                                      //     height: 60,
+                                      //     fit: BoxFit.cover,
+                                      //   ),
+                                      // ),
                                       title: Text(post.title),
                                       subtitle: Text(
                                           '₹${post.price} • ${post.location}'),
@@ -1493,80 +1515,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// -----------------------------------------
-  /// "Recommended" row
-  /*
-  Widget _buildRecommendedRow() {
-    final List<_SimpleItem> recommendedItems = [
-      _SimpleItem(
-          title: tr("Pesticides"),
-          price: "\$15",
-          image: "assets/pesticide.webp"),
-      _SimpleItem(
-          title: tr("Seeds"), price: "\$20", image: "assets/addatiimage3.jpg"),
-      _SimpleItem(
-          title: tr("Harvest Tools"),
-          price: "\$35",
-          image: "assets/machines.webp"),
-      _SimpleItem(
-          title: tr("Cattle Feed"), price: "\$10", image: "assets/cattle.jpg"),
-    ];
-    return Container(
-      height: 150,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: recommendedItems.length,
-        itemBuilder: (context, index) {
-          final item = recommendedItems[index];
-          return GestureDetector(
-            onTap: () {
-              // Open item details or something
-            },
-            child: Container(
-              width: 130,
-              margin: EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 5,
-                    offset: Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.asset(
-                      item.image,
-                      height: 80,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    item.title,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    item.price,
-                    style: TextStyle(color: Colors.green[700], fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-  */
 
   /// Category Tapped
   final Map<int, Map<String, dynamic>> _categoryMap = {

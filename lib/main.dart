@@ -93,16 +93,27 @@ class _MyAppState extends State<MyApp> {
       title: 'Kisan Desk'.tr(),
       debugShowCheckedModeBanner: false,
       theme: _buildThemeData(),
-      navigatorKey: navigatorKey, // Optional, GetX manages this internally
-      locale: context.locale,
+      navigatorKey: MyApp.navigatorKey, // Optional, GetX manages this internally
+      // locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
-
+      locale: EasyLocalization.of(context)!.locale,
       // 👇 GetX handles routes and navigation
       home: UserSession.user != null ? HomePage() : KisanDeskScreen(),
 
       // Optional named route setup if needed
       getPages:AppRoutes.routes,
+    );
+
+    return MaterialApp(
+      title: 'Kisan Desk'.tr(),
+      debugShowCheckedModeBanner: false,
+      theme: _buildThemeData(),
+      navigatorKey: MyApp.navigatorKey, // Needed for navigation from service
+      locale: context.locale,
+      supportedLocales: context.supportedLocales,
+      localizationsDelegates: context.localizationDelegates,
+      home: UserSession.user != null ? HomePage() : KisanDeskScreen(),
     );
   }
 
@@ -116,7 +127,7 @@ class _MyAppState extends State<MyApp> {
         Theme.of(context).textTheme,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: Color.fromARGB(255, 29, 108, 92), // appbar color
+        backgroundColor: Color.fromARGB(255, 29, 108, 92),//appbar color
         foregroundColor: Colors.white,
         elevation: 4,
       ),

@@ -198,8 +198,10 @@ flutter:
     - assets/animations/lock.json
     - assets/animations/location.json
     - assets/animations/coming_soon.json
+    - assets/animations/contact_us.json
  
     - assets/farmer.png 
+
     # machinery
     - assets/machinery/machine_type/harvester.jpg
     - assets/machinery/machine_type/JCB.jpeg
