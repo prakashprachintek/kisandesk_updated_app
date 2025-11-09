@@ -112,7 +112,7 @@ class _PostdetailspageState extends State<Postdetailspage> {
             Align(
               alignment: Alignment.center,
               child: Text(
-                'Price: ${widget.price}',
+                'Price: ₹${widget.price}',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,

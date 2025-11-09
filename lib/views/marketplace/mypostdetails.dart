@@ -441,7 +441,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                       MaterialPageRoute(
                         builder: (context) => Postdetailspage(
                           name: post['name'],
-                          price: '₹${post['price']}',
+                          price: '${post['price']}',
                           imagePath: post['fileName'],
                           location: post['location'],
                           description: post['description'],
