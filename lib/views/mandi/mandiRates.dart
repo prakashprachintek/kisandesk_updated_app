@@ -17,7 +17,8 @@ class _MandiRatesPageState extends State<MandiRatesPage>
   List<dynamic> mandiData = [];
   List<dynamic> filteredData = [];
   List<dynamic> displayedData = [];
-  bool isLoading = true;
+  bool isLoadingList = true;     // Only for list
+  bool isFetching = false;       // Background API
   bool isLoadingMore = false;
   bool isOffline = false;
   final int batchSize = 20;
@@ -52,10 +53,10 @@ class _MandiRatesPageState extends State<MandiRatesPage>
   }
 
   Future<void> _initHive() async {
-    // Initialize Hive only once with hive_flutter
     await Hive.initFlutter();
     cacheBox = await Hive.openBox('mandi_rates_box');
-    await _loadFromCacheOrFetch();
+    await _loadFromCache(); // Load cache first
+    _fetchMandiRatesInBackground(); // Then fetch fresh
   }
 
   @override
@@ -63,6 +64,7 @@ class _MandiRatesPageState extends State<MandiRatesPage>
     searchController.dispose();
     _scrollController.dispose();
     cacheBox.close();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -72,296 +74,189 @@ class _MandiRatesPageState extends State<MandiRatesPage>
     _debounce = Timer(const Duration(milliseconds: 300), filterData);
   }
 
-  Future<void> _loadFromCacheOrFetch() async {
-    setState(() {
-      isLoading = true;
-    });
+  // Helper: Safely add 'All' only once
+  List<String> _withAll(List<String> items) {
+    final set = items.toSet()..remove('All');
+    return ['All', ...set.toList()..sort()];
+  }
 
-    // Try to load from cache
+  // Load from cache immediately
+  Future<void> _loadFromCache() async {
     try {
       final cachedData = cacheBox.get('data');
       final cachedCommodities = cacheBox.get('commodities');
       final cachedMarkets = cacheBox.get('markets');
       final cachedTimestamp = cacheBox.get('last_updated');
 
-      if (cachedData != null &&
-          cachedCommodities != null &&
-          cachedMarkets != null &&
-          cachedTimestamp != null &&
-          cachedData is List &&
-          cachedCommodities is List &&
-          cachedMarkets is List &&
-          cachedTimestamp is String) {
-        final lastUpdatedTime = DateTime.tryParse(cachedTimestamp);
-        if (lastUpdatedTime != null) {
-          final now = DateTime.now();
-          const cacheDuration = Duration(hours: 24);
-
-          if (now.difference(lastUpdatedTime) < cacheDuration) {
-            setState(() {
-              mandiData = cachedData;
-              commodityOptions = cachedCommodities.cast<String>();
-              marketOptions = cachedMarkets.cast<String>();
-              lastUpdated = cachedTimestamp;
-              isLoading = false;
-            });
-            filterData();
-            // Fetch fresh data in the background
-            _fetchMandiRates();
-            return;
-          }
-        }
-      }
-    } catch (e) {
-      print("Error reading cache: $e");
-      // Clear corrupted cache to prevent repeated issues
-      await cacheBox.clear();
-    }
-
-    // No valid cache, fetch from API
-    await _fetchMandiRates();
-  }
-
-  Future<void> _fetchMandiRates() async {
-    try {
-      final response =
-          await http.post(Uri.parse(apiUrl)).timeout(Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          mandiData = data['results'];
-
-          Set<String> uniqueCommodities = {};
-          for (var record in mandiData) {
-            if (record['Commodity'] != null) {
-              uniqueCommodities.add(record['Commodity'].toString());
-            }
-          }
-          commodityOptions = ['All'] + uniqueCommodities.toList()
-            ..sort();
-
-          Set<String> uniqueMarkets = {};
-          for (var record in mandiData) {
-            if (record['Market'] != null) {
-              uniqueMarkets.add(record['Market'].toString());
-            }
-          }
-          marketOptions = ['All'] + uniqueMarkets.toList()
-            ..sort();
-
-          isLoading = false;
-          isOffline = false;
-          lastUpdated = DateTime.now().toString();
-        });
-
-        // Cache the data
-        await cacheBox.put('data', mandiData);
-        await cacheBox.put('commodities', commodityOptions);
-        await cacheBox.put('markets', marketOptions);
-        await cacheBox.put('last_updated', lastUpdated);
-
-        filterData();
-      } else {
-        print("Failed to fetch mandi rates: ${response.statusCode}");
-        setState(() {
-          isLoading = false;
-          isOffline = true;
-        });
-        _loadCachedDataOnFailure();
-      }
-    } catch (e) {
-      print("Error fetching mandi rates: $e");
-      setState(() {
-        isLoading = false;
-        isOffline = true;
-      });
-      _loadCachedDataOnFailure();
-    }
-  }
-
-  void _loadCachedDataOnFailure() {
-    try {
-      final cachedData = cacheBox.get('data');
-      final cachedCommodities = cacheBox.get('commodities');
-      final cachedMarkets = cacheBox.get('markets');
-      final cachedTimestamp = cacheBox.get('last_updated');
-
-      if (cachedData != null &&
-          cachedCommodities != null &&
-          cachedMarkets != null &&
-          cachedTimestamp != null &&
-          cachedData is List &&
-          cachedCommodities is List &&
-          cachedMarkets is List &&
-          cachedTimestamp is String) {
+      if (cachedData is List && cachedData.isNotEmpty) {
         setState(() {
           mandiData = cachedData;
-          commodityOptions = cachedCommodities.cast<String>();
-          marketOptions = cachedMarkets.cast<String>();
+          commodityOptions = _withAll(cachedCommodities?.cast<String>() ?? []);
+          marketOptions = _withAll(cachedMarkets?.cast<String>() ?? []);
           lastUpdated = cachedTimestamp;
-          filterData();
+          isLoadingList = false;
+          isOffline = false;
+        });
+        filterData();
+      } else {
+        setState(() {
+          isLoadingList = true;
         });
       }
     } catch (e) {
-      print("Error reading cache on failure: $e");
+      print("Cache error: $e");
       setState(() {
-        mandiData = [];
-        filteredData = [];
-        displayedData = [];
-        commodityOptions = ['All'];
-        marketOptions = ['All'];
-        lastUpdated = null;
+        isLoadingList = true;
       });
+    }
+  }
+
+  // Background fetch
+  void _fetchMandiRatesInBackground() async {
+    if (isFetching) return;
+    setState(() => isFetching = true);
+
+    for (int i = 0; i <= 2; i++) {
+      try {
+        final response = await http
+            .post(Uri.parse(apiUrl))
+            .timeout(const Duration(seconds: 10));
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final results = data['results'] as List;
+
+          if (results.isEmpty) break;
+
+          final Set<String> comms = {};
+          final Set<String> markets = {};
+          for (var r in results) {
+            if (r['Commodity'] != null) comms.add(r['Commodity'].toString());
+            if (r['Market'] != null) markets.add(r['Market'].toString());
+          }
+
+          setState(() {
+            mandiData = results;
+            commodityOptions = _withAll(comms.toList());
+            marketOptions = _withAll(markets.toList());
+            lastUpdated = DateTime.now().toString();
+            isLoadingList = false;
+            isOffline = false;
+            isFetching = false;
+          });
+
+          // Save cache
+          await cacheBox.put('data', results);
+          await cacheBox.put('commodities', commodityOptions.sublist(1));
+          await cacheBox.put('markets', marketOptions.sublist(1));
+          await cacheBox.put('last_updated', lastUpdated);
+
+          filterData();
+          return;
+        }
+      } catch (e) {
+        if (i == 2) {
+          setState(() {
+            isOffline = true;
+            isFetching = false;
+            if (mandiData.isEmpty) isLoadingList = false;
+          });
+        }
+        await Future.delayed(Duration(seconds: 1 << i));
+      }
     }
   }
 
   void filterData() {
-    final String query = searchController.text.toLowerCase();
+    final query = searchController.text.toLowerCase().trim();
+    final commLower = selectedCommodity.toLowerCase();
+    final marketLower = selectedMarket.toLowerCase();
+
+    final filtered = mandiData.where((r) {
+      final c = (r['Commodity'] ?? '').toString().toLowerCase();
+      final m = (r['Market'] ?? '').toString().toLowerCase();
+      final d = (r['District'] ?? '').toString().toLowerCase();
+
+      final matchComm = selectedCommodity == 'All' || c == commLower;
+      final matchMarket = selectedMarket == 'All' || m == marketLower;
+      final matchSearch = query.isEmpty || c.contains(query) || m.contains(query) || d.contains(query);
+
+      return matchComm && matchMarket && matchSearch;
+    }).toList();
+
     setState(() {
-      filteredData = mandiData.where((record) {
-        final commodity = (record['Commodity'] ?? "").toLowerCase();
-        final market = (record['Market'] ?? "").toLowerCase();
-        final district = (record['District'] ?? "").toLowerCase();
-
-        bool matchesCommodityFilter = selectedCommodity == 'All' ||
-            commodity == selectedCommodity.toLowerCase();
-        bool matchesMarketFilter =
-            selectedMarket == 'All' || market == selectedMarket.toLowerCase();
-        bool matchesSearchQuery = query.isEmpty ||
-            commodity.contains(query) ||
-            market.contains(query) ||
-            district.contains(query);
-
-        return matchesCommodityFilter &&
-            matchesMarketFilter &&
-            matchesSearchQuery;
-      }).toList();
-
+      filteredData = filtered;
       currentIndex = 0;
-      displayedData = filteredData.take(batchSize).toList();
+      displayedData = filtered.take(batchSize).toList();
       currentIndex = displayedData.length;
     });
   }
 
   void loadMoreData() {
+    setState(() => isLoadingMore = true);
+    final next = filteredData.skip(currentIndex).take(batchSize).toList();
     setState(() {
-      isLoadingMore = true;
-    });
-    setState(() {
-      final nextBatch =
-          filteredData.skip(currentIndex).take(batchSize).toList();
-      displayedData.addAll(nextBatch);
-      currentIndex += nextBatch.length;
+      displayedData.addAll(next);
+      currentIndex += next.length;
       isLoadingMore = false;
     });
   }
 
   Future<void> _onRefresh() async {
-    await _fetchMandiRates();
+    await _loadFromCache();
+    _fetchMandiRatesInBackground();
   }
 
   void _showFilterBottomSheet() {
+    String tempCommodity = selectedCommodity;
+    String tempMarket = selectedMarket;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
       ),
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter modalSetState) {
-            return Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "Filter Options".tr(),
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00AD83),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: 'Select Commodity'.tr(),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    value: selectedCommodity,
-                    dropdownColor: const Color.fromARGB(255, 234, 238, 234),
-                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                    items: commodityOptions
-                        .map((commodity) => DropdownMenuItem(
-                              value: commodity,
-                              child: Flexible(
-                                  child: Text(commodity,
-                                      overflow: TextOverflow.ellipsis)),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      modalSetState(() {
-                        selectedCommodity = value!;
-                      });
-                      filterData();
-                    },
-                  ),
-                  SizedBox(height: 15),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: 'Select Market'.tr(),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    value: selectedMarket,
-                    dropdownColor: const Color.fromARGB(255, 234, 238, 234),
-                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                    items: marketOptions
-                        .map((market) => DropdownMenuItem(
-                              value: market,
-                              child: Flexible(
-                                  child: Text(market,
-                                      overflow: TextOverflow.ellipsis)),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      modalSetState(() {
-                        selectedMarket = value!;
-                      });
-                      filterData();
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF00AD83),
-                      foregroundColor: Colors.white,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text("Apply Filters".tr()),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+      builder: (_) => StatefulBuilder(
+        builder: (context, modalSetState) {
+          return Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("Filter Options".tr(), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF00AD83))),
+                const SizedBox(height: 20),
+                DropdownButtonFormField<String>(
+                  value: tempCommodity,
+                  decoration: InputDecoration(labelText: 'Select Commodity'.tr(), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+                  items: commodityOptions.map((c) => DropdownMenuItem(value: c, child: Text(c, overflow: TextOverflow.ellipsis))).toList(),
+                  onChanged: (v) => modalSetState(() => tempCommodity = v!),
+                ),
+                const SizedBox(height: 15),
+                DropdownButtonFormField<String>(
+                  value: tempMarket,
+                  decoration: InputDecoration(labelText: 'Select Market'.tr(), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+                  items: marketOptions.map((m) => DropdownMenuItem(value: m, child: Text(m, overflow: TextOverflow.ellipsis))).toList(),
+                  onChanged: (v) => modalSetState(() => tempMarket = v!),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedCommodity = tempCommodity;
+                      selectedMarket = tempMarket;
+                    });
+                    filterData();
+                    Navigator.pop(context);
+                  },
+                  child: Text("Apply Filters".tr()),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00AD83), foregroundColor: Colors.white),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -370,21 +265,17 @@ class _MandiRatesPageState extends State<MandiRatesPage>
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Mandi Rates".tr(),
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: Text("Mandi Rates".tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
-        color: Color(0xFF00AD83),
+        color: const Color(0xFF00AD83),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // --- Search Bar and Filter Button ---
               Row(
                 children: [
                   Expanded(
@@ -392,171 +283,80 @@ class _MandiRatesPageState extends State<MandiRatesPage>
                       controller: searchController,
                       decoration: InputDecoration(
                         hintText: "Search market, commodity, or district".tr(),
-                        prefixIcon:
-                            Icon(Icons.search, color: Color(0xFF00AD83)),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Color(0xFF00AD83)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              BorderSide(color: Color(0xFF00AD83), width: 2),
-                        ),
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFF00AD83)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF00AD83))),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF00AD83), width: 2)),
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Container(
-                    decoration: BoxDecoration(
-                      color: Color(0xFF00AD83),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    decoration: BoxDecoration(color: const Color(0xFF00AD83), borderRadius: BorderRadius.circular(8)),
                     child: IconButton(
-                      icon: Icon(Icons.filter_list, color: Colors.white),
+                      icon: const Icon(Icons.filter_list, color: Colors.white),
                       onPressed: _showFilterBottomSheet,
                       tooltip: "Open Filters",
-                      padding: EdgeInsets.all(12),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              // --- Last Updated Info ---
+              const SizedBox(height: 10),
               if (lastUpdated != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
-                    isOffline
-                        ? "Showing cached data (Last updated: $lastUpdated)."
-                            .tr()
-                        : "Last updated: $lastUpdated".tr(),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isOffline ? Colors.red : Colors.grey[600],
-                    ),
+                    isOffline ? "Showing cached data (Last updated: $lastUpdated).".tr() : "Last updated: $lastUpdated".tr(),
+                    style: TextStyle(fontSize: 14, color: isOffline ? Colors.red : Colors.grey[600]),
                   ),
                 ),
-              SizedBox(height: 10),
-              // --- Mandi Rates List ---
-              isLoading
-                  ? Center(
-                      child:
-                          CircularProgressIndicator(color: Color(0xFF00AD83)))
+              const SizedBox(height: 10),
+              isLoadingList && mandiData.isEmpty
+                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF00AD83)))
                   : filteredData.isEmpty
                       ? Center(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("No data available for the selected filters."
-                                  .tr()),
+                              Text("No data available for the selected filters.".tr()),
                               if (isOffline)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 16.0),
-                                  child: ElevatedButton(
-                                    onPressed: _fetchMandiRates,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF00AD83),
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    child: Text("Retry".tr()),
-                                  ),
-                                ),
+                                ElevatedButton(onPressed: _fetchMandiRatesInBackground, child: Text("Retry".tr())),
                             ],
                           ),
                         )
                       : Expanded(
                           child: ListView.builder(
                             controller: _scrollController,
-                            itemCount:
-                                displayedData.length + (isLoadingMore ? 1 : 0),
+                            itemCount: displayedData.length + (isLoadingMore ? 1 : 0),
                             itemBuilder: (context, index) {
-                              if (index == displayedData.length &&
-                                  isLoadingMore) {
-                                return Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: CircularProgressIndicator(
-                                        color: Color(0xFF00AD83)),
-                                  ),
-                                );
+                              if (index == displayedData.length && isLoadingMore) {
+                                return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: Color(0xFF00AD83))));
                               }
-
-                              final record = displayedData[index];
+                              final r = displayedData[index];
                               return Card(
-                                margin: EdgeInsets.only(bottom: 10),
+                                margin: const EdgeInsets.only(bottom: 10),
                                 elevation: 5,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                color: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Flexible(
-                                            child: Text(
-                                              record['Market'] ?? 'N/A',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xFF00AD83),
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          SizedBox(width: 8),
-                                          Flexible(
-                                            child: Text(
-                                              record['Commodity'] ?? 'N/A',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.blueGrey.shade700,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.right,
-                                            ),
-                                          ),
+                                          Flexible(child: Text(r['Market'] ?? 'N/A', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF00AD83)), overflow: TextOverflow.ellipsis)),
+                                          const SizedBox(width: 8),
+                                          Flexible(child: Text(r['Commodity'] ?? 'N/A', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blueGrey.shade700), overflow: TextOverflow.ellipsis, textAlign: TextAlign.right)),
                                         ],
                                       ),
-                                      SizedBox(height: 5),
-                                      Text(
-                                        record['District'] ?? 'N/A',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
+                                      const SizedBox(height: 5),
+                                      Text(r['District'] ?? 'N/A', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                                      const SizedBox(height: 10),
                                       Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          PriceTile(
-                                            label: "Min Price",
-                                            value: record['Min_Price'] ?? 'N/A',
-                                            color: Colors.black87,
-                                          ),
-                                          PriceTile(
-                                            label: "Max Price",
-                                            value: record['Max_Price'] ?? 'N/A',
-                                            color: Colors.red.shade700,
-                                          ),
-                                          PriceTile(
-                                            label: "Modal Price",
-                                            value:
-                                                record['Modal_Price'] ?? 'N/A',
-                                            color: Colors.orange.shade700,
-                                          ),
+                                          PriceTile(label: "Min Price", value: r['Min_Price'] ?? 'N/A', color: Colors.black87),
+                                          PriceTile(label: "Max Price", value: r['Max_Price'] ?? 'N/A', color: Colors.red.shade700),
+                                          PriceTile(label: "Modal Price", value: r['Modal_Price'] ?? 'N/A', color: Colors.orange.shade700),
                                         ],
                                       ),
                                     ],
@@ -575,30 +375,15 @@ class _MandiRatesPageState extends State<MandiRatesPage>
 }
 
 class PriceTile extends StatelessWidget {
-  final String label;
-  final String value;
+  final String label, value;
   final Color color;
-
-  PriceTile({required this.label, required this.value, required this.color});
-
+  const PriceTile({required this.label, required this.value, required this.color});
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-        SizedBox(height: 4),
-        Text(
-          "₹$value",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Column(
+        children: [
+          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          const SizedBox(height: 4),
+          Text("₹$value", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+        ],
+      );
 }

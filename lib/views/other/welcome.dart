@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mainproject1/main.dart';
 import 'package:mainproject1/views/auth/AuthSelectionScreen.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -75,6 +76,7 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                                 _selectedLocale = const Locale('en');
                               });
                               context.setLocale(const Locale('en'));
+                              Get.updateLocale(_selectedLocale!);
                             },
                             child: Container(
                               padding: EdgeInsets.symmetric(vertical: 40),
@@ -120,6 +122,7 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                                 _selectedLocale = const Locale('kn');
                               });
                               context.setLocale(const Locale('kn'));
+                              Get.updateLocale(_selectedLocale!);
                             },
                             child: Container(
                               padding: EdgeInsets.symmetric(vertical: 40),
