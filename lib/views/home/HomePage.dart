@@ -644,7 +644,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-
   }
 
   Future<void> _openPrivacyPolicy() async {
@@ -652,12 +651,11 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(
         builder: (context) => const AppWebView(
-          url:ApiConstants.privacyPolicyURL,
+          url: ApiConstants.privacyPolicyURL,
           title: "Privacy Policy",
         ),
       ),
     );
-
   }
 
   Widget _buildDrawer(BuildContext context) {
@@ -752,8 +750,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => SupportPage()),
+                MaterialPageRoute(builder: (context) => SupportPage()),
               );
             },
           ),
@@ -900,7 +897,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(value),
                                   );
                                 }).toList(),
-                                onChanged: (String? newValue) {
+                                onChanged: (String? newValue) async {
                                   if (newValue != null) {
                                     Locale selectedLocale;
                                     switch (newValue.toLowerCase()) {
@@ -919,7 +916,10 @@ class _HomePageState extends State<HomePage> {
                                       default:
                                         selectedLocale = Locale('en');
                                     }
-                                    context.setLocale(selectedLocale);
+                                    await context.setLocale(selectedLocale);
+                                    if (mounted) {
+                                      setState(() {});
+                                    }
                                   }
                                 },
                               ),
@@ -1493,7 +1493,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 
   /// Category Tapped
   final Map<int, Map<String, dynamic>> _categoryMap = {
