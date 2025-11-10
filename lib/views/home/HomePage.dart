@@ -223,6 +223,9 @@ class _HomePageState extends State<HomePage> {
 
   String? _profileImageBase64;
 
+  String? _profilePicUrl;
+  bool _isLoadingPic = true;
+
   Future<void> _changeProfilePicture() async {
     final ImagePicker picker = ImagePicker();
     final XFile? pickedFile = await picker.pickImage(
@@ -330,12 +333,47 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _fetchLocation();
+    _fetchProfilePic();
     marketPostsFuture = fetchMarketPosts();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showToastOverlay(
           context, 'Login Successful. Welcome to Kisan Desk!'.tr());
     });
+  }
+
+  Future<void> _fetchProfilePic() async {
+    final userId = UserSession.userId;
+    if (userId == null) {
+      setState(() {
+        _isLoadingPic = false;
+      });
+      return;
+    }
+
+    setState(() => _isLoadingPic = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('${KD.api}/user/get_profile_pic'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'userId': userId}),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final String? imageUrl = json['profile_url']?.toString().trim();
+
+        setState(() {
+          _profilePicUrl = imageUrl;
+          _isLoadingPic = false;
+        });
+      } else {
+        setState(() => _isLoadingPic = false);
+      }
+    } catch (e) {
+      setState(() => _isLoadingPic = false);
+    }
   }
 
   void showToastOverlay(BuildContext context, String message) {
@@ -659,6 +697,39 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _showExpandedImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(20),
+        child: AspectRatio(
+          aspectRatio: 3 / 4, // 3:4 ratio
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, progress) {
+                return progress == null
+                    ? child
+                    : const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/profile.jpg',
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
@@ -675,24 +746,51 @@ class _HomePageState extends State<HomePage> {
             ),
             currentAccountPicture: Stack(
               children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: _profileImageBase64 != null &&
-                          _profileImageBase64!.isNotEmpty
-                      ? MemoryImage(base64Decode(_profileImageBase64!))
-                      : AssetImage('assets/profile.jpg') as ImageProvider,
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: _pickProfilePicture,
-                    child: CircleAvatar(
-                      radius: 12,
-                      backgroundColor: Colors.white,
-                      child:
-                          Icon(Icons.camera_alt, size: 15, color: Colors.black),
-                    ),
+                GestureDetector(
+                  onTap: () {
+                    if (_profilePicUrl != null && _profilePicUrl!.isNotEmpty) {
+                      _showExpandedImage(context, _profilePicUrl!);
+                    }
+                  },
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.grey[200],
+                    child: _isLoadingPic
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          )
+                        : _profilePicUrl != null && _profilePicUrl!.isNotEmpty
+                            ? ClipOval(
+                                child: Image.network(
+                                  _profilePicUrl!,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, progress) {
+                                    return progress == null
+                                        ? child
+                                        : const CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.asset(
+                                      'assets/profile.jpg',
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                ),
+                              )
+                            : Image.asset(
+                                'assets/profile.jpg',
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
                   ),
                 ),
               ],
@@ -844,8 +942,10 @@ class _HomePageState extends State<HomePage> {
                               builder: (context) => IconButton(
                                 icon: Icon(Icons.menu,
                                     color: Colors.white, size: 30),
-                                onPressed: () =>
-                                    Scaffold.of(context).openDrawer(),
+                                onPressed: () {
+                                  Scaffold.of(context).openDrawer();
+                                  _fetchProfilePic();
+                                },
                               ),
                             ),
                             SizedBox(width: 8),
@@ -898,7 +998,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(value),
                                   );
                                 }).toList(),
-                                onChanged: (String? newValue) async {
+                                onChanged: (String? newValue) {
                                   if (newValue != null) {
                                     Locale selectedLocale;
                                     switch (newValue.toLowerCase()) {

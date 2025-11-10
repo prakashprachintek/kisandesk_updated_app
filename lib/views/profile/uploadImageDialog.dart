@@ -73,8 +73,7 @@ Future<Map<String, dynamic>?> uploadImageDialog({
                 ));
 
               final streamed = await request.send();
-              final uploadResp =
-                  await http.Response.fromStream(streamed);
+              final uploadResp = await http.Response.fromStream(streamed);
 
               if (uploadResp.statusCode != 200) {
                 return {
@@ -86,8 +85,7 @@ Future<Map<String, dynamic>?> uploadImageDialog({
 
               // 3. Update profile pic
               final fileName = pickedFile!.name;
-              final updateUri =
-                  Uri.parse('${KD.api}/user/update_profile_pic');
+              final updateUri = Uri.parse('${KD.api}/user/update_profile_pic');
               final updateResp = await http.post(
                 updateUri,
                 headers: {'Content-Type': 'application/json'},
@@ -120,8 +118,7 @@ Future<Map<String, dynamic>?> uploadImageDialog({
           return AlertDialog(
             title: const Text('Update Profile Picture'),
             content: ConstrainedBox(
-              constraints:
-                  const BoxConstraints(maxWidth: 340, minWidth: 280),
+              constraints: const BoxConstraints(maxWidth: 340, minWidth: 280),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
