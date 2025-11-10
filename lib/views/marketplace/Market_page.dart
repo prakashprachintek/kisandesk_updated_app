@@ -611,7 +611,7 @@ class _MarketPageState extends State<MarketPage>
                                         MaterialPageRoute(
                                           builder: (context) => Postdetailspage(
                                             name: marketItem['name'],
-                                            price: '₹${marketItem['price']}',
+                                            price: '${marketItem['price']}',
                                             imagePath: marketItem['fileName'],
                                             location: marketItem['location'] ??
                                                 'Unknown location',

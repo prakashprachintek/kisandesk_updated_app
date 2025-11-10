@@ -3,7 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mainproject1/src/core/constant/local_db_constant.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../main.dart';
 import 'api_config.dart';
@@ -44,11 +46,16 @@ class VersionControlService {
       }
 
       final versionData = data['results'][0]['version'];
+      String? supportMobileNumber = data['results']['supportMobileNumber'] ;
+      String? supportWhatsAppNumber = data['results']['supportWhatsAppNumber'] ;
 
       // For testing force-update:
       // final latestVersion = '1.5.0';
       // final minSupportedVersion = '2.0.0';
 
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      pref.setString(LocalDBConstant.supportMobileNumber.key, supportMobileNumber!);
+      pref.setString(LocalDBConstant.supportWhatsAppNumber.key, supportWhatsAppNumber!);
       final latestVersion =
           versionData['latest_version']?.toString() ?? '1.0.0';
 

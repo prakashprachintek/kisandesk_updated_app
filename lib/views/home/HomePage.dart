@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:mainproject1/views/home/app_settings.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
+import 'package:mainproject1/views/services/image_caching.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
@@ -325,6 +327,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         );
+      },
+    );
+  }
+
+  init() async {
+    final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+    await analytics.logEvent(
+      name: 'Dashboard',
+      parameters: {
+        'status': 'opened',
       },
     );
   }
@@ -909,6 +921,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1152,20 +1165,26 @@ class _HomePageState extends State<HomePage> {
                                     elevation: 2,
                                     margin: EdgeInsets.symmetric(vertical: 8),
                                     child: ListTile(
-                                      leading: Image.network(
-                                        post.imageUrl,
-                                        width: 60,
-                                        height: 60,
+                                      leading: CachedImageWidget(
+                                        imageUrl: post.imageUrl,
                                         fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Image.asset(
-                                          'assets/land1.jpg',
                                           width: 60,
                                           height: 60,
-                                          fit: BoxFit.cover,
-                                        ),
                                       ),
+                                      // Image.network(
+                                      //   post.imageUrl,
+                                      //   width: 60,
+                                      //   height: 60,
+                                      //   fit: BoxFit.cover,
+                                      //   errorBuilder:
+                                      //       (context, error, stackTrace) =>
+                                      //           Image.asset(
+                                      //     'assets/land1.jpg',
+                                      //     width: 60,
+                                      //     height: 60,
+                                      //     fit: BoxFit.cover,
+                                      //   ),
+                                      // ),
                                       title: Text(post.title),
                                       subtitle: Text(
                                           '₹${post.price} • ${post.location}'),
