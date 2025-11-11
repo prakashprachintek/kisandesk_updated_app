@@ -15,6 +15,7 @@ import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
 import 'package:mainproject1/views/services/image_caching.dart';
+import '../fertilizers/fertilizer_list_screen.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
@@ -1616,7 +1617,7 @@ class _HomePageState extends State<HomePage> {
   final Map<int, Map<String, dynamic>> _categoryMap = {
     0: {'page': LabourBookingPage(), 'key': 'labours'},
     1: {'page': MachineryRentPage(), 'key': 'machinery'},
-    2: {'page': ComingSoonPage(), 'key': ''},
+    2: {'page': FertilizerListScreen(), 'key': ''},
     3: {'page': DoctorPage(), 'key': 'doctors'},
     4: {'page': ComingSoonPage(), 'key': ''},
     5: {'page': ComingSoonPage(), 'key': ''},
