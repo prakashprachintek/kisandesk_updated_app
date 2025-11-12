@@ -34,8 +34,18 @@ class _SupportPageState extends State<SupportPage>
       curve: Curves.easeInOut,
     );
     SharedPreferences pref = await SharedPreferences.getInstance();
-    _callNumber =  pref.getString(LocalDBConstant.supportMobileNumber.key) ?? "08020014300";
-    _whatsappNumber = pref.getString(LocalDBConstant.supportWhatsAppNumber.key) ?? "919743204088";
+    final storedCallNumber =
+    pref.getString(LocalDBConstant.supportMobileNumber.key);
+    final storedWhatsappNumber =
+    pref.getString(LocalDBConstant.supportWhatsAppNumber.key);
+
+    _callNumber = (storedCallNumber != null && storedCallNumber.isNotEmpty)
+        ? storedCallNumber
+        : "08020014300";
+
+    _whatsappNumber = (storedWhatsappNumber != null && storedWhatsappNumber.isNotEmpty)
+        ? storedWhatsappNumber
+        : "919743204088";
     setState(() {});
   }
   @override

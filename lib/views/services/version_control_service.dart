@@ -54,8 +54,8 @@ class VersionControlService {
       final minSupportedVersion  = versionData['min_supported_version']?.toString() ?? '1.0.0';
 
 
-      final String? supportMobileNumber   = firstResult['supportMobileNumber']?.toString();
-      final String? supportWhatsAppNumber = firstResult['supportWhatsAppNumber']?.toString();
+      final String? supportMobileNumber   = firstResult['supportMobileNumber'] ?? "";
+      final String? supportWhatsAppNumber = firstResult['supportWhatsAppNumber'] ?? "";
 
 
       final pref = await SharedPreferences.getInstance();
