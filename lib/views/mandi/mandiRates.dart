@@ -301,6 +301,7 @@ class _MandiRatesPageState extends State<MandiRatesPage>
                 ],
               ),
               const SizedBox(height: 10),
+              /*
               if (lastUpdated != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -309,6 +310,7 @@ class _MandiRatesPageState extends State<MandiRatesPage>
                     style: TextStyle(fontSize: 14, color: isOffline ? Colors.red : Colors.grey[600]),
                   ),
                 ),
+                */
               const SizedBox(height: 10),
               isLoadingList && mandiData.isEmpty
                   ? const Center(child: CircularProgressIndicator(color: Color(0xFF00AD83)))
