@@ -76,36 +76,54 @@ class _BookPageState extends State<BookPage> {
     setState(() => isLoading = false);
   }
 
-  Widget _buildBase64Image(String? base64Str,
-      {double width = 60, double height = 60}) {
-    if (base64Str == null || base64Str.isEmpty) {
-      return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.image_not_supported,
-            size: width * 0.6, color: Colors.grey),
-      );
-    }
-    try {
-      final bytes = base64Decode(base64Str.split(',').last);
-      return ClipRRect(
+  Widget _buildImage(String? imageUrl, {double width = 60, double height = 60}) {
+  if (imageUrl == null || imageUrl.isEmpty || !imageUrl.startsWith('http')) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
-        child: Image.memory(
-          bytes,
+      ),
+      child: Icon(Icons.image_not_supported, size: width * 0.6, color: Colors.grey),
+    );
+  }
+
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: Image.network(
+      imageUrl,
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
           width: width,
           height: height,
-          fit: BoxFit
-              .cover, // Adjust fit as needed (e.g., BoxFit.contain, BoxFit.cover)
-        ),
-      );
-    } catch (e) {
-      return Icon(Icons.broken_image, size: width * 0.6, color: Colors.red);
-    }
-  }
+          color: Colors.grey[200],
+          child: Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation(Color(0xFF00AD83)),
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(Icons.broken_image, color: Colors.red[300]),
+        );
+      },
+    ),
+  );
+}
 
   // Open date picker dialog
   void _pickDate() async {
@@ -312,7 +330,7 @@ class _BookPageState extends State<BookPage> {
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 child: Row(
                                   children: [
-                                    _buildBase64Image(machine["image"],
+                                    _buildImage(machine["image"],
                                         width: 150, height: 120),
                                     SizedBox(width: 20),
                                     Expanded(
@@ -521,7 +539,7 @@ class _BookPageState extends State<BookPage> {
                                                 0.8,
                                         child: Row(
                                           children: [
-                                            _buildBase64Image(workType["image"],
+                                            _buildImage(workType["image"],
                                                 width: 150, height: 120),
                                             SizedBox(width: 20),
                                             Expanded(

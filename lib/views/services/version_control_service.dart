@@ -45,35 +45,24 @@ class VersionControlService {
         return;
       }
 
-      // -----------------------------------------------------------------
-      // Correct & Safe way to read the data
-      // -----------------------------------------------------------------
-      final firstResult =
-          data['results'][0]; // This is the first (and only) object
+      final firstResult = data['results'][0]; 
 
       // Version info (inside the "version" object)
       final versionData = firstResult['version'] as Map<String, dynamic>;
 
-      final latestVersion =
-          versionData['latest_version']?.toString() ?? '1.0.0';
-      final minSupportedVersion =
-          versionData['min_supported_version']?.toString() ?? '1.0.0';
+      final latestVersion        = versionData['latest_version']?.toString()        ?? '1.0.0';
+      final minSupportedVersion  = versionData['min_supported_version']?.toString() ?? '1.0.0';
 
-      // Support numbers – they are directly inside the first result object
-      final String? supportMobileNumber =
-          firstResult['supportMobileNumber']?.toString();
-      final String? supportWhatsAppNumber =
-          firstResult['supportWhatsAppNumber']?.toString();
 
-      // Save safely to SharedPreferences (null → empty string, no crash)
+      final String? supportMobileNumber   = firstResult['supportMobileNumber']?.toString();
+      final String? supportWhatsAppNumber = firstResult['supportWhatsAppNumber']?.toString();
+
+
       final pref = await SharedPreferences.getInstance();
-      await pref.setString(
-          LocalDBConstant.supportMobileNumber.key, supportMobileNumber ?? '');
-      await pref.setString(LocalDBConstant.supportWhatsAppNumber.key,
-          supportWhatsAppNumber ?? '');
+      await pref.setString(LocalDBConstant.supportMobileNumber.key,   supportMobileNumber   ?? '');
+      await pref.setString(LocalDBConstant.supportWhatsAppNumber.key, supportWhatsAppNumber ?? '');
 
-      debugPrint(
-          'API response - Latest: $latestVersion, Min Supported: $minSupportedVersion');
+      debugPrint('API response - Latest: $latestVersion, Min Supported: $minSupportedVersion');
 
       if (_isVersionLower(currentVersion, minSupportedVersion)) {
         debugPrint('Triggering force update dialog');
