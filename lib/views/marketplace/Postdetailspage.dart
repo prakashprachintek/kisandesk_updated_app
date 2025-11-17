@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mainproject1/views/services/image_caching.dart';
 import 'package:share_plus/share_plus.dart'; 
 
 class Postdetailspage extends StatefulWidget {
@@ -89,21 +90,29 @@ class _PostdetailspageState extends State<Postdetailspage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              height: 240,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
-                  image: NetworkImage(widget.imagePath),
-                  fit: BoxFit.cover, 
-                ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CachedImageWidget(
+                imageUrl: widget.imagePath,
+                fit: BoxFit.cover,
+                height: 240,
               ),
             ),
+            // Container(
+            //   height: 240,
+            //   decoration: BoxDecoration(
+            //     borderRadius: BorderRadius.circular(12),
+            //     image: DecorationImage(
+            //       image: NetworkImage(widget.imagePath),
+            //       fit: BoxFit.cover,
+            //     ),
+            //   ),
+            // ),
             const SizedBox(height: 30), 
             Align(
               alignment: Alignment.center,
               child: Text(
-                'Price: ₹${widget.price}', 
+                'Price: ₹${widget.price}',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,

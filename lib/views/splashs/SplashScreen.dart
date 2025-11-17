@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 200, height: 200),
             SizedBox(height: 16),
             Text(
-              "Kisan Desk".tr(),
+              "KisanDesk".tr(),
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

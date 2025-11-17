@@ -1,5 +1,7 @@
 // lib/views/support/SupportPage.dart
 import 'package:flutter/material.dart';
+import 'package:mainproject1/src/core/constant/local_db_constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:lottie/lottie.dart';
@@ -15,15 +17,13 @@ class SupportPage extends StatefulWidget {
 
 class _SupportPageState extends State<SupportPage>
     with SingleTickerProviderStateMixin {
-  static const String _callNumber = '080200143';
-  static const String _whatsappNumber = '919743204088';
+    String _callNumber = '';
+    String _whatsappNumber = '';
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
-  @override
-  void initState() {
-    super.initState();
+  init() async {
     _controller = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -33,6 +33,25 @@ class _SupportPageState extends State<SupportPage>
       parent: _controller,
       curve: Curves.easeInOut,
     );
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    final storedCallNumber =
+    pref.getString(LocalDBConstant.supportMobileNumber.key);
+    final storedWhatsappNumber =
+    pref.getString(LocalDBConstant.supportWhatsAppNumber.key);
+
+    _callNumber = (storedCallNumber != null && storedCallNumber.isNotEmpty)
+        ? storedCallNumber
+        : "08020014300";
+
+    _whatsappNumber = (storedWhatsappNumber != null && storedWhatsappNumber.isNotEmpty)
+        ? storedWhatsappNumber
+        : "919743204088";
+    setState(() {});
+  }
+  @override
+  void initState() {
+    super.initState();
+    init();
   }
 
   @override
@@ -191,7 +210,7 @@ class _SupportPageState extends State<SupportPage>
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       subtitle: Text(
-                          '+${_whatsappNumber.substring(0, 2)} ${_whatsappNumber.substring(2)}'),
+                          _formatWhatsAppNumber(_whatsappNumber),),
                       trailing: const Icon(Icons.arrow_forward_ios_rounded,
                           size: 18, color: Colors.grey),
                       // onTap: () => _confirmAction(
@@ -239,4 +258,22 @@ class _SupportPageState extends State<SupportPage>
       ),
     );
   }
+    String _formatWhatsAppNumber(String? number) {
+      if (number == null || number.isEmpty) {
+        return 'N/A'; // or ''
+      }
+
+      // Remove spaces and symbols, just in case
+      final clean = number.replaceAll(RegExp(r'\D'), '');
+
+      // Example: if you expect country code + number (e.g., 919876543210)
+      if (clean.length > 2) {
+        final countryCode = clean.substring(0, 2);
+        final rest = clean.substring(2);
+        return '+$countryCode $rest';
+      }
+
+      // If too short, return as-is
+      return number;
+    }
 }

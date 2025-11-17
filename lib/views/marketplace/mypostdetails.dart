@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
-import '../services/api_config.dart'; // Ensure KD.api is correctly defined here
-import '../services/user_session.dart'; // Ensure UserSession.userId is available
-import 'Market_page.dart'; // Ensure MarketCard is correctly defined
-import 'Postdetailspage.dart'; // Ensure Postdetailspage is correctly defined
+import 'package:mainproject1/views/other/add_page.dart'; 
+import '../services/api_config.dart'; 
+import '../services/user_session.dart'; 
+import 'Market_page.dart'; 
+import 'Postdetailspage.dart'; 
 
-// --- API Configuration ---
+
 const String FETCH_API_URL = '${KD.api}/admin/fetchpost_by_userid';
 const String DELETE_API_URL = '${KD.api}/admin/delete_market_post';
 
@@ -72,18 +73,16 @@ class _MyPostsPageState extends State<MyPostsPage> {
     final userId = UserSession.userId;
     if (userId == null) return;
 
-    // VITAL: Clear the cache keys on initial load to FORCE a network check
     final cacheKey = 'data_my_posts_$userId';
     final timestampKey = 'last_updated_my_posts_$userId';
 
     await cacheBox.delete(cacheKey);
     await cacheBox.delete(timestampKey);
 
-    // Call the fetch logic, which will always hit the network since the cache is cleared.
     await _loadFromCacheOrFetch(forceNetwork: true);
   }
 
-  // --- Data Loading Logic ---
+
 
   Future<void> _loadFromCacheOrFetch({required bool forceNetwork}) async {
     final userId = UserSession.userId;
@@ -129,9 +128,10 @@ class _MyPostsPageState extends State<MyPostsPage> {
                 myPosts = castedData;
                 lastUpdated = cachedTimestamp;
                 isLoading = false;
+                errorMessage = null;
               });
             }
-            return; // Exit, using recent cache.
+            return;
           }
         }
         print('❌ Cache is stale or non-existent, fetching from API.');
@@ -140,11 +140,10 @@ class _MyPostsPageState extends State<MyPostsPage> {
       }
     }
 
-    // 2. If recent cache fails or is stale/forced network, proceed to fetch from API.
+
     await _fetchMyPosts(isBackground: false);
   }
 
-  // --- Fetch Posts ---
 
   Future<void> _fetchMyPosts({bool isBackground = false}) async {
     if (!isBackground) {
@@ -197,7 +196,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
             };
           }).toList());
 
-          // VITAL: Update cache with the fresh data
+
           await cacheBox.put(cacheKey, fetchedPosts);
           final now = DateTime.now().toString();
           await cacheBox.put(timestampKey, now);
@@ -226,7 +225,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
     }
   }
 
-  // --- Load Cached Data On Failure (Unchanged) ---
+
 
   void _loadCachedDataOnFailure(String cacheKey, String timestampKey) {
     try {
@@ -265,7 +264,6 @@ class _MyPostsPageState extends State<MyPostsPage> {
     }
   }
 
-  // --- Delete Post ---
 
   Future<void> _deletePost(String postId) async {
     final confirmed = await showDialog<bool>(
@@ -331,12 +329,12 @@ class _MyPostsPageState extends State<MyPostsPage> {
                 content: Text(data['message'] ?? 'Post deleted successfully!')),
           );
 
-          // 1. Remove the item from the local list
+
           setState(() {
             myPosts.removeWhere((post) => post['_id'] == postId);
           });
 
-          // 2. VITAL: Overwrite the cache with the MODIFIED list immediately
+
           final cacheKey = 'data_my_posts_$userId';
           final now = DateTime.now().toString();
           await cacheBox.put(cacheKey, myPosts);
@@ -359,32 +357,55 @@ class _MyPostsPageState extends State<MyPostsPage> {
     }
   }
 
-  // --- Build Method with RefreshIndicator ---
+
 
   @override
   Widget build(BuildContext context) {
+    final userSessionData = UserSession.user ?? {};
+    final phone = userSessionData['phone'] ?? '';
+    final isUserLoggedIn = UserSession.userId != null;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Posts'),
       ),
-      // REFRESH INDICATOR ADDED BACK HERE
       body: RefreshIndicator(
         onRefresh: () async {
           final userId = UserSession.userId;
           if (userId != null) {
-            // Delete cache keys to FORCE the next load to be a network fetch.
             await cacheBox.delete('data_my_posts_$userId');
             await cacheBox.delete('last_updated_my_posts_$userId');
           }
-          // Restart the loading process, forcing a network check
           await _loadFromCacheOrFetch(forceNetwork: true);
         },
         child: _buildBody(),
       ),
+      
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddMarketPostPage(
+                userData: userSessionData,
+                phoneNumber: phone,
+                isUserExists: isUserLoggedIn,
+              ),
+            ),
+          );
+          
+          if (result == true) {
+             await _loadFromCacheOrFetch(forceNetwork: true);
+          }
+        },
+        tooltip: 'Create New Post',
+        child: const Icon(Icons.add),
+      ),
+
     );
   }
 
-  // --- UI Building Methods (Unchanged) ---
+
 
   Widget _buildBody() {
     if (isLoading) {
@@ -441,7 +462,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                       MaterialPageRoute(
                         builder: (context) => Postdetailspage(
                           name: post['name'],
-                          price: '₹${post['price']}',
+                          price: '${post['price']}',
                           imagePath: post['fileName'],
                           location: post['location'],
                           description: post['description'],
@@ -488,7 +509,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.black54),
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
             if (subMessage != null) const SizedBox(height: 8),
             if (subMessage != null)

@@ -571,19 +571,19 @@ class _MarketPageState extends State<MarketPage>
                       ),
                     ),
                   ),
-                if (lastUpdated != null)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      isOffline
-                          ? "Showing cached data (Last updated: $lastUpdated). Pull to refresh."
-                          : "Last updated: $lastUpdated",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isOffline ? Colors.red : Colors.grey[600],
-                      ),
-                    ),
-                  ),
+                // if (lastUpdated != null)
+                //   Padding(
+                //     padding: const EdgeInsets.all(8.0),
+                //     child: Text(
+                //       isOffline
+                //           ? "Showing cached data (Last updated: $lastUpdated). Pull to refresh."
+                //           : "Last updated: $lastUpdated",
+                //       style: TextStyle(
+                //         fontSize: 12,
+                //         color: isOffline ? Colors.red : Colors.grey[600],
+                //       ),
+                //     ),
+                //   ),
                 Expanded(
                   child: isLoading
                       ? const Center(child: CircularProgressIndicator())
@@ -611,7 +611,7 @@ class _MarketPageState extends State<MarketPage>
                                         MaterialPageRoute(
                                           builder: (context) => Postdetailspage(
                                             name: marketItem['name'],
-                                            price: '₹${marketItem['price']}',
+                                            price: '${marketItem['price']}',
                                             imagePath: marketItem['fileName'],
                                             location: marketItem['location'] ??
                                                 'Unknown location',

@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -7,12 +8,33 @@ import 'package:mainproject1/views/widgets/GradientAuthButton.dart';
 import '../../../core/style/colors.dart';
 import '../view_model/login_controller.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final controller = Get.find<LoginController>();
+  final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  init() async {
+    controller.onInit();
+    await analytics.logEvent(
+      name: 'login',
+      parameters: {
+        'status': 'opened',
+      },
+    );
+  }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    init();
+
+    super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
-    print("🔄 MobileVerificationScreen build triggered");
     return Scaffold(
       appBar: AppBar(
         title: Text(tr("Mobile Verification"),

@@ -76,36 +76,54 @@ class _BookPageState extends State<BookPage> {
     setState(() => isLoading = false);
   }
 
-  Widget _buildBase64Image(String? base64Str,
-      {double width = 60, double height = 60}) {
-    if (base64Str == null || base64Str.isEmpty) {
-      return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.image_not_supported,
-            size: width * 0.6, color: Colors.grey),
-      );
-    }
-    try {
-      final bytes = base64Decode(base64Str.split(',').last);
-      return ClipRRect(
+  Widget _buildImage(String? imageUrl, {double width = 60, double height = 60}) {
+  if (imageUrl == null || imageUrl.isEmpty || !imageUrl.startsWith('http')) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
-        child: Image.memory(
-          bytes,
+      ),
+      child: Icon(Icons.image_not_supported, size: width * 0.6, color: Colors.grey),
+    );
+  }
+
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: Image.network(
+      imageUrl,
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
           width: width,
           height: height,
-          fit: BoxFit
-              .cover, // Adjust fit as needed (e.g., BoxFit.contain, BoxFit.cover)
-        ),
-      );
-    } catch (e) {
-      return Icon(Icons.broken_image, size: width * 0.6, color: Colors.red);
-    }
-  }
+          color: Colors.grey[200],
+          child: Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation(Color(0xFF00AD83)),
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(Icons.broken_image, color: Colors.red[300]),
+        );
+      },
+    ),
+  );
+}
 
   // Open date picker dialog
   void _pickDate() async {
@@ -151,9 +169,19 @@ class _BookPageState extends State<BookPage> {
       "userId": UserSession.userId,
       "full_name": UserSession.user?['full_name'] ?? '',
       "phone": UserSession.user?['phone'] ?? '',
-      "machineryType": selectedMachinery!,
+      "machineryType": machineryData.firstWhere((m) =>
+              (Localizations.localeOf(context).languageCode == 'kn'
+                  ? (m["name_in_kannada"] ?? m["name_in_english"])
+                  : (m["name_in_english"] ?? m["name"])) ==
+              selectedMachinery)["name_in_english"] ??
+          selectedMachinery!,
       "workDate": bookingDate!,
-      "workType": selectedWorkType!,
+      "workType": workTypeList.firstWhere((w) =>
+              (Localizations.localeOf(context).languageCode == 'kn'
+                  ? (w["type_in_kannada"] ?? w["type_in_english"])
+                  : (w["type_in_english"] ?? w["type"])) ==
+              selectedWorkType)["type_in_english"] ??
+          selectedWorkType!,
       "workInQuantity": selectedQuantity,
       "workInUnit": selectedUnit,
       "description": descriptionController.text,
@@ -283,7 +311,12 @@ class _BookPageState extends State<BookPage> {
                         .map<DropdownMenuEntry<String>>((entry) {
                       final index = entry.key;
                       final machine = entry.value;
-                      final machineName = machine["name"] as String;
+                      final machineName =
+                          Localizations.localeOf(context).languageCode == 'kn'
+                              ? (machine["name_in_kannada"] ??
+                                  machine["name_in_english"] ??
+                                  machine["name"])
+                              : (machine["name_in_english"] ?? machine["name"]);
                       return DropdownMenuEntry<String>(
                         value: machineName,
                         label: machineName, // For accessibility
@@ -297,7 +330,7 @@ class _BookPageState extends State<BookPage> {
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 child: Row(
                                   children: [
-                                    _buildBase64Image(machine["image"],
+                                    _buildImage(machine["image"],
                                         width: 150, height: 120),
                                     SizedBox(width: 20),
                                     Expanded(
@@ -326,10 +359,24 @@ class _BookPageState extends State<BookPage> {
                     }).toList(),
                     onSelected: (value) {
                       setState(() {
-                        selectedMachinery = value;
+                        selectedMachinery =
+                            value; // This is the displayed text (Kannada or English)
+
+                        // Find the actual machine object using localized name
+                        final selectedMachine = machineryData.firstWhere((m) {
+                          final displayName =
+                              Localizations.localeOf(context).languageCode ==
+                                      'kn'
+                                  ? (m["name_in_kannada"] ??
+                                      m["name_in_english"] ??
+                                      m["name"])
+                                  : (m["name_in_english"] ?? m["name"]);
+                          return displayName == value;
+                        });
+
+                        // Now safely extract work types
                         workTypeList = List<Map<String, dynamic>>.from(
-                            machineryData.firstWhere(
-                                (m) => m["name"] == value)["work_types"]);
+                            selectedMachine["work_types"]);
                         selectedWorkType = null;
                         fieldErrors['machinery'] = false;
                       });
@@ -468,7 +515,14 @@ class _BookPageState extends State<BookPage> {
                               .map<DropdownMenuEntry<String>>((entry) {
                               final index = entry.key;
                               final workType = entry.value;
-                              final workName = workType["type"] as String;
+                              final workName = Localizations.localeOf(context)
+                                          .languageCode ==
+                                      'kn'
+                                  ? (workType["type_in_kannada"] ??
+                                      workType["type_in_english"] ??
+                                      workType["type"])
+                                  : (workType["type_in_english"] ??
+                                      workType["type"]);
                               return DropdownMenuEntry<String>(
                                 value: workName,
                                 label: workName,
@@ -485,7 +539,7 @@ class _BookPageState extends State<BookPage> {
                                                 0.8,
                                         child: Row(
                                           children: [
-                                            _buildBase64Image(workType["image"],
+                                            _buildImage(workType["image"],
                                                 width: 150, height: 120),
                                             SizedBox(width: 20),
                                             Expanded(
