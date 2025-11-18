@@ -41,6 +41,7 @@ class FertilizerApiService {
     required String userId,
     required List<Map<String, String>> products,
     required String amount,
+    required String address,
   }) async {
     try {
       final response = await http.post(
@@ -51,6 +52,7 @@ class FertilizerApiService {
           'products': products,
           'amount': amount,
           'Payment_mode': 'cash on delivery',
+          'address': address,
         }),
       );
       if (response.statusCode == 200) {
