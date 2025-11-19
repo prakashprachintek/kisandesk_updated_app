@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:mainproject1/views/machinery/order_detail_page.dart';
 import 'package:mainproject1/views/machinery/myorderspage.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
 import 'bookpage.dart';
@@ -20,10 +21,10 @@ class MachineryRentPage extends StatefulWidget {
 
 class _MachineryRentPageState extends State<MachineryRentPage> {
   final List<String> imagePaths = [
-    'assets/machinery/machine_type/JCB.jpeg',
-    'assets/machinery/machine_type/harvester.jpg',
-    'assets/machinery/machine_type/rotavator.jpg',
-    'assets/machinery/machine_type/tractor.jpg',
+    AppAssets.machineJCB,
+    AppAssets.machineHarvester,
+    AppAssets.machineRotavator,
+    AppAssets.machineTractor
   ];
 
   List<Map<String, String>> recentOrders = [];

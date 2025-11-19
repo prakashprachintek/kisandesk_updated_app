@@ -38,6 +38,7 @@ import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
 import 'package:get/get.dart' hide Trans;
+import '../services/AppAssets.dart';
 
 class _CategoryCard extends StatelessWidget {
   final String imageUrl;
@@ -730,8 +731,7 @@ class _HomePageState extends State<HomePage> {
                       );
               },
               errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  'assets/profile.jpg',
+                return Image.asset(AppAssets.profile,
                   fit: BoxFit.cover,
                 );
               },
@@ -788,8 +788,7 @@ class _HomePageState extends State<HomePage> {
                                           );
                                   },
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Image.asset(
-                                      'assets/profile.jpg',
+                                    return Image.asset(AppAssets.profile,
                                       width: 80,
                                       height: 80,
                                       fit: BoxFit.cover,
@@ -797,8 +796,7 @@ class _HomePageState extends State<HomePage> {
                                   },
                                 ),
                               )
-                            : Image.asset(
-                                'assets/profile.jpg',
+                            : Image.asset(AppAssets.profile,
                                 width: 80,
                                 height: 80,
                                 fit: BoxFit.cover,
@@ -994,8 +992,7 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                icon: Image.asset(
-                                  'assets/lang.png',
+                                icon: Image.asset(AppAssets.lang,
                                   height: 24,
                                   width: 24,
                                   color: Colors.white,
@@ -1433,10 +1430,10 @@ class _HomePageState extends State<HomePage> {
   /// Second Carousel (2nd slideshow)
   Widget _buildCarouselSlideshow() {
     final List<String> imageUrls = [
-      'assets/car1.webp',
-      'assets/image1.webp',
-      'assets/car4.jpg',
-      'assets/image3.jpg',
+      AppAssets.car1,
+      AppAssets.image1,
+      AppAssets.car4,
+      AppAssets.image3
     ];
 
     return Container(
@@ -1500,12 +1497,12 @@ class _HomePageState extends State<HomePage> {
   /// 6 Categories Grid
   Widget _buildCategoriesGrid() {
     final List<String> imagePaths = [
-      'assets/Labor.jpeg',
-      'assets/machines.webp',
-      'assets/fertilizers.jpg',
-      'assets/veterinary.webp',
-      'assets/loan.webp',
-      'assets/govtschemes.png',
+      AppAssets.labor,
+      AppAssets.machinesh,
+      AppAssets.fertilizers,
+      AppAssets.veterinary,
+      AppAssets.loan,
+      AppAssets.govSchemes
     ];
     final List<String> labels = [
       tr('Labours'),

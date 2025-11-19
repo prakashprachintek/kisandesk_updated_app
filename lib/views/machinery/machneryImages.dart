@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class MachineryImages {
   static const String _basePath = 'assets/machinery/machine_type/';
   static const String defaultImage = 'assets/machinery/default_machine.png';

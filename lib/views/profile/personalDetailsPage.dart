@@ -7,6 +7,7 @@ import 'package:mainproject1/views/profile/profile_update_page.dart';
 import 'package:mainproject1/views/profile/uploadImageDialog.dart';
 import 'package:mainproject1/views/services/image_caching.dart';
 
+import '../services/AppAssets.dart';
 import '../services/api_config.dart';
 import '../services/user_session.dart';
 
@@ -126,7 +127,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
   }
 
   Widget _fallback() => Image.asset(
-        'assets/farmer.png',
+        AppAssets.farmer,
         fit: BoxFit.cover,
         width: 150,
         height: 150,

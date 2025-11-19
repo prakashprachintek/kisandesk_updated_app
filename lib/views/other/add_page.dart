@@ -9,6 +9,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:lottie/lottie.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'package:mainproject1/views/services/api_config.dart';
 import 'package:mainproject1/views/services/image_compression.dart';
 import '../services/user_session.dart';
@@ -88,32 +89,32 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
   final Map<String, List<Map<String, String>>> _categoryOptions = {
     'cattle': [
-      {'name': 'Cow', 'image': 'assets/cow.png'},
-      {'name': 'Ox', 'image': 'assets/oxnew.png'},
-      {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
-      {'name': 'Sheep', 'image': 'assets/Sheep.png'},
-      {'name': 'Goat', 'image': 'assets/goat (2).png'},
-      {'name': 'Hen', 'image': 'assets/Henm.png'},
-      {'name': 'Duck', 'image': 'assets/Duck.png'},
+      {'name': 'Cow', 'image': AppAssets.cow},
+      {'name': 'Ox', 'image': AppAssets.oxNew},
+      {'name': 'Buffalo', 'image': AppAssets.buffalom},
+      {'name': 'Sheep', 'image': AppAssets.sheep},
+      {'name': 'Goat', 'image': AppAssets.goat2},
+      {'name': 'Hen', 'image': AppAssets.henm},
+      {'name': 'Duck', 'image': AppAssets.duck},
     ],
     'crop': [
-      {'name': 'Pulses', 'image': 'assets/pulses.png'},
-      {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'},
-      {'name': 'Fruits', 'image': 'assets/fruitsm.png'},
-      {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'},
-      {'name': 'Cereals', 'image': 'assets/cerealsm.png'},
-      {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
+      {'name': 'Pulses', 'image': AppAssets.pulses},
+      {'name': 'Oil Seed', 'image': AppAssets.oilSeedsm},
+      {'name': 'Fruits', 'image': AppAssets.fruitsm},
+      {'name': 'Vegetables', 'image': AppAssets.vegetablesm},
+      {'name': 'Cereals', 'image': AppAssets.cerealsm},
+      {'name': 'Dry Fruits', 'image': AppAssets.dryfruitsm}
     ],
     'land': [
-      {'name': 'Home', 'image': 'assets/homen.webp'},
-      {'name': 'Plots', 'image': 'assets/Plots.png'},
-      {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
-      {'name': 'Irrigation Land', 'image': 'assets/irrigationland.png'}
+      {'name': 'Home', 'image': AppAssets.homen},
+      {'name': 'Plots', 'image': AppAssets.plots},
+      {'name': 'Dry Land', 'image': AppAssets.dryLand},
+      {'name': 'Irrigation Land', 'image': AppAssets.irrigationLand}
     ],
     'machinery': [
-      {'name': 'Transport Vehicles', 'image': 'assets/Transportm.png'},
-      {'name': 'Farming Machines', 'image': 'assets/FarmingMachine.png'},
-      {'name': 'Farming Equipment', 'image': 'assets/FarmingEqui.png'},
+      {'name': 'Transport Vehicles', 'image': AppAssets.transportm},
+      {'name': 'Farming Machines', 'image': AppAssets.farmingMachine},
+      {'name': 'Farming Equipment', 'image': AppAssets.farmingEqui},
     ],
   };
 
@@ -294,10 +295,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
   Widget _buildStep0() {
     final Map<String, String> categoryImages = {
-      'cattle': 'assets/cattlen.png',
-      'crop': 'assets/cropn.png',
-      'land': 'assets/propn.jpg',
-      'machinery': 'assets/Machinen.png',
+      'cattle': AppAssets.cattlen,
+      'crop': AppAssets.cropn,
+      'land': AppAssets.propn,
+      'machinery': AppAssets.machinen,
     };
 
     return SingleChildScrollView(
@@ -711,7 +712,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Lottie.asset('assets/animations/location.json', height: 180),
+            Lottie.asset(AppAssets.animLocation, height: 180),
             SizedBox(height: 10),
             Center(
               child: Text(

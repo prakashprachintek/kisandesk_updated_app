@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mainproject1/views/marketplace/mypostdetails.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'package:mainproject1/views/services/image_caching.dart';
 import '../services/api_config.dart';
 import 'Postdetailspage.dart';
@@ -28,10 +29,10 @@ class _MarketPageState extends State<MarketPage>
 
   final Map<String, String> categoryImages = {
     '': 'assets/all_market.jpg',
-    'crop': 'assets/cropn.png',
-    'cattle': 'assets/cattlen.png',
-    'machinery': 'assets/Machinen.png',
-    'land': 'assets/propn.jpg'
+    'crop': AppAssets.cropn,
+    'cattle': AppAssets.cattlen,
+    'machinery': AppAssets.machinen,
+    'land': AppAssets.propn
   };
 
   final Map<String, String> categoryNames = {
@@ -45,44 +46,44 @@ class _MarketPageState extends State<MarketPage>
   // CENTRALIZED MAP for all subcategories
   final Map<String, Map<String, Map<String, String>>> subCategoriesData = {
     'cattle': {
-      'cow': {'name': 'Cow', 'image': 'assets/cow.png'},
-      'ox': {'name': 'Ox', 'image': 'assets/oxnew.png'},
-      'buffalo': {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
-      'sheep': {'name': 'Sheep', 'image': 'assets/Sheep.png'},
-      'goat': {'name': 'Goat', 'image': 'assets/goat (2).png'},
-      'hen': {'name': 'Hen', 'image': 'assets/Henm.png'},
-      'duck': {'name': 'Duck', 'image': 'assets/Duck.png'},
+      'cow': {'name': 'Cow', 'image': AppAssets.cow},
+      'ox': {'name': 'Ox', 'image': AppAssets.oxNew},
+      'buffalo': {'name': 'Buffalo', 'image': AppAssets.buffalom},
+      'sheep': {'name': 'Sheep', 'image': AppAssets.sheep},
+      'goat': {'name': 'Goat', 'image': AppAssets.goat2},
+      'hen': {'name': 'Hen', 'image': AppAssets.henm},
+      'duck': {'name': 'Duck', 'image': AppAssets.duck},
     },
     'machinery': {
       'farming_machines': {
         'name': 'Farming Machines',
-        'image': 'assets/FarmingMachine.png'
+        'image': AppAssets.farmingMachine
       },
       'farming_equipment': {
         'name': 'Farming Equipment',
-        'image': 'assets/FarmingEqui.png'
+        'image': AppAssets.farmingEqui
       },
       'transport': {
         'name': 'Transport Vehicles',
-        'image': 'assets/Transportm.png'
+        'image': AppAssets.transportm
       },
     },
     'crop': {
-      'oil_seed': {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'},
-      'vegetables': {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'},
-      'fruits': {'name': 'Fruits', 'image': 'assets/fruitsm.png'},
-      'pulses': {'name': 'Pulses', 'image': 'assets/pulses.png'},
-      'cerals': {'name': 'Cerals', 'image': 'assets/cerealsm.png'},
-      'dry_fruits': {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
+      'oil_seed': {'name': 'Oil Seed', 'image': AppAssets.oilSeedsm},
+      'vegetables': {'name': 'Vegetables', 'image': AppAssets.vegetablesm},
+      'fruits': {'name': 'Fruits', 'image': AppAssets.fruitsm},
+      'pulses': {'name': 'Pulses', 'image': AppAssets.pulses},
+      'cerals': {'name': 'Cerals', 'image': AppAssets.cerealsm},
+      'dry_fruits': {'name': 'Dry Fruits', 'image': AppAssets.dryfruitsm}
     },
     'land': {
-      'home': {'name': 'Home', 'image': 'assets/homen.webp'},
-      'dry_land': {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
+      'home': {'name': 'Home', 'image': AppAssets.homen},
+      'dry_land': {'name': 'Dry Land', 'image': AppAssets.dryLand},
       'irrigation_land': {
         'name': 'Irrigation Land',
-        'image': 'assets/irrigationland.png'
+        'image': AppAssets.irrigationLand
       },
-      'plots': {'name': 'Plots', 'image': 'assets/Plots.png'},
+      'plots': {'name': 'Plots', 'image': AppAssets.plots},
     },
   };
 
@@ -497,8 +498,7 @@ class _MarketPageState extends State<MarketPage>
           Positioned.fill(
             child: Opacity(
               opacity: 0.1,
-              child: Image.asset(
-                'assets/NewLogo.png',
+              child: Image.asset(AppAssets.newLogo,
                 fit: BoxFit.contain,
               ),
             ),

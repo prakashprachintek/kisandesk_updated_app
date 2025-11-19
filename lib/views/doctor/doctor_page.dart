@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mainproject1/views/services/AppAssets.dart';
 import '../services/api_config.dart';
 import '../doctor/doctor_detailpage.dart';
 import 'dart:convert';
@@ -238,8 +239,7 @@ class _DoctorPageState extends State<DoctorPage> {
                                         ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(8),
-                                          child: Image.asset(
-                                            'assets/doctor_placeholder.png',
+                                          child: Image.asset(AppAssets.doctorPlaceholder,
                                             width: 70,
                                             height: 70,
                                             fit: BoxFit.cover,

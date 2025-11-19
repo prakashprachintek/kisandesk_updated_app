@@ -1,6 +1,7 @@
 // lib/views/support/SupportPage.dart
 import 'package:flutter/material.dart';
 import 'package:mainproject1/src/core/constant/local_db_constant.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -132,7 +133,7 @@ class _SupportPageState extends State<SupportPage>
                 children: [
                   // ---- Lottie Animation ----------------------------------
                   Lottie.asset(
-                    'assets/animations/contact_us.json',
+                    AppAssets.animContactUs,
                     height: 180,
                   ),
 

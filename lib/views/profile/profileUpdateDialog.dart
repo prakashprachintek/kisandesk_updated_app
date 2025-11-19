@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter, rootBundle;
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'package:mainproject1/views/services/user_session.dart';
 import '../services/api_config.dart';
 
 Future<Map<String, dynamic>> loadLocationJson() async {
-  final String jsonString = await rootBundle.loadString('assets/loadLocation_data.json');
+  final String jsonString = await rootBundle.loadString(AppAssets.loadLocationData);
   return json.decode(jsonString);
 }
 

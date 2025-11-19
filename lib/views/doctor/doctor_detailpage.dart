@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/doctor/doctor.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DoctorDetailPage extends StatefulWidget {
@@ -278,8 +279,7 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                           imageData,
                           fit: BoxFit.cover,
                         )
-                      : Image.asset(
-                          'assets/doctor_default.jpg', 
+                      : Image.asset(AppAssets.doctorDefault, 
                           fit: BoxFit.cover,
                         ),
                 ),

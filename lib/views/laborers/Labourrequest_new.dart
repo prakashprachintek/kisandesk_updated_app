@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/laborers/Labour_orders.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'dart:convert';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
@@ -199,7 +200,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
                               }
                             });
                           },
-                          'assets/Male.png',
+                          AppAssets.male,
                         ),
                         _buildGenderSelection(
                           tr("Female"),
@@ -212,7 +213,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
                               }
                             });
                           },
-                          'assets/Female.png',
+                          AppAssets.female,
                         ),
                       ],
                     ),

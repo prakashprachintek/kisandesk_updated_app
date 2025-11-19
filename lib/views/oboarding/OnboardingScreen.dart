@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mainproject1/src/features/auth/view/login_screen.dart';
 import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 
 import '../../main.dart';
 import '../auth/AuthSelectionScreen.dart';
@@ -23,9 +24,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   final List<String> onboardingFiles = [
-    "assets/animations/onb1.json",
+    AppAssets.animOnb1,
+    AppAssets.animOnb3
     // "assets/animations/onb2.json",
-    "assets/animations/onb3.json",
   ];
 
   void _nextPage() {

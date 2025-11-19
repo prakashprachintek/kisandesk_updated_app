@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mainproject1/main.dart';
 import 'package:mainproject1/views/auth/AuthSelectionScreen.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'package:mainproject1/views/splashs/SplashScreen.dart';
 
 class KisanDeskScreen extends StatefulWidget {
@@ -42,8 +43,7 @@ class _KisanDeskScreenState extends State<KisanDeskScreen> {
                     SizedBox(
                       height: 30,
                     ),
-                    Image.asset(
-                      'assets/New_logo.png',
+                    Image.asset(AppAssets.newLogoPng,
                       height: 200,
                     ),
                     SizedBox(height: 12),

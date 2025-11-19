@@ -6,6 +6,7 @@ import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/src/features/auth/view/login_screen.dart';
 import 'package:mainproject1/views/auth/MobileVerificationScreen.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'dart:convert';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
@@ -235,8 +236,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 16),
-                      Lottie.asset(
-                        "assets/animations/lock.json",
+                      Lottie.asset(AppAssets.animLock,
                           width: 180, height: 180),
                       const SizedBox(height: 20),
                       Text(

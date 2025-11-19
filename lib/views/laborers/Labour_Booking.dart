@@ -5,6 +5,7 @@ import 'package:mainproject1/views/laborers/Labour_orders.dart';
 import 'package:mainproject1/views/laborers/Labourrequest_new.dart';
 import 'package:mainproject1/views/laborers/Requestdetails.dart';
 import 'package:mainproject1/views/profile/personalDetailsPage.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import 'dart:convert';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
@@ -19,10 +20,10 @@ class LabourBookingPage extends StatefulWidget {
 
 class _LabourBookingPageState extends State<LabourBookingPage> {
   final List<String> imagePaths = [
-    'assets/paddy1.png',
-    'assets/paddy2.jpg',
-    'assets/paddy3.jpg',
-    'assets/paddy4.jpg',
+    AppAssets.paddy1,
+    AppAssets.paddy2,
+    AppAssets.paddy3,
+    AppAssets.paddy4
   ];
 
   late Future<List<dynamic>> _recentOrdersFuture;

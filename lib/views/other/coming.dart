@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 
 class ComingSoonPage extends StatefulWidget {
   const ComingSoonPage({super.key});
@@ -26,7 +27,7 @@ class _ComingSoonPageState extends State<ComingSoonPage> {
       ),
       body: Center(
         child: Lottie.asset(
-          'assets/animations/coming_soon.json',
+          AppAssets.animComingSoon,
           width: 300,
           height: 400,
           fit: BoxFit.contain,

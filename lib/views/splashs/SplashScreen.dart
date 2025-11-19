@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 
 import '../../main.dart';
 import '../oboarding/OnboardingScreen.dart';
@@ -31,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Lottie.asset('assets/animations/logo.json',
+            Lottie.asset(AppAssets.animLogo,
                 width: 200, height: 200),
             SizedBox(height: 16),
             Text(

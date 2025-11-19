@@ -6,6 +6,7 @@ import 'package:mainproject1/src/core/constant/api_constants.dart';
 import 'package:mainproject1/src/core/style/colors.dart';
 import 'package:mainproject1/src/features/auth/view/signup_bottom_sheet.dart';
 import 'package:mainproject1/src/shared/presentation/widgets/flutter_inappwebview.dart';
+import 'package:mainproject1/views/services/AppAssets.dart';
 import '../services/api_config.dart';
 import '../widgets/GradientAuthButton.dart';
 import 'OTPVerificationScreen.dart';
@@ -151,8 +152,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
             child: Column(
               children: [
                 SizedBox(height: 16),
-                Lottie.asset(
-                  "assets/animations/phone.json",
+                Lottie.asset(AppAssets.animPhone,
                   width: 180,
                   height: 180,
                   fit: BoxFit.contain,
