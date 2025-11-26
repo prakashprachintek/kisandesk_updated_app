@@ -4,6 +4,7 @@ import 'fertilizer_model.dart';
 
 class CartService {
   static const String _cartKey = 'cart';
+  static const String _tempBuyNowCartKey = 'temp_buy_now_cart';
 
   Future<void> addToCart(CartItem item) async {
     final prefs = await SharedPreferences.getInstance();
@@ -78,6 +79,24 @@ class CartService {
       return Cart(items: [], totalCartValue: 0.0);
     }
     return Cart.fromJson(jsonDecode(cartJson));
+  }
+
+  // TEMP CART FOR BUY NOW
+  Future<void> setTempBuyNowCart(Cart cart) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tempBuyNowCartKey, jsonEncode(cart.toJson()));
+  }
+
+  Future<Cart> getTempBuyNowCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString(_tempBuyNowCartKey);
+    if (json == null) return Cart(items: [], totalCartValue: 0.0);
+    return Cart.fromJson(jsonDecode(json));
+  }
+
+  Future<void> clearTempBuyNowCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tempBuyNowCartKey);
   }
 
   Future<void> clearCart() async {

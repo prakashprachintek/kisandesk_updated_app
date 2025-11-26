@@ -20,15 +20,16 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
   List<Fertilizer> _fertilizers = [];
   List<Fertilizer> _filteredFertilizers = [];
   String _searchQuery = '';
-  String _sortOrder = 'none'; // none, ascending, descending
+  String _sortOrder = 'none'; // none, ascending, descending, bestseller
   late String _farmerId;
+  Map<String, int> _cartQuantities = {}; // productId → quantity in cart
 
   @override
   void initState() {
     super.initState();
     _farmerId = UserSession.userId!;
     _fertilizerFuture = FertilizerApiService().fetchFertilizers();
-    _cartFuture = CartService().getCart();
+    _cartFuture = CartService().getCart()..then((_) => _loadCartQuantities());
   }
 
   void _filterFertilizers(String query) {
@@ -38,7 +39,8 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
         _filteredFertilizers = List.from(_fertilizers);
       } else {
         _filteredFertilizers = _fertilizers
-            .where((f) => f.productName.toLowerCase().contains(query.toLowerCase()))
+            .where((f) =>
+                f.productName.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
       _applySort();
@@ -47,44 +49,129 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
 
   void _applySort() {
     if (_sortOrder == 'ascending') {
-      _filteredFertilizers.sort((a, b) => a.discountedPrice.compareTo(b.discountedPrice));
+      _filteredFertilizers
+          .sort((a, b) => a.discountedPrice.compareTo(b.discountedPrice));
     } else if (_sortOrder == 'descending') {
-      _filteredFertilizers.sort((a, b) => b.discountedPrice.compareTo(a.discountedPrice));
+      _filteredFertilizers
+          .sort((a, b) => b.discountedPrice.compareTo(a.discountedPrice));
+    } else if (_sortOrder == 'bestseller') {
+      // _filteredFertilizers.sort((a, b) => b.totalSales.compareTo(a.totalSales));
     }
   }
 
-  void _toggleSortOrder() {
+  void _openSortBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.star),
+              title: const Text('Best Sellers'),
+              trailing: _sortOrder == 'bestseller'
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
+              onTap: () {
+                setState(() {
+                  _sortOrder = 'bestseller';
+                  _applySort();
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.arrow_upward),
+              title: const Text('Price: Low to High'),
+              trailing: _sortOrder == 'ascending'
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
+              onTap: () {
+                setState(() {
+                  _sortOrder = 'ascending';
+                  _applySort();
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.arrow_downward),
+              title: const Text('Price: High to Low'),
+              trailing: _sortOrder == 'descending'
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
+              onTap: () {
+                setState(() {
+                  _sortOrder = 'descending';
+                  _applySort();
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.clear),
+              title: const Text('Clear Sorting'),
+              trailing: _sortOrder == 'none'
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
+              onTap: () {
+                setState(() {
+                  _sortOrder = 'none';
+                  _filteredFertilizers = List.from(_fertilizers);
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _loadCartQuantities() async {
+    final cart = await CartService().getCart();
+    final Map<String, int> quantities = {};
+    for (var item in cart.items) {
+      quantities[item.productId] = item.quantity;
+    }
+    if (mounted) {
+      setState(() {
+        _cartQuantities = quantities;
+      });
+    }
+  }
+
+  Future<void> _refreshCartState() async {
     setState(() {
-      if (_sortOrder == 'none') {
-        _sortOrder = 'ascending';
-      } else if (_sortOrder == 'ascending') {
-        _sortOrder = 'descending';
-      } else {
-        _sortOrder = 'none';
-        _filteredFertilizers = List.from(_fertilizers);
-      }
-      _applySort();
+      _cartFuture = CartService().getCart();
     });
+    await _loadCartQuantities();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fertilizers', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Fertilizers',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         actions: [
           FutureBuilder<Cart>(
             future: _cartFuture,
             builder: (context, snapshot) {
-              int itemCount = snapshot.hasData ? snapshot.data!.items.length : 0;
+              int itemCount =
+                  snapshot.hasData ? snapshot.data!.items.length : 0;
               return Stack(
                 alignment: Alignment.topRight,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.shopping_cart),
                     tooltip: 'Cart',
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
+                    onPressed: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const CartScreen())),
                   ),
                   if (itemCount > 0)
                     Positioned(
@@ -92,9 +179,17 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                       top: 8,
                       child: Container(
                         padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                        child: Text('$itemCount', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                        decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10)),
+                        constraints:
+                            const BoxConstraints(minWidth: 16, minHeight: 16),
+                        child: Text('$itemCount',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center),
                       ),
                     ),
                 ],
@@ -104,7 +199,11 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
           IconButton(
             icon: const Icon(Icons.list_alt),
             tooltip: 'My Orders',
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MyFertilizerOrdersScreen(farmerId: _farmerId))),
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) =>
+                        MyFertilizerOrdersScreen(farmerId: _farmerId))),
           ),
         ],
       ),
@@ -122,9 +221,21 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                       decoration: InputDecoration(
                         hintText: 'Search fertilizers...',
                         prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color.fromARGB(255, 29, 108, 92), width: 1.5)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color.fromARGB(255, 29, 108, 92), width: 1.5)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color.fromARGB(255, 20, 80, 70), width: 2.0)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color: Color.fromARGB(255, 29, 108, 92),
+                                width: 1.5)),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color: Color.fromARGB(255, 29, 108, 92),
+                                width: 1.5)),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color: Color.fromARGB(255, 20, 80, 70),
+                                width: 2.0)),
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       ),
                       onChanged: _filterFertilizers,
@@ -132,9 +243,9 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(_sortOrder == 'ascending' ? Icons.arrow_upward : _sortOrder == 'descending' ? Icons.arrow_downward : Icons.sort),
-                    onPressed: _toggleSortOrder,
-                    tooltip: 'Sort by price',
+                    icon: const Icon(Icons.filter_list),
+                    tooltip: 'Sort',
+                    onPressed: _openSortBottomSheet,
                   ),
                 ],
               ),
@@ -149,35 +260,49 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.results.isEmpty) {
+                  } else if (!snapshot.hasData ||
+                      snapshot.data!.results.isEmpty) {
                     return const Center(child: Text('No fertilizers found'));
                   }
 
                   _fertilizers = snapshot.data!.results;
-                  _filteredFertilizers = _searchQuery.isEmpty && _sortOrder == 'none'
-                      ? List.from(_fertilizers)
-                      : _filteredFertilizers.isEmpty
+                  _filteredFertilizers =
+                      _searchQuery.isEmpty && _sortOrder == 'none'
                           ? List.from(_fertilizers)
-                          : _filteredFertilizers;
+                          : _filteredFertilizers.isEmpty
+                              ? List.from(_fertilizers)
+                              : _filteredFertilizers;
 
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: _filteredFertilizers.length,
                     itemBuilder: (context, index) {
                       final f = _filteredFertilizers[index];
+                      final int currentQty = _cartQuantities[f.productId] ?? 0;
+                      final bool isInCart = currentQty > 0;
+                      final bool isOutOfStock = f.availableQuantity <= 0;
 
                       return GestureDetector(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FertilizerDetailsScreen(fertilizer: f))),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  FertilizerDetailsScreen(fertilizer: f)),
+                        ),
                         child: Card(
                           elevation: 4,
                           margin: const EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [Colors.white, Color.fromARGB(215, 223, 241, 223)],
+                                colors: [
+                                  Colors.white,
+                                  Color.fromARGB(215, 223, 241, 223)
+                                ],
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -186,77 +311,233 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                               children: [
                                 // Product Image
                                 ClipRRect(
-                                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                                  borderRadius: const BorderRadius.horizontal(
+                                      left: Radius.circular(12)),
                                   child: SizedBox(
                                     width: 120,
-                                    height: 120,
+                                    height: 200,
                                     child: Image.network(
-                                      f.images.isNotEmpty ? f.images[0].url : '',
+                                      f.images.isNotEmpty
+                                          ? f.images[0].url
+                                          : '',
                                       fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported, size: 40),
+                                      errorBuilder: (_, __, ___) => const Icon(
+                                          Icons.image_not_supported,
+                                          size: 40),
                                     ),
                                   ),
                                 ),
 
-                                // Product Details
+                                // Product Details + Dynamic Button
                                 Expanded(
                                   child: Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        // Product Name
                                         Text(
                                           f.productName,
-                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         const SizedBox(height: 4),
 
-                                        // MRP + Selling Price
                                         Row(
                                           children: [
                                             Text(
-                                              '₹${f.mrpPrice}',
-                                              style: const TextStyle(fontSize: 14, color: Colors.grey, decoration: TextDecoration.lineThrough),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
                                               '₹${f.discountedPrice.toStringAsFixed(0)}',
-                                              style: const TextStyle(fontSize: 16, color: Colors.green, fontWeight: FontWeight.bold),
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  color: Colors.green,
+                                                  fontWeight: FontWeight.bold),
                                             ),
+                                            const SizedBox(width: 10),
+                                            if (f.specialDiscount != '0%')
+                                              Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                              color: Colors.orange.shade100,
+                              borderRadius: BorderRadius.circular(6)),
+                          child: Text('${f.specialDiscount} OFF',
+                              style: const TextStyle(
+                                  color: Colors.orange,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            const Text('M.R.P',
+                                                style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey)),
+                                            const SizedBox(width: 8),
+                                            Text('₹${f.mrpPrice}',
+                                                style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey,
+                                                    decoration: TextDecoration
+                                                        .lineThrough)),
                                           ],
                                         ),
 
-                                        // Discount Badge
-                                        if (f.specialDiscount != '0%')
-                                          Text(
-                                            '${f.specialDiscount} off',
-                                            style: const TextStyle(fontSize: 12, color: Colors.orange),
-                                          ),
-
-                                        // Unit + Stock Info
                                         Row(
                                           children: [
-                                            Text(
-                                              f.unit,
-                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                            ),
+                                            Text(f.unit,
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey)),
                                             const Spacer(),
-                                            if (f.totalQuantity <= 20)
+                                            if (f.availableStock <= 20)
                                               Text(
-                                                f.totalQuantity <= 0
+                                                f.availableStock <= 0
                                                     ? 'Out of stock'
-                                                    : 'Only ${f.totalQuantity} left',
+                                                    : 'Only ${f.availableStock} left',
                                                 style: TextStyle(
                                                   fontSize: 11,
-                                                  color: f.totalQuantity <= 0 ? Colors.red : Colors.orange[700],
+                                                  color: f.availableStock <= 0
+                                                      ? Colors.red
+                                                      : Colors.orange[700],
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
                                           ],
                                         ),
+
+                                        const SizedBox(height: 12),
+
+                                        // DYNAMIC BUTTON: Add to Cart OR Quantity Controls
+                                        if (isOutOfStock)
+                                          const SizedBox(
+                                            width: double.infinity,
+                                            child: OutlinedButton(
+                                              onPressed: null,
+                                              child: Text('Out of Stock',
+                                                  style: TextStyle(
+                                                      color: Colors.grey)),
+                                            ),
+                                          )
+                                        else if (!isInCart)
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton.icon(
+                                              onPressed: () async {
+                                                final item = CartItem(
+                                                  productId: f.productId,
+                                                  quantity: 1,
+                                                  totalValue: f.discountedPrice,
+                                                );
+                                                await CartService()
+                                                    .addToCart(item);
+                                                await _refreshCartState();
+
+                                                if (mounted) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content:
+                                                          Text('Added to cart'),
+                                                      duration:
+                                                          Duration(seconds: 1),
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                              icon: const Icon(
+                                                  Icons.add_shopping_cart,
+                                                  size: 18),
+                                              label: const Text('Add to Cart'),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color.fromARGB(
+                                                        255, 29, 108, 92),
+                                                foregroundColor: Colors.white,
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8)),
+                                              ),
+                                            ),
+                                          )
+                                        else
+                                          // Quantity Controls
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: const Color.fromARGB(
+                                                      255, 29, 108, 92)
+                                                  .withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                  color: const Color.fromARGB(
+                                                      255, 29, 108, 92)),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(
+                                                      Icons
+                                                          .remove_circle_outline,
+                                                      color: Colors.red),
+                                                  onPressed: () async {
+                                                    final newQty =
+                                                        currentQty - 1;
+                                                    if (newQty <= 0) {
+                                                      await CartService()
+                                                          .removeFromCart(
+                                                              f.productId);
+                                                    } else {
+                                                      await CartService()
+                                                          .updateQuantity(
+                                                              f.productId,
+                                                              newQty);
+                                                    }
+                                                    await _refreshCartState();
+                                                  },
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 20),
+                                                  child: Text(
+                                                    '$currentQty',
+                                                    style: const TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                      Icons.add_circle_outline,
+                                                      color: Colors.green),
+                                                  onPressed: currentQty <
+                                                          f.availableQuantity
+                                                      ? () async {
+                                                          await CartService()
+                                                              .updateQuantity(
+                                                                  f.productId,
+                                                                  currentQty +
+                                                                      1);
+                                                          await _refreshCartState();
+                                                        }
+                                                      : null,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                       ],
                                     ),
                                   ),

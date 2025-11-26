@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../services/api_config.dart';
 import 'fertilizer_model.dart';
 
 class FertilizerApiService {
-  static const String _fetchFertilizerUrl = 'https://app.kisandesk.com/api/fertilizer/fetch_fertilizer_list';
-  static const String _fetchOrdersUrl = 'https://app.kisandesk.com/api/fertilizer/get_fertilizer_requests';
-  static const String _bookFertilizerUrl = 'https://app.kisandesk.com/api/fertilizer/book_fertilizer';
+  static const String _fetchFertilizerUrl = '${KD.api}/fertilizer/fetch_fertilizer_list';
+  static const String _fetchOrdersUrl = '${KD.api}/fertilizer/get_fertilizer_requests';
+  static const String _bookFertilizerUrl = '${KD.api}/fertilizer/book_fertilizer';
 
   Future<FertilizerResponse> fetchFertilizers() async {
     try {
@@ -28,7 +29,8 @@ class FertilizerApiService {
         body: jsonEncode({'farmerId': farmerId}),
       );
       if (response.statusCode == 200) {
-        return FertilizerOrderResponse.fromJsonString(response.body);
+        final Map<String, dynamic> json = jsonDecode(response.body) as Map<String, dynamic>;
+        return FertilizerOrderResponse.fromJson(json);
       } else {
         throw Exception('Failed to load fertilizer orders: ${response.statusCode}');
       }
