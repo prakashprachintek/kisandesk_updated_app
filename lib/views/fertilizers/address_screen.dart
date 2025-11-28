@@ -1,11 +1,13 @@
+// lib/screens/address_screen.dart
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:mainproject1/views/home/HomePage.dart';
 import '../services/user_session.dart';
 import 'address_service.dart';
 import 'address_model.dart';
-import 'add_address_screen.dart';
+import 'manage_address_screen.dart';
 import 'cart_service.dart';
 import 'fertilizer_api_service.dart';
-import 'fertilizer_list_screen.dart';
 import 'fertilizer_model.dart';
 
 enum PaymentMethod { cod, online }
@@ -22,10 +24,8 @@ class _AddressScreenState extends State<AddressScreen> {
   late Future<Cart> _cartFuture;
   bool _isLoading = false;
   PaymentMethod _paymentMethod = PaymentMethod.cod;
-
-  List<Address> _addresses = [];
   Address? _selectedAddress;
-  bool _isLoadingAddresses = true;
+  bool _isInitializing = true;
 
   @override
   void initState() {
@@ -33,36 +33,70 @@ class _AddressScreenState extends State<AddressScreen> {
     _cartFuture = widget.isBuyNow
         ? CartService().getTempBuyNowCart()
         : CartService().getCart();
-    _loadAddresses();
+    _initializeDefaultAddress();
   }
 
-  Future<void> _loadAddresses() async {
-    setState(() => _isLoadingAddresses = true);
-    final addresses = await AddressService.getAddresses();
-    final defaultAddr = await AddressService.getDefaultAddress();
+  Future<void> _initializeDefaultAddress() async {
+    final savedDefault = await AddressService.getDefaultAddress();
 
-    setState(() {
-      _addresses = addresses;
-      _selectedAddress = defaultAddr ?? (addresses.isNotEmpty ? addresses[0] : null);
-      _isLoadingAddresses = false;
-    });
-
-    // If no addresses → go to add address screen
-    if (_addresses.isEmpty) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAddressScreen()));
+    if (savedDefault != null) {
+      setState(() {
+        _selectedAddress = savedDefault;
+        _isInitializing = false;
       });
+      return;
+    }
+
+    // First time user → create default from profile
+    final user = UserSession.user;
+    if (user != null) {
+      final defaultAddress = Address(
+        id: 'profile_default_${DateTime.now().millisecondsSinceEpoch}',
+        fullName: user['full_name'] ?? 'User',
+        phone: user['phone'] ?? '',
+        houseDetails: user['address'] ?? '',
+        village: user['village'] ?? '',
+        taluka: user['taluka'] ?? '',
+        district: user['district'] ?? '',
+        state: user['state'] ?? '',
+        pincode: user['pincode'] ?? '',
+        isDefault: true,
+      );
+
+      final added = await AddressService.addAddress(defaultAddress);
+      if (added) {
+        setState(() {
+          _selectedAddress = defaultAddress;
+          _isInitializing = false;
+        });
+      }
+    } else {
+      setState(() => _isInitializing = false);
     }
   }
 
-  void _selectAddress(Address addr) async {
-    setState(() => _selectedAddress = addr);
-    await AddressService.setDefaultAddress(addr.id);
+  Future<void> _openAddressManager() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ManageAddressesScreen()),
+    );
+
+    if (result is Address) {
+      setState(() => _selectedAddress = result);
+    }
   }
 
-  String get _deliveryAddress => _selectedAddress != null
-      ? "${_selectedAddress!.houseDetails}, ${_selectedAddress!.village}, ${_selectedAddress!.taluka}, ${_selectedAddress!.district}, ${_selectedAddress!.state} - ${_selectedAddress!.pincode}"
-      : "No address selected";
+  String get _fullDeliveryAddress {
+    if (_selectedAddress == null) return "No address selected";
+    return [
+      _selectedAddress!.houseDetails,
+      _selectedAddress!.village,
+      _selectedAddress!.taluka,
+      _selectedAddress!.district,
+      _selectedAddress!.state,
+      _selectedAddress!.pincode,
+    ].where((s) => s.isNotEmpty).join(', ');
+  }
 
   Future<void> _placeOrder() async {
     if (_selectedAddress == null) {
@@ -80,21 +114,31 @@ class _AddressScreenState extends State<AddressScreen> {
           : await CartService().getCart();
 
       if (cart.items.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cart is empty')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Your cart is empty')),
+        );
         return;
       }
 
       final userId = UserSession.userId;
       if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please login')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please login again')),
+        );
         return;
       }
 
       final response = await FertilizerApiService().bookFertilizerOrder(
         userId: userId,
-        products: cart.items.map((i) => {'id': i.productId, 'quantity': i.quantity.toString()}).toList(),
+        products: cart.items
+            .map((item) => {
+                  'id': item.productId,
+                  'quantity': item.quantity.toString(),
+                })
+            .toList(),
         amount: cart.totalCartValue.toStringAsFixed(0),
-        address: _deliveryAddress,
+        address:
+            "$_fullDeliveryAddress\n${_selectedAddress!.fullName} | ${_selectedAddress!.phone}",
       );
 
       if (!mounted) return;
@@ -108,16 +152,19 @@ class _AddressScreenState extends State<AddressScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_paymentMethod == PaymentMethod.cod
-                ? 'Order placed! Pay ₹${cart.totalCartValue.toStringAsFixed(0)} on delivery'
-                : 'Order placed successfully!'),
+            content: Text(
+              _paymentMethod == PaymentMethod.cod
+                  ? 'Order placed! Pay ₹${cart.totalCartValue.toStringAsFixed(0)} on delivery'
+                  : 'Order placed successfully!',
+            ),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
           ),
         );
 
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const FertilizerListScreen()),
+          MaterialPageRoute(builder: (_) => const HomePage()),
           (route) => false,
         );
       } else {
@@ -126,139 +173,234 @@ class _AddressScreenState extends State<AddressScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  final List<Map<String, dynamic>> _dummyOffers = [
+    {
+      "title": "🎉 Flat 20% Off",
+      "subtitle": "Use code FESTIVE20 on checkout",
+      "colors": [Colors.pink, Colors.purple],
+    },
+    {
+      "title": "🔥 Buy 2 Get 1 Free",
+      "subtitle": "Only for Fertilizers & Seeds category",
+      "colors": [Colors.orange, Colors.red],
+    },
+    {
+      "title": "💰 Save ₹50",
+      "subtitle": "On orders above ₹499",
+      "colors": [Colors.blue, Colors.teal],
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Delivery & Payment', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Delivery & Payment',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: const Color.fromARGB(255, 29, 108, 92),
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: FutureBuilder<Cart>(
         future: _cartFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              _isInitializing) {
+            return const Center(
+                child: CircularProgressIndicator(color: Colors.green));
           }
 
           final cart = snapshot.data ?? Cart(items: [], totalCartValue: 0.0);
-          final totalAmount = cart.items.fold(0.0, (sum, i) => sum + i.totalValue);
+          final totalAmount = cart.totalCartValue;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Total Summary
+                // Order Summary
+                SizedBox(
+                  height: 150,
+                  child: CarouselSlider(
+                    options: CarouselOptions(
+                      height: 150,
+                      autoPlay: true,
+                      enlargeCenterPage: true,
+                      viewportFraction: 1.0,
+                      autoPlayInterval: const Duration(seconds: 3),
+                    ),
+                    items: _dummyOffers.map((offer) {
+                      return Builder(
+                        builder: (context) {
+                          return Container(
+                            width: MediaQuery.of(context).size.width,
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                              gradient: LinearGradient(
+                                colors: offer["colors"],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    offer["title"],
+                                    style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    offer["subtitle"],
+                                    style: const TextStyle(
+                                        fontSize: 15, color: Colors.white70),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 22),
+
+                // Selected Address Card
                 Card(
-                  elevation: 6,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  color: Colors.green.shade50,
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: Colors.green, width: 2),
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('${cart.items.length} item${cart.items.length == 1 ? '' : 's'}', style: const TextStyle(fontSize: 18)),
-                            const SizedBox(height: 4),
-                            const Text('Total Payable', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                            const Text('Delivery Address',
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold)),
+                            TextButton(
+                              onPressed: _openAddressManager,
+                              child: const Text('Change',
+                                  style: TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16)),
+                            ),
                           ],
                         ),
-                        Text('₹${totalAmount.toStringAsFixed(0)}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.green)),
+                        const Divider(color: Colors.green),
+                        if (_selectedAddress != null) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.person, color: Colors.green),
+                              const SizedBox(width: 8),
+                              Text(_selectedAddress!.fullName,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(Icons.phone,
+                                  color: Colors.green, size: 20),
+                              const SizedBox(width: 8),
+                              Text(_selectedAddress!.phone),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              const Icon(Icons.location_on,
+                                  color: Colors.green),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(_fullDeliveryAddress)),
+                            ],
+                          ),
+                          if (_selectedAddress!.isDefault)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.star,
+                                      color: Colors.amber, size: 20),
+                                  SizedBox(width: 4),
+                                  Text('Default Address',
+                                      style: TextStyle(
+                                          color: Colors.amber,
+                                          fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                            ),
+                        ] else
+                          const Text('No address selected'),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 28),
-
-                // Select Address Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Delivery Address', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    TextButton.icon(
-                      onPressed: () async {
-                        final added = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAddressScreen()));
-                        if (added == true) _loadAddresses();
-                      },
-                      icon: const Icon(Icons.add_circle, color: Colors.green),
-                      label: const Text('Add New', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Addresses List
-                _isLoadingAddresses
-                    ? const Center(child: CircularProgressIndicator())
-                    : _addresses.isEmpty
-                        ?  Card(
-                            color: Colors.orange.shade50,
-                            child: Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Text('No saved addresses. Tap "Add New" to save one!', style: TextStyle(fontWeight: FontWeight.w500)),
-                            ),
-                          )
-                        : Column(
-                            children: _addresses.map((addr) {
-                              final isSelected = _selectedAddress?.id == addr.id;
-                              return Card(
-                                elevation: isSelected ? 8 : 3,
-                                color: isSelected ? Colors.green.shade50 : null,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: isSelected ? const BorderSide(color: Colors.green, width: 2) : BorderSide.none,
-                                ),
-                                child: RadioListTile<Address>(
-                                  title: Text(addr.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(addr.fullAddress, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                      Text(addr.phone, style: const TextStyle(color: Colors.grey)),
-                                    ],
-                                  ),
-                                  secondary: addr.isDefault ? const Icon(Icons.star, color: Colors.amber) : null,
-                                  value: addr,
-                                  groupValue: _selectedAddress,
-                                  onChanged: (val) => _selectAddress(val!),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-
                 const SizedBox(height: 32),
 
                 // Payment Method
-                const Text('Payment Method', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const Text('Payment Method',
+                    style:
+                        TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
                 Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                   child: Column(
                     children: [
                       RadioListTile<PaymentMethod>(
-                        title: const Text('Cash on Delivery (COD)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                        title: const Text('Cash on Delivery (COD)',
+                            style: TextStyle(
+                                fontSize: 17, fontWeight: FontWeight.bold)),
                         subtitle: const Text('Pay when product is delivered'),
-                        secondary: const Icon(Icons.payments, color: Colors.green, size: 28),
+                        secondary:
+                            const Icon(Icons.payments, color: Colors.green),
                         value: PaymentMethod.cod,
                         groupValue: _paymentMethod,
                         onChanged: (v) => setState(() => _paymentMethod = v!),
                       ),
                       const Divider(height: 1),
                       RadioListTile<PaymentMethod>(
-                        title: const Text('Online Payment', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                        title: const Text('Online Payment',
+                            style: TextStyle(
+                                fontSize: 17, fontWeight: FontWeight.bold)),
                         subtitle: const Text('UPI • Card • Netbanking'),
-                        secondary: const Icon(Icons.credit_card, color: Colors.blue, size: 28),
+                        secondary:
+                            const Icon(Icons.credit_card, color: Colors.blue),
                         value: PaymentMethod.online,
                         groupValue: _paymentMethod,
                         onChanged: (v) => setState(() => _paymentMethod = v!),
@@ -266,18 +408,170 @@ class _AddressScreenState extends State<AddressScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 20),
 
-                const SizedBox(height: 40),
+                // REPLACE THE OLD SUMMARY CARD WITH THIS ONE
+FutureBuilder<List<dynamic>>(
+  future: Future.wait([
+    FertilizerApiService().fetchFertilizers(),
+    widget.isBuyNow ? CartService().getTempBuyNowCart() : CartService().getCart(),
+  ]),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    if (!snapshot.hasData || snapshot.hasError) {
+      return const Card(
+        elevation: 6,
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Text('Error loading cart summary'),
+        ),
+      );
+    }
+
+    final fertilizers = snapshot.data![0] as FertilizerResponse;
+    final cart = snapshot.data![1] as Cart;
+    final totalAmount = cart.totalCartValue;
+
+    final fertilizerMap = {for (var f in fertilizers.results) f.productId: f};
+
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ExpansionTile(
+        // collapsedBackgroundColor: Colors.green.shade50,
+        backgroundColor: Colors.green.shade50,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${cart.items.length} item${cart.items.length == 1 ? '' : 's'}',
+                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+                ),
+                const Text('Tap to view details', style: TextStyle(color: Colors.green, fontSize: 14)),
+              ],
+            ),
+            Text(
+              '₹${totalAmount.toStringAsFixed(0)}',
+              style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.green),
+            ),
+          ],
+        ),
+        children: [
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Column(
+              children: cart.items.map((item) {
+                final fertilizer = fertilizerMap[item.productId] ?? Fertilizer(
+                  id: '',
+                  productName: 'Product Not Found',
+                  mrpPrice: '0',
+                  sellPrice: '0',
+                  productQuantity: '1',
+                  productUnit: 'Unit',
+                  productId: item.productId,
+                  soldQuantity: '0',
+                  availableQuantity: 0,
+                  status: '',
+                  images: [],
+                  isDeleted: true,
+                  createdAt: '',
+                  createdBy: '',
+                  category: '',
+                );
+
+                final unitPrice = item.totalValue / item.quantity;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Optional Image
+                      // if (fertilizer.images.isNotEmpty)
+                      //   ClipRRect(
+                      //     borderRadius: BorderRadius.circular(8),
+                      //     child: Image.network(fertilizer.images[0].url, width: 50, height: 50, fit: BoxFit.cover),
+                      //   ),
+                      // const SizedBox(width: 12),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              fertilizer.productName,
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${item.quantity} × ₹${unitPrice.toStringAsFixed(0)} • ${fertilizer.productUnit}',
+                              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '₹${item.totalValue.toStringAsFixed(0)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.green),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.green.shade100,
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Total Payable', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('₹${totalAmount.toStringAsFixed(0)}', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.green)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  },
+),
+
+                const SizedBox(height: 32),
 
                 // Place Order Button
                 SizedBox(
                   width: double.infinity,
                   height: 62,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _placeOrder,
+                    onPressed: _isLoading || _selectedAddress == null
+                        ? null
+                        : _placeOrder,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 29, 108, 92),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       elevation: 10,
                     ),
                     child: _isLoading
@@ -285,8 +579,11 @@ class _AddressScreenState extends State<AddressScreen> {
                         : Text(
                             _paymentMethod == PaymentMethod.cod
                                 ? 'Place Order • Pay on Delivery'
-                                : 'Pay ₹${totalAmount.toStringAsFixed(0)} Online',
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                                : 'Pay ₹${totalAmount.toStringAsFixed(0)} Now',
+                            style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
                           ),
                   ),
                 ),

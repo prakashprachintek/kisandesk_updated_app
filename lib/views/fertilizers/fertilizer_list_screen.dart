@@ -358,16 +358,23 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                             const SizedBox(width: 10),
                                             if (f.specialDiscount != '0%')
                                               Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                              color: Colors.orange.shade100,
-                              borderRadius: BorderRadius.circular(6)),
-                          child: Text('${f.specialDiscount} OFF',
-                              style: const TextStyle(
-                                  color: Colors.orange,
-                                  fontWeight: FontWeight.bold)),
-                        ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2),
+                                                decoration: BoxDecoration(
+                                                    color:
+                                                        Colors.orange.shade100,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6)),
+                                                child: Text(
+                                                    '${f.specialDiscount} OFF',
+                                                    style: const TextStyle(
+                                                        color: Colors.orange,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
                                           ],
                                         ),
                                         Row(
