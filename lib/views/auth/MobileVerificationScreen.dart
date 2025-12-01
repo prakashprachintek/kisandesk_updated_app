@@ -179,7 +179,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                   keyboardType: TextInputType.phone,
                   maxLength: 10,
                   decoration: InputDecoration(
-                    labelText: tr("10-digit number"),
+                    labelText: tr("10-digit_number"),
                     prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
                     fillColor: Colors.white,
                     filled: true,
@@ -196,7 +196,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 ),
                 SizedBox(height: 24),
                 GradientAuthButton(
-                  text: isLoading ? tr("Checking...") : tr("Send OTP"),
+                  text: isLoading ? tr("Checking...") : tr("Send_OTP"),
                   onTap: isLoading || !isPhoneValid
                       ? null
                       : () async {
@@ -213,11 +213,11 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 // Terms and Conditions text
                 Text.rich(
                   TextSpan(
-                    text: "By continuing, you agree to our ",
+                    text: "By_continuing,_you_agree_to_our_",
                     style: const TextStyle(fontSize: 13, color: Colors.black54),
                     children: [
                       TextSpan(
-                        text: "Terms & Conditions",
+                        text: "Terms_&_Conditions".tr(),
                         style:  TextStyle(
                           color: AppColors.buttonPrimary,
                           fontWeight: FontWeight.w600,
@@ -227,7 +227,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                       ),
                       const TextSpan(text: " and "),
                       TextSpan(
-                        text: "Privacy Policy",
+                        text: "Privacy_Policy".tr(),
                         style: const TextStyle(
                           color: AppColors.buttonPrimary,
                           fontWeight: FontWeight.w600,
