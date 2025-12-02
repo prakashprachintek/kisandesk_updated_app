@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mainproject1/views/fertilizers/fertilizer_api_service.dart';
 import '../services/user_session.dart';
 import 'fertilizer_model.dart';
 import 'cart_service.dart';
 import 'cart_screen.dart';
 import 'address_screen.dart';
-import 'my_fertilizer_orders_screen.dart'; // Create this next — I'll help you!
+import 'my_fertilizer_orders_screen.dart';
 
 class FertilizerDetailsScreen extends StatefulWidget {
   final Fertilizer fertilizer;
@@ -37,6 +38,132 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
         _quantity = newQty;
       }
     });
+  }
+
+  // Add these in _FertilizerDetailsScreenState
+  final TextEditingController _reviewController = TextEditingController();
+  int _selectedRating = 5;
+  bool _isSubmittingReview = false;
+
+// Helper to calculate average rating
+  double _calculateAverageRating(List<Review> reviews) {
+    if (reviews.isEmpty) return 0.0;
+    final sum = reviews
+        .map((r) => double.tryParse(r.rating) ?? 0)
+        .reduce((a, b) => a + b);
+    return sum / reviews.length;
+  }
+
+// Star selector for writing review
+  Widget _buildStarRatingSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (index) {
+        return IconButton(
+          iconSize: 48,
+          padding: EdgeInsets.zero,
+          icon: Icon(
+            index < _selectedRating ? Icons.star : Icons.star_border,
+            color: Colors.amber,
+            size: 48,
+          ),
+          onPressed: () {
+            setState(() => _selectedRating = index + 1);
+          },
+        );
+      }),
+    );
+  }
+
+// Review card (reusable)
+  Widget _buildReviewCard(Review review) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Colors.green.shade100,
+                  child: Text(
+                    review.farmer.isNotEmpty
+                        ? review.farmer[0].toUpperCase()
+                        : 'A',
+                    style: TextStyle(
+                        color: Colors.green.shade800,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(review.farmer,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15)),
+                ),
+                _buildRatingStars(double.tryParse(review.rating) ?? 0),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(review.comment,
+                style: const TextStyle(fontSize: 14.5, height: 1.5)),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Submit review API call
+  Future<void> _submitReview() async {
+    if (_reviewController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please write a review')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmittingReview = true);
+
+    try {
+      final response = await FertilizerApiService().addRating(
+        fid: widget.fertilizer.id,
+        userId: UserSession.userId!,
+        rating: _selectedRating.toString(),
+        comment: _reviewController.text.trim(),
+      );
+
+      if (response['status'] == 'success') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Thank you! Your review has been submitted'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        _reviewController.clear();
+        setState(() => _selectedRating = 5);
+
+        // Optional: Refresh product to show new review
+        // You can refetch the product if needed
+      } else {
+        throw Exception(response['message'] ?? 'Failed to submit');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() => _isSubmittingReview = false);
+    }
   }
 
   // Add to existing cart
@@ -106,6 +233,8 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
     final isOutOfStock = f.availableQuantity <= 0;
     final reviews = f.reviews ?? [];
     final details = f.productDetails;
+    final description = f.description;
+    
 
     return Scaffold(
       appBar: AppBar(
@@ -216,9 +345,9 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                       if (f.mrp > f.sell)
                         Text('M.R.P ',
                             style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey,
-                                )),
+                              fontSize: 18,
+                              color: Colors.grey,
+                            )),
                       if (f.mrp > f.sell)
                         Text('₹${f.mrp.toStringAsFixed(0)}',
                             style: const TextStyle(
@@ -292,6 +421,24 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                     Text(details.content,
                         style: const TextStyle(fontSize: 15, height: 1.5)),
                     const SizedBox(height: 20),
+                    const Text('Usage',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(details.usage,
+                        style: const TextStyle(fontSize: 15, height: 1.5)),
+                    const SizedBox(height: 20),
+                    
+                  ],
+                  // Description
+                  if (description!.isNotEmpty) ...[
+                    const Text('Description',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(description,
+                        style: const TextStyle(fontSize: 15, height: 1.5)),
+                    const SizedBox(height: 20),
                   ],
 
                   // QUANTITY + BUTTONS
@@ -362,116 +509,231 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
 
                   const SizedBox(height: 16),
 
-    /*
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const CartScreen())),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                            color: Color.fromARGB(255, 29, 108, 92), width: 2),
-                        minimumSize: const Size(0, 54),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                      child: const Text('Go to Cart',
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Color.fromARGB(255, 29, 108, 92),
-                              fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                  
+// Reviews Section
+                  if (reviews.isNotEmpty || true) ...[
+                    const SizedBox(height: 28),
 
-                  const SizedBox(height: 32),
-                  */
-
-                  // === ALL YOUR REVIEWS CODE BELOW (unchanged & perfect) ===
-                  if (reviews.isNotEmpty) ...[
-                    const Divider(height: 40, thickness: 1),
-                    const Text('Customer Reviews',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        _buildRatingStars(reviews
-                                .map((r) => double.tryParse(r.rating) ?? 0)
-                                .reduce((a, b) => a + b) /
-                            reviews.length),
-                        const SizedBox(width: 10),
-                        Text(
-                          '${(reviews.map((r) => double.tryParse(r.rating) ?? 0).reduce((a, b) => a + b) / reviews.length).toStringAsFixed(1)} out of 5',
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
-                        const Spacer(),
-                        Text(
-                            '${reviews.length} review${reviews.length == 1 ? '' : 's'}',
-                            style: TextStyle(color: Colors.grey[600])),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    ...reviews.take(3).map((review) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: Colors.grey.shade200),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 18,
-                                      backgroundColor: Colors.green.shade100,
-                                      child: Text(
-                                        review.farmer.isNotEmpty
-                                            ? review.farmer[0].toUpperCase()
-                                            : 'A',
-                                        style: TextStyle(
-                                            color: Colors.green.shade800,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                        child: Text(review.farmer,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15))),
-                                    _buildRatingStars(
-                                        double.tryParse(review.rating) ?? 0),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Text(review.comment,
-                                    style: const TextStyle(
-                                        fontSize: 14.5, height: 1.5)),
-                              ],
+                    // ──────────────────────────────
+                    // 1. CUSTOMER REVIEWS (No Container!)
+                    // ──────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0.2),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title
+                          const Text(
+                            'Customer Reviews',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
                           ),
-                        )),
-                    if (reviews.length > 3)
-                      Center(
-                        child: TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text('More reviews coming soon!')));
-                          },
-                          child: Text('View all ${reviews.length} reviews',
-                              style: const TextStyle(fontSize: 15)),
-                        ),
+                          const SizedBox(height: 18),
+
+                          // Average Rating + Distribution Bars
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Big Rating Number
+                              Column(
+                                children: [
+                                  Text(
+                                    _calculateAverageRating(reviews)
+                                        .toStringAsFixed(1),
+                                    style: const TextStyle(
+                                      fontSize: 56,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                  _buildRatingStars(
+                                      _calculateAverageRating(reviews)),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '${reviews.length} review${reviews.length == 1 ? '' : 's'}',
+                                    style: TextStyle(
+                                        color: Colors.grey[700], fontSize: 15),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 32),
+                              Expanded(
+                                child: Column(
+                                  children: [5, 4, 3, 2, 1].map((star) {
+                                    final count = reviews
+                                        .where((r) =>
+                                            (double.tryParse(r.rating) ?? 0)
+                                                .floor() ==
+                                            star)
+                                        .length;
+                                    final percentage = reviews.isEmpty
+                                        ? 0.0
+                                        : (count / reviews.length) * 100;
+
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 5),
+                                      child: Row(
+                                        children: [
+                                          SizedBox(
+                                              width: 20,
+                                              child: Text('$star',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w600))),
+                                          const Icon(Icons.star,
+                                              size: 18, color: Colors.amber),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: LinearProgressIndicator(
+                                              value: percentage / 100,
+                                              backgroundColor: Colors.grey[300],
+                                              color: Colors.amber,
+                                              minHeight: 9,
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          SizedBox(
+                                              width: 32,
+                                              child: Text('$count',
+                                                  textAlign: TextAlign.right,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w600))),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Expandable Reviews
+                          ExpansionTile(
+                            tilePadding: EdgeInsets.zero,
+                            childrenPadding: EdgeInsets.zero,
+                            backgroundColor: Colors.transparent,
+                            title: Text(
+                              'Read all ${reviews.length} reviews',
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: Color.fromARGB(255, 29, 108, 92),
+                              ),
+                            ),
+                            trailing: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                size: 28,
+                                color: Color.fromARGB(255, 29, 108, 92)),
+                            children: [
+                              const Divider(
+                                  height: 32,
+                                  thickness: 1,
+                                  color: Color(0xFFE0E0E0)),
+                              ...reviews
+                                  .map((review) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 20),
+                                        child: _buildReviewCard(review),
+                                      ))
+                                  .toList(),
+                              const SizedBox(height: 12),
+                            ],
+                          ),
+                        ],
                       ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // ──────────────────────────────
+                    // 2. WRITE YOUR REVIEW (No Container!)
+                    // ──────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0.2),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(Icons.rate_review_outlined,
+                                  color: Colors.green, size: 32),
+                              SizedBox(width: 12),
+                              Text(
+                                'Write Your Review',
+                                style: TextStyle(
+                                    fontSize: 21, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Center(child: _buildStarRatingSelector()),
+                          const SizedBox(height: 20),
+                          TextField(
+                            controller: _reviewController,
+                            maxLines: 6,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Share your experience with this fertilizer...',
+                              hintStyle: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontStyle: FontStyle.italic),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.all(18),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300)),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300)),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: const BorderSide(
+                                      color: Colors.green, width: 2.5)),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed:
+                                  _isSubmittingReview ? null : _submitReview,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color.fromARGB(255, 29, 108, 92),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18)),
+                                elevation: 6,
+                              ),
+                              child: _isSubmittingReview
+                                  ? const SizedBox(
+                                      height: 26,
+                                      width: 26,
+                                      child: CircularProgressIndicator(
+                                          color: Colors.white, strokeWidth: 3))
+                                  : const Text('Submit Review',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
                   ],
                   const SizedBox(height: 20),
                 ],
