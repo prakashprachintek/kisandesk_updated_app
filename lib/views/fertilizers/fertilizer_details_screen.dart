@@ -40,9 +40,13 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
     });
   }
 
+  //Page Controllers for images
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
   // Add these in _FertilizerDetailsScreenState
   final TextEditingController _reviewController = TextEditingController();
-  int _selectedRating = 5;
+  int _selectedRating = 0;
   bool _isSubmittingReview = false;
 
 // Helper to calculate average rating
@@ -234,7 +238,6 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
     final reviews = f.reviews ?? [];
     final details = f.productDetails;
     final description = f.description;
-    
 
     return Scaffold(
       appBar: AppBar(
@@ -280,7 +283,7 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
 
           // My Orders Icon
           IconButton(
-            icon: const Icon(Icons.list_alt),
+            icon: const Icon(Icons.inventory_2_outlined),
             tooltip: 'My Orders',
             onPressed: () => Navigator.push(
                 context,
@@ -299,19 +302,83 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
             SizedBox(
               height: 240,
               width: double.infinity,
-              child: f.images.isEmpty
-                  ? Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, size: 80))
-                  : PageView.builder(
-                      itemCount: f.images.length,
-                      itemBuilder: (context, index) => Image.network(
-                        f.images[index].url,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) =>
-                            const Icon(Icons.error, size: 60),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    itemCount: f.images.length,
+                    onPageChanged: (index) {
+                      setState(() => _currentPage = index);
+                    },
+                    itemBuilder: (context, index) => Image.network(
+                      f.images[index].url,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.error, size: 60),
+                    ),
+                  ),
+
+                  // LEFT ARROW
+                  if (f.images.length > 1 && _currentPage > 0)
+                    Positioned(
+                      left: 8,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black45,
+                        child: IconButton(
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () {
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                        ),
                       ),
                     ),
+
+                  // RIGHT ARROW
+                  if (f.images.length > 1 && _currentPage < f.images.length - 1)
+                    Positioned(
+                      right: 8,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black45,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_forward,
+                              color: Colors.white),
+                          onPressed: () {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // DOT INDICATORS
+                  if (f.images.length > 1)
+                    Positioned(
+                      bottom: 10,
+                      child: Row(
+                        children: List.generate(f.images.length, (index) {
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: _currentPage == index ? 10 : 8,
+                            height: _currentPage == index ? 10 : 8,
+                            decoration: BoxDecoration(
+                              color: _currentPage == index
+                                  ? Colors.white
+                                  : Colors.white54,
+                              shape: BoxShape.circle,
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                ],
+              ),
             ),
 
             Padding(
@@ -319,9 +386,17 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(f.productName,
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold)),
+                  Row(
+                    children: [
+                      Text(f.productName,
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 12),
+                      Text('${f.unit} Pack',
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                   const SizedBox(height: 8),
 
                   if (f.category.isNotEmpty)
@@ -375,8 +450,11 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                         ),
                     ],
                   ),
-
                   const SizedBox(height: 12),
+
+                  /*
+                  const SizedBox(height: 12),
+                  
                   Row(
                     children: [
                       Icon(
@@ -405,41 +483,7 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 12),
-                  Text('Pack Size: ${f.unit}',
-                      style: const TextStyle(fontSize: 16)),
-
-                  const SizedBox(height: 20),
-
-                  // Product Details
-                  if (details != null && details.content.trim().isNotEmpty) ...[
-                    const Text('Product Details',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(details.content,
-                        style: const TextStyle(fontSize: 15, height: 1.5)),
-                    const SizedBox(height: 20),
-                    const Text('Usage',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(details.usage,
-                        style: const TextStyle(fontSize: 15, height: 1.5)),
-                    const SizedBox(height: 20),
-                    
-                  ],
-                  // Description
-                  if (description!.isNotEmpty) ...[
-                    const Text('Description',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(description,
-                        style: const TextStyle(fontSize: 15, height: 1.5)),
-                    const SizedBox(height: 20),
-                  ],
+                  */
 
                   // QUANTITY + BUTTONS
                   Row(
@@ -506,6 +550,40 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: 12),
+                  Text('Pack Size: ${f.unit}',
+                      style: const TextStyle(fontSize: 16)),
+
+                  const SizedBox(height: 20),
+
+                  // Product Details
+                  if (details != null && details.content.trim().isNotEmpty) ...[
+                    const Text('Product Details',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(details.content,
+                        style: const TextStyle(fontSize: 15, height: 1.5)),
+                    const SizedBox(height: 20),
+                    const Text('Usage',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(details.usage,
+                        style: const TextStyle(fontSize: 15, height: 1.5)),
+                    const SizedBox(height: 20),
+                  ],
+                  // Description
+                  if (description!.isNotEmpty) ...[
+                    const Text('Description',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(description,
+                        style: const TextStyle(fontSize: 15, height: 1.5)),
+                    const SizedBox(height: 20),
+                  ],
 
                   const SizedBox(height: 16),
 

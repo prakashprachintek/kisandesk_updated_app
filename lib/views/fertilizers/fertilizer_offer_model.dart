@@ -1,4 +1,4 @@
-// lib/models/offer_model.dart
+// lib/views/fertilizers/fertilizer_offer_model.dart
 class Offer {
   final String title;
   final String message;
@@ -28,8 +28,15 @@ class OfferResponse {
   OfferResponse({required this.offers});
 
   factory OfferResponse.fromJson(Map<String, dynamic> json) {
-    var list = json['offers'] as List<dynamic>? ?? [];
-    List<Offer> offerList = list.map((i) => Offer.fromJson(i)).toList();
+    List<dynamic> results = json['results'] ?? [];
+
+    if (results.isEmpty) return OfferResponse(offers: []);
+
+    List<dynamic> offerListJson = results[0]['offers'] ?? [];
+
+    List<Offer> offerList =
+        offerListJson.map((i) => Offer.fromJson(i)).toList();
+
     return OfferResponse(offers: offerList);
   }
 }
