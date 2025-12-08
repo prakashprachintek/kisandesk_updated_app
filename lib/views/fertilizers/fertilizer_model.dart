@@ -286,68 +286,129 @@ class OrderProduct {
   }
 }
 
-class FertilizerOrder {
+// ADD THIS NEW MODEL FOR RICH ORDER DATA
+class RichFertilizerOrder {
   final String id;
-  final String farmerId;
-  final List<OrderProduct> products;
   final String orderId;
   final String amount;
-  final String? paymentMode;
   final String status;
-  final List<ActivityLog> activityLog;
+  final String createdAt;
+  
+  // Farmer info
+  final String farmerName;
+  final String farmerPhone;
+  final String farmerVillage;
 
-  FertilizerOrder({
+  // Parallel arrays for products
+  final List<String> productIds;
+  final List<String> productNames;
+  final List<String> sellPrices;
+  final List<String> productQuantities;
+  final List<String> productCategories;
+
+  // Nested product details & images
+  final List<ProductDetail> productDetails;
+  final List<List<FertilizerImage>> productImages; // List of list of images per product
+
+  RichFertilizerOrder({
     required this.id,
-    required this.farmerId,
-    required this.products,
     required this.orderId,
     required this.amount,
-    required this.paymentMode,
     required this.status,
-    required this.activityLog,
+    required this.createdAt,
+    required this.farmerName,
+    required this.farmerPhone,
+    required this.farmerVillage,
+    required this.productIds,
+    required this.productNames,
+    required this.sellPrices,
+    required this.productQuantities,
+    required this.productCategories,
+    required this.productDetails,
+    required this.productImages,
   });
 
-  factory FertilizerOrder.fromJson(Map<String, dynamic> json) {
-    List<OrderProduct> products = [];
-    final productData = json['product_id'];
-    if (productData is List) {
-      products = productData.map((item) => OrderProduct.fromJson(item)).toList();
-    } else if (productData is String) {
-      products = [OrderProduct(id: productData, quantity: '1')];
-    }
+  factory RichFertilizerOrder.fromJson(Map<String, dynamic> json) {
+    var productIds = (json['product_id'] as List<dynamic>?)?.cast<String>() ?? [];
+    var productNames = (json['product_name'] as List<dynamic>?)?.cast<String>() ?? [];
+    var sellPrices = (json['sell_price'] as List<dynamic>?)?.cast<String>() ?? [];
+    var quantities = (json['product_quantity'] as List<dynamic>?)?.cast<String>() ?? [];
+    var categories = (json['product_category'] as List<dynamic>?)?.cast<String>() ?? [];
 
-    return FertilizerOrder(
-      id: json['_id'] as String,
-      farmerId: json['farmer_id'] as String,
-      products: products,
-      orderId: json['order_id'] as String,
-      amount: json['amount'] as String,
-      paymentMode: json['payment_mode'] as String?,
-      status: json['status'] as String,
-      activityLog: (json['activity_log'] as List<dynamic>? ?? [])
-          .map((log) => ActivityLog.fromJson(log as Map<String, dynamic>))
-          .toList(),
+    // Parse product_details (list of maps)
+    var detailsList = (json['product_details'] as List<dynamic>?) ?? [];
+    var productDetails = detailsList.map((d) => ProductDetail.fromJson(d as Map<String, dynamic>)).toList();
+
+    // Parse images: [[{url:...}], [{url:...}, {url:...}]]
+    var rawImages = (json['images'] as List<dynamic>?) ?? [];
+    var productImages = rawImages.map<List<FertilizerImage>>((item) {
+      if (item is List) {
+        return item.map((img) => FertilizerImage.fromJson(img as Map<String, dynamic>)).toList();
+      }
+      return <FertilizerImage>[];
+    }).toList();
+
+    return RichFertilizerOrder(
+      id: json['_id'] as String? ?? '',
+      orderId: json['order_id'] as String? ?? '',
+      amount: json['amount'] as String? ?? '0',
+      status: json['status'] as String? ?? 'Pending',
+      createdAt: json['created_at'] as String? ?? '',
+      farmerName: json['farmer_name'] as String? ?? 'Unknown Farmer',
+      farmerPhone: json['farmer_phone'] as String? ?? '',
+      farmerVillage: json['farmer_village'] as String? ?? '',
+      productIds: productIds,
+      productNames: productNames,
+      sellPrices: sellPrices,
+      productQuantities: quantities,
+      productCategories: categories,
+      productDetails: productDetails,
+      productImages: productImages,
+    );
+  }
+
+  String formatDate() {
+    try {
+      final date = DateTime.parse(createdAt);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return 'N/A';
+    }
+  }
+}
+
+// New simple product detail class
+class ProductDetail {
+  final String content;
+  final String usage;
+
+  ProductDetail({required this.content, required this.usage});
+
+  factory ProductDetail.fromJson(Map<String, dynamic> json) {
+    return ProductDetail(
+      content: json['content'] as String? ?? '',
+      usage: json['usage'] as String? ?? '',
     );
   }
 }
 
-class FertilizerOrderResponse {
+class RichFertilizerOrderResponse {
   final String status;
   final String message;
-  final List<FertilizerOrder> results;
+  final List<RichFertilizerOrder> results;
 
-  FertilizerOrderResponse({
+  RichFertilizerOrderResponse({
     required this.status,
     required this.message,
     required this.results,
   });
 
-  factory FertilizerOrderResponse.fromJson(Map<String, dynamic> json) {
-    return FertilizerOrderResponse(
+  factory RichFertilizerOrderResponse.fromJson(Map<String, dynamic> json) {
+    return RichFertilizerOrderResponse(
       status: json['status'] as String? ?? '',
       message: json['message'] as String? ?? '',
       results: (json['results'] as List<dynamic>? ?? [])
-          .map((item) => FertilizerOrder.fromJson(item as Map<String, dynamic>))
+          .map((item) => RichFertilizerOrder.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
