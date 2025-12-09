@@ -97,10 +97,6 @@
   "price": "Price",
   "quantity": "Quantity",
   "state": "State",
-  "district": "District",
-  "taluka": "Taluka",
-  "village": "Village",
-  "pincode": "Pincode",
   "selectImage": "Select Image",
   "imageUploaded": "Image Uploaded: {fileName}",
   "submit": "Submit",
@@ -120,10 +116,7 @@
   "Full Name": "Full Name",
   "Phone Number": "Phone Number",
   "Address": "Address",
-  "Pincode": "Pincode",
-  "District": "District",
-  "Taluka": "Taluka",
-  "Village": "Village",
+
 
   "appBarTitle": "My Dashboard",
   "post": "Post",
@@ -174,9 +167,9 @@
   "transactionDateLabel": "Transaction Date:",
   "farmerNameLabel": "Name:",
   "phoneLabel": "Phone:",
-  "villageLabel": "Village:",
-  "talukaLabel": "Taluka:",
-  "districtLabel": "District:",
+
+
+
 
 
   "search_hint": "Search Machinery",
@@ -282,7 +275,6 @@
   "add_me_as_labor_title": "Add Me as Labor",
   "name": "Name",
   "phone": "Phone Number",
-  "submit": "Submit",
   "Skip": "Skip",
   
 
@@ -372,7 +364,32 @@
   "Machine_Booked":"Machine Booked",
   "By_continuing,_you_agree_to_our_":"By continuing, you agree to our ",
   "Checking...":"Checking...",
-  "10-digit_number":"10-digit_number"
+  "10-digit_number":"10-digit_number",
+  "Invalid_phone_number._Try_a_different_number.":"Invalid phone number. Try a different number.",
+  "Invalid_phone_number":"Invalid phone number",
+  "Something_went_wrong._Try_again.":"Something went wrong. Try again.",
+  "Network_error._Try_again.":"Network error. Try again.",
+  "Mobile_Verification":"Mobile Verification",
+  "We'll_send_an_OTP_to_verify_your_number_(+91)":"We'll send an OTP to verify your number (+91)",
+  "Failed_to_initialize_autofill._Enter_OTP_manually.":"Failed to initialize autofill. Enter OTP manually.",
+  "OTP_resent_successfully":"OTP resent successfully",
+  "Failed_to_resend_OTP":"Failed to resend OTP",
+  "Please_enter_a_valid_OTP":"Please enter a valid OTP",
+  "OTP_verification_failed":"OTP verification failed",
+  "Server_error._Try_again.":"Server error. Try again.",
+  "OTP_Verification":"OTP Verification",
+  "Enter_OTP":"Enter OTP",
+  "Verifying...":"Verifying...",
+  "Verify_OTP":"Verify OTP",
+  "Wrong_number?_Go_back":"Wrong number? Go back",
+  "Resending...":"Resending...",
+  "Resend_OTP":"Resend OTP",
+  "Sign_Up":"Sign Up",
+  "Sign_Up_Initiated_Successfully":"Sign Up Initiated Successfully",
+  "Failed_to_generate_OTP":"Failed to generate OTP",
+  "Registration_failed":"Registration failed"
+
+
 
   
 

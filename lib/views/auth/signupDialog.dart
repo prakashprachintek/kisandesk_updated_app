@@ -56,7 +56,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
             titlePadding: const EdgeInsets.fromLTRB(24, 24, 0, 0),
             title: Stack(
               children: [
-                Text(tr("Sign Up")),
+                Text(tr("Sign_Up")),
                 Positioned(
                   right: 4,
                   top: -8,
@@ -76,7 +76,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                     TextFormField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: tr("Full Name"),
+                        labelText: tr("full_Name"),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide:
@@ -113,14 +113,14 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                       },
                       validator: (value) =>
                           value == null || value.trim().isEmpty
-                              ? tr("Please enter your full name")
+                              ? tr("please_enter_full_name")
                               : null,
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: selectedDistrict,
                       decoration: InputDecoration(
-                        labelText: tr("District"),
+                        labelText: tr("district"),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide:
@@ -148,7 +148,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         ),
                         floatingLabelBehavior: FloatingLabelBehavior.auto,
                       ),
-                      hint: Text(tr("Select District")),
+                      hint: Text(tr("please_select_district")),
                       items: districts.map((district) {
                         return DropdownMenuItem(
                           value: district,
@@ -171,7 +171,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         });
                       },
                       validator: (value) =>
-                          value == null ? tr("Please select a district") : null,
+                          value == null ? tr("please_select_district") : null,
                     ),
                     const SizedBox(height: 10),
                     if (selectedDistrict != null)
@@ -179,7 +179,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         value: selectedTaluk,
                         isExpanded: true,
                         decoration: InputDecoration(
-                          labelText: tr("Taluk"),
+                          labelText: tr("taluka"),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
@@ -207,7 +207,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                           ),
                           floatingLabelBehavior: FloatingLabelBehavior.auto,
                         ),
-                        hint: Text(tr("Select Taluk")),
+                        hint: Text(tr("Please_enter_taluka")),
                         items: taluks.map((taluk) {
                           return DropdownMenuItem<String>(
                             value: taluk,
@@ -235,7 +235,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                           });
                         },
                         validator: (value) =>
-                            value == null ? tr("Please select a taluk") : null,
+                            value == null ? tr("Please_enter_taluka") : null,
                       ),
                     const SizedBox(height: 10),
                     if (selectedTaluk != null)
@@ -243,7 +243,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         value: selectedVillage,
                         isExpanded: true,
                         decoration: InputDecoration(
-                          labelText: tr("Village"),
+                          labelText: tr("village"),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
@@ -271,7 +271,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                           ),
                           floatingLabelBehavior: FloatingLabelBehavior.auto,
                         ),
-                        hint: Text(tr("Select Village")),
+                        hint: Text(tr("please_enter_village")),
                         items: villagesList.map((village) {
                           return DropdownMenuItem<String>(
                             value: village,
@@ -295,14 +295,14 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                           });
                         },
                         validator: (value) => value == null
-                            ? tr("Please select a village")
+                            ? tr("please_enter_village")
                             : null,
                       ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: _pincodeController,
                       decoration: InputDecoration(
-                        labelText: tr("Pincode"),
+                        labelText: tr("pincode"),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide:
@@ -341,10 +341,10 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                       },
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return tr("Please enter a pincode");
+                          return tr("please_enter_pincode");
                         }
                         if (value.length != 6) {
-                          return tr("Pincode must be 6 digits");
+                          return tr("pincode_must_be_6_digits");
                         }
                         return null;
                       },
@@ -357,7 +357,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
               ElevatedButton(
                 child: isSubmitting
                     ? const CircularProgressIndicator()
-                    : Text(tr("Submit")),
+                    : Text(tr("submit")),
                 onPressed: () async {
                   setState(() {
                     hasSubmitted = true; // Mark submission attempt
@@ -406,7 +406,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content:
-                                  Text(tr("Sign Up Initiated Successfully")),
+                                  Text(tr("Sign_Up_Initiated_Successfully")),
                             ),
                           );
                           Navigator.push(
@@ -420,7 +420,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(generateOtpData["message"] ??
-                                  tr("Failed to generate OTP")),
+                                  tr("Failed_to_generate_OTP")),
                             ),
                           );
                         }
@@ -428,7 +428,7 @@ Future<void> showSignupDialog(BuildContext context, String phone) async {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(userInsertData["message"] ??
-                                tr("Registration failed")),
+                                tr("Registration_failed")),
                           ),
                         );
                       }
@@ -524,7 +524,7 @@ Future<void> showSignupBottomSheet(BuildContext context, String phone) async {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              tr("Sign Up"),
+                              tr("Sign_Up"),
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -542,7 +542,7 @@ Future<void> showSignupBottomSheet(BuildContext context, String phone) async {
                         TextFormField(
                           controller: _nameController,
                           decoration: InputDecoration(
-                            labelText: tr("Full Name"),
+                            labelText: tr("full_Name"),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
