@@ -23,6 +23,9 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
   String _sortOrder = 'none';
   late String _farmerId;
 
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
+
 
   String _selectedCategory = "";
 
@@ -35,7 +38,6 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
     _fertilizerFuture = FertilizerApiService().fetchFertilizers();
     _cartFuture = CartService().getCart()..then((_) => _loadCartQuantities());
   }
-
 
   void _applyCategoryFilter() {
     if (_selectedCategory.isEmpty) {
@@ -75,24 +77,43 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
     setState(() {
       _searchQuery = query;
 
-      if (query.isEmpty) {
-        _filteredFertilizers = List.from(_fertilizers);
-      } else {
-        _filteredFertilizers = _fertilizers
-            .where((f) => f.productName.toLowerCase().contains(query.toLowerCase()))
+      // Start from full list
+      List<Fertilizer> temp = List.from(_fertilizers);
+
+      // Apply search
+      if (query.isNotEmpty) {
+        temp = temp
+            .where((f) =>
+                f.productName.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
 
-      _applyCategoryFilter();
-      _applySort();
+      // Apply category filter
+      if (_selectedCategory.isNotEmpty) {
+        temp = temp
+            .where((f) =>
+                f.category.toLowerCase() == _selectedCategory.toLowerCase())
+            .toList();
+      }
+
+      // Apply sorting
+      if (_sortOrder == 'ascending') {
+        temp.sort((a, b) => a.discountedPrice.compareTo(b.discountedPrice));
+      } else if (_sortOrder == 'descending') {
+        temp.sort((a, b) => b.discountedPrice.compareTo(a.discountedPrice));
+      }
+
+      _filteredFertilizers = temp;
     });
   }
 
   void _applySort() {
     if (_sortOrder == 'ascending') {
-      _filteredFertilizers.sort((a, b) => a.discountedPrice.compareTo(b.discountedPrice));
+      _filteredFertilizers
+          .sort((a, b) => a.discountedPrice.compareTo(b.discountedPrice));
     } else if (_sortOrder == 'descending') {
-      _filteredFertilizers.sort((a, b) => b.discountedPrice.compareTo(a.discountedPrice));
+      _filteredFertilizers
+          .sort((a, b) => b.discountedPrice.compareTo(a.discountedPrice));
     }
   }
 
@@ -180,13 +201,15 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fertilizers', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Fertilizers',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         actions: [
           FutureBuilder<Cart>(
             future: _cartFuture,
             builder: (context, snapshot) {
-              int itemCount = snapshot.hasData ? snapshot.data!.items.length : 0;
+              int itemCount =
+                  snapshot.hasData ? snapshot.data!.items.length : 0;
 
               return Stack(
                 alignment: Alignment.topRight,
@@ -194,8 +217,8 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                   IconButton(
                     icon: const Icon(Icons.shopping_cart),
                     tooltip: 'Cart',
-                    onPressed: () => Navigator.push(
-                        context, MaterialPageRoute(builder: (_) => const CartScreen())),
+                    onPressed: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const CartScreen())),
                   ),
                   if (itemCount > 0)
                     Positioned(
@@ -207,7 +230,8 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        constraints:
+                            const BoxConstraints(minWidth: 16, minHeight: 16),
                         child: Text(
                           '$itemCount',
                           style: const TextStyle(
@@ -223,16 +247,17 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.list_alt),
+            icon: const Icon(Icons.inventory_2_outlined),
             tooltip: 'My Orders',
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => MyFertilizerOrdersScreen(farmerId: _farmerId)),
+              MaterialPageRoute(
+                  builder: (_) =>
+                      MyFertilizerOrdersScreen(farmerId: _farmerId)),
             ),
           ),
         ],
       ),
-
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Column(
@@ -244,24 +269,47 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                 children: [
                   Expanded(
                     child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocus,
+                      onChanged: _filterFertilizers,
                       decoration: InputDecoration(
                         hintText: 'Search fertilizers...',
                         prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon:
+                                    const Icon(Icons.clear, color: Colors.grey),
+                                onPressed: () {
+                                  setState(() {
+                                    _searchQuery = '';
+                                    _searchController.clear();
+                                  });
+                                  _filterFertilizers(''); // Clear search
+                                  _searchFocus.unfocus();
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: Colors.grey[50],
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                                color: Color.fromARGB(255, 29, 108, 92), width: 1.5)),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
                         enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                                color: Color.fromARGB(255, 29, 108, 92), width: 1.5)),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 29, 108, 92),
+                              width: 1.5),
+                        ),
                         focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                                color: Color.fromARGB(255, 20, 80, 70), width: 2.0)),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 20, 80, 70),
+                              width: 2.5),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 16),
                       ),
-                      onChanged: _filterFertilizers,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -273,7 +321,6 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                 ],
               ),
             ),
-
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -305,14 +352,23 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.results.isEmpty) {
+                  } else if (!snapshot.hasData ||
+                      snapshot.data!.results.isEmpty) {
                     return const Center(child: Text('No fertilizers found'));
                   }
 
                   _fertilizers = snapshot.data!.results;
-                  _filteredFertilizers = _filteredFertilizers.isEmpty
-                      ? List.from(_fertilizers)
-                      : _filteredFertilizers;
+                  // REMOVE THIS ENTIRE BLOCK FROM FutureBuilder
+// _filteredFertilizers = _filteredFertilizers.isEmpty
+//     ? List.from(_fertilizers)
+//     : _filteredFertilizers;
+
+// REPLACE WITH THIS:
+                  if (_searchQuery.isEmpty &&
+                      _selectedCategory.isEmpty &&
+                      _sortOrder == 'none') {
+                    _filteredFertilizers = List.from(_fertilizers);
+                  }
 
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),
@@ -327,7 +383,8 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => FertilizerDetailsScreen(fertilizer: f)),
+                              builder: (_) =>
+                                  FertilizerDetailsScreen(fertilizer: f)),
                         ),
                         child: Card(
                           elevation: 4,
@@ -356,30 +413,32 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                     width: 120,
                                     height: 200,
                                     child: Image.network(
-                                      f.images.isNotEmpty ? f.images[0].url : '',
+                                      f.images.isNotEmpty
+                                          ? f.images[0].url
+                                          : '',
                                       fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) =>
-                                          const Icon(Icons.image_not_supported, size: 40),
+                                      errorBuilder: (_, __, ___) => const Icon(
+                                          Icons.image_not_supported,
+                                          size: 40),
                                     ),
                                   ),
                                 ),
-
                                 Expanded(
                                   child: Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           f.productName,
                                           style: const TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 20,
                                               fontWeight: FontWeight.bold),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         const SizedBox(height: 4),
-
                                         Row(
                                           children: [
                                             Text(
@@ -392,45 +451,49 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                             const SizedBox(width: 10),
                                             if (f.specialDiscount != '0%')
                                               Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 6, vertical: 2),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2),
                                                 decoration: BoxDecoration(
                                                   color: Colors.orange.shade100,
-                                                  borderRadius: BorderRadius.circular(6),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
                                                 ),
                                                 child: Text(
                                                   '${f.specialDiscount} OFF',
                                                   style: const TextStyle(
                                                       color: Colors.orange,
-                                                      fontWeight: FontWeight.bold),
+                                                      fontWeight:
+                                                          FontWeight.bold),
                                                 ),
                                               ),
                                           ],
                                         ),
-
                                         Row(
                                           children: [
                                             const Text('M.R.P',
                                                 style: TextStyle(
-                                                    fontSize: 14, color: Colors.grey)),
+                                                    fontSize: 14,
+                                                    color: Colors.grey)),
                                             const SizedBox(width: 8),
                                             Text(
                                               '₹${f.mrpPrice}',
                                               style: const TextStyle(
                                                   fontSize: 14,
                                                   color: Colors.grey,
-                                                  decoration:
-                                                      TextDecoration.lineThrough),
+                                                  decoration: TextDecoration
+                                                      .lineThrough),
                                             ),
                                           ],
                                         ),
-
                                         Row(
                                           children: [
                                             Text(
                                               f.unit,
                                               style: const TextStyle(
-                                                  fontSize: 12, color: Colors.grey),
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
                                             ),
                                             const Spacer(),
                                             if (f.availableStock <= 20)
@@ -448,64 +511,145 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                               ),
                                           ],
                                         ),
-
                                         const SizedBox(height: 12),
 
+// MAIN BUTTON LOGIC
                                         if (isOutOfStock)
                                           const SizedBox(
                                             width: double.infinity,
                                             child: OutlinedButton(
                                               onPressed: null,
                                               child: Text('Out of Stock',
-                                                  style: TextStyle(color: Colors.grey)),
+                                                  style: TextStyle(
+                                                      color: Colors.grey)),
                                             ),
                                           )
                                         else if (!isInCart)
-                                          SizedBox(
-                                            width: double.infinity,
-                                            child: ElevatedButton.icon(
-                                              onPressed: () async {
-                                                final item = CartItem(
-                                                  productId: f.productId,
-                                                  quantity: 1,
-                                                  totalValue: f.discountedPrice,
-                                                );
+                                          // NOT IN CART → Show "Add" + "Buy Now" side by side
+                                          Row(
+                                            children: [
+                                              // ADD TO CART BUTTON
+                                              Expanded(
+                                                child: ElevatedButton.icon(
+                                                  onPressed: () async {
+                                                    try {
+                                                      final item = CartItem(
+                                                        productId: f.productId,
+                                                        quantity: 1,
+                                                        totalValue:
+                                                            f.discountedPrice,
+                                                      );
+                                                      await CartService()
+                                                          .addToCart(item);
+                                                      await _refreshCartState();
 
-                                                await CartService().addToCart(item);
-                                                await _refreshCartState();
-
-                                                if (mounted) {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text('Added to cart'),
-                                                      duration: Duration(seconds: 1),
-                                                      backgroundColor: Colors.green,
-                                                    ),
-                                                  );
-                                                }
-                                              },
-                                              icon: const Icon(Icons.add_shopping_cart,
-                                                  size: 18),
-                                              label: const Text('Add to Cart'),
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    const Color.fromARGB(255, 29, 108, 92),
-                                                foregroundColor: Colors.white,
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(8)),
+                                                      if (mounted) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text(
+                                                                'Added to cart ✓'),
+                                                            backgroundColor:
+                                                                Colors.green,
+                                                            duration: Duration(
+                                                                seconds: 1),
+                                                          ),
+                                                        );
+                                                      }
+                                                    } catch (e) {
+                                                      if (mounted) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                              content: Text(
+                                                                  'Failed: $e'),
+                                                              backgroundColor:
+                                                                  Colors.red),
+                                                        );
+                                                      }
+                                                    }
+                                                  },
+                                                  // icon: const Icon(Icons.add_shopping_cart, size: 20),
+                                                  label: const Text(
+                                                      "Add to Cart",
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        const Color.fromARGB(
+                                                            255, 29, 108, 92),
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 14),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+
+                                              const SizedBox(width: 12),
+
+                                              // BUY NOW BUTTON (Orange, with lightning icon)
+                                              Expanded(
+                                                child: ElevatedButton.icon(
+                                                  onPressed: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              FertilizerDetailsScreen(
+                                                                  fertilizer:
+                                                                      f)),
+                                                    );
+                                                  },
+                                                  // icon: const Icon(Icons.flash_on, size: 22), // Lightning = fast buy
+                                                  label: const Text("Buy Now",
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.orange.shade700,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 14),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                    elevation: 3,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           )
                                         else
+                                          // ALREADY IN CART → Full-width quantity control (unchanged, perfect)
                                           Container(
                                             width: double.infinity,
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 12, vertical: 6),
                                             decoration: BoxDecoration(
-                                              color:
-                                                  const Color.fromARGB(255, 29, 108, 92)
-                                                      .withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(8),
+                                              color: const Color.fromARGB(
+                                                      255, 29, 108, 92)
+                                                  .withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                               border: Border.all(
                                                   color: const Color.fromARGB(
                                                       255, 29, 108, 92)),
@@ -516,46 +660,49 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                               children: [
                                                 IconButton(
                                                   icon: const Icon(
-                                                    Icons.remove_circle_outline,
-                                                    color: Colors.red,
-                                                  ),
+                                                      Icons
+                                                          .remove_circle_outline,
+                                                      color: Colors.red,
+                                                      size: 28),
                                                   onPressed: () async {
-                                                    final newQty = currentQty - 1;
-
+                                                    final newQty =
+                                                        currentQty - 1;
                                                     if (newQty <= 0) {
                                                       await CartService()
-                                                          .removeFromCart(f.productId);
+                                                          .removeFromCart(
+                                                              f.productId);
                                                     } else {
                                                       await CartService()
                                                           .updateQuantity(
-                                                              f.productId, newQty);
+                                                              f.productId,
+                                                              newQty);
                                                     }
-
                                                     await _refreshCartState();
                                                   },
                                                 ),
                                                 Padding(
-                                                  padding: const EdgeInsets.symmetric(
-                                                      horizontal: 20),
-                                                  child: Text(
-                                                    '$currentQty',
-                                                    style: const TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight: FontWeight.bold),
-                                                  ),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 28),
+                                                  child: Text('$currentQty',
+                                                      style: const TextStyle(
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
                                                 ),
                                                 IconButton(
                                                   icon: const Icon(
-                                                    Icons.add_circle_outline,
-                                                    color: Colors.green,
-                                                  ),
+                                                      Icons.add_circle_outline,
+                                                      color: Colors.green,
+                                                      size: 28),
                                                   onPressed: currentQty <
                                                           f.availableQuantity
                                                       ? () async {
                                                           await CartService()
                                                               .updateQuantity(
                                                                   f.productId,
-                                                                  currentQty + 1);
+                                                                  currentQty +
+                                                                      1);
                                                           await _refreshCartState();
                                                         }
                                                       : null,
