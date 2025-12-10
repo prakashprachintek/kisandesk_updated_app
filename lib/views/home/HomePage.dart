@@ -179,7 +179,7 @@ Future<List<MarketPost>> fetchMarketPosts() async {
       return results.map((item) => MarketPost.fromJson(item)).toList();
     } else {
       print('API Error: ${response.statusCode}');
-      throw Exception('Failed to load market posts');
+      throw Exception('Failed_to_load_market_posts');
     }
   } catch (e) {
     print('Exception while fetching : $e');
@@ -247,7 +247,7 @@ class _HomePageState extends State<HomePage> {
       String uid = widget.userData?['uid'] ?? "";
       if (uid.isNotEmpty) {
         FirebaseDatabase.instance.ref("users").child(uid).update({
-          'profileImage': base64Image,
+          'profileImage'.tr(): base64Image,
         });
       }
     }
@@ -270,18 +270,18 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(tr("Update Profile")),
+          title: Text(tr("Update_Profile")),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: InputDecoration(labelText: tr("Name")),
+                  decoration: InputDecoration(labelText: tr("name")),
                 ),
                 TextField(
                   controller: dobController,
                   decoration:
-                      InputDecoration(labelText: tr("DOB (YYYY-MM-DD)")),
+                      InputDecoration(labelText: tr("DOB_(YYYY-MM-DD)")),
                 ),
                 TextField(
                   controller: genderController,
@@ -289,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 TextField(
                   controller: phoneController,
-                  decoration: InputDecoration(labelText: tr("Mobile Number")),
+                  decoration: InputDecoration(labelText: tr("Mobile_Number")),
                   keyboardType: TextInputType.phone,
                 ),
                 TextField(
@@ -320,7 +320,7 @@ class _HomePageState extends State<HomePage> {
                     'email': emailController.text,
                   });
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(tr("Profile updated successfully."))));
+                      content: Text(tr("Profile_updated_successfully."))));
                 }
                 Navigator.pop(context);
               },
@@ -351,7 +351,7 @@ class _HomePageState extends State<HomePage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showToastOverlay(
-          context, 'Login Successful. Welcome to Kisan Desk!'.tr());
+          context, 'Login_Successful._Welcome_to_Kisan_Desk!'.tr());
     });
   }
 
@@ -445,7 +445,7 @@ class _HomePageState extends State<HomePage> {
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error(tr('Location services are disabled.'));
+      return Future.error(tr('Location_services_are_disabled'));
     }
 
     // Check permission
@@ -453,13 +453,13 @@ class _HomePageState extends State<HomePage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error(tr('Location permissions are denied.'));
+        return Future.error(tr('Location_permissions_are_denied'));
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       return Future.error(
-        tr('Location permissions are permanently denied, we cannot request permission.'),
+        tr('Location_permissions_are_permanently_denied,_we_cannot_request_permission.'),
       );
     }
 
@@ -478,8 +478,8 @@ class _HomePageState extends State<HomePage> {
       );
       if (placemarks.isNotEmpty) {
         final place = placemarks[0];
-        final city = place.locality ?? tr("Unknown City");
-        final state = place.administrativeArea ?? tr("Unknown State");
+        final city = place.locality ?? tr("Unknown_City");
+        final state = place.administrativeArea ?? tr("Unknown_State");
         final locationStr = "$city, $state";
 
         setState(() {
@@ -487,12 +487,12 @@ class _HomePageState extends State<HomePage> {
         });
       } else {
         setState(() {
-          _locationName = tr("Unknown Location");
+          _locationName = tr("unknown_location");
         });
       }
     } catch (e) {
       setState(() {
-        _locationName = tr("Location Error");
+        _locationName = tr("Location_Error");
       });
       print(tr("Error fetching location: $e"));
     }
@@ -550,13 +550,13 @@ class _HomePageState extends State<HomePage> {
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            title: Text(tr("Incomplete Profile"),
+            title: Text(tr("Incomplete_Profile"),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 )),
             content: Text(
-              tr("Please update your information to create a post"),
+              tr("Please_update_your_information_to_create_a_post"),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -585,7 +585,7 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
                 child: Text(
-                  tr("Update Profile"),
+                  tr("Update_Profile"),
                   style: const TextStyle(
                     color: Color.fromARGB(255, 29, 108, 92),
                     fontSize: 16,
@@ -622,7 +622,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               ListTile(
                 leading: Icon(Icons.camera_alt, color: Colors.black54),
-                title: Text(tr('Take Photo'),
+                title: Text(tr('Take_Photo'),
                     style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -636,7 +636,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: Colors.black54),
-                title: Text(tr('Choose from Gallery'),
+                title: Text(tr('Choose_from_Gallery'),
                     style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -658,7 +658,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _handleProfileImage(XFile? pickedFile) async {
     if (pickedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("No image selected."))),
+        SnackBar(content: Text(tr("No_image_selected."))),
       );
       return;
     }
@@ -677,11 +677,11 @@ class _HomePageState extends State<HomePage> {
         });
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Profile image updated successfully."))),
+        SnackBar(content: Text(tr("Profile_image_updated_successfully"))),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Failed to update image."))),
+        SnackBar(content: Text(tr("Failed_to_update_image"))),
       );
     }
   }
@@ -835,7 +835,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.settings),
-            title: Text(tr("Privacy Policy")),
+            title: Text(tr("Privacy_Policy")),
             onTap: () {
               Navigator.pop(context);
               _openPrivacyPolicy();
@@ -843,7 +843,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.contact_phone),
-            title: Text(tr("Terms & Conditions")),
+            title: Text(tr("Terms_&_Conditions")),
             onTap: () {
               Navigator.pop(context);
               _openTerms();
@@ -877,7 +877,7 @@ class _HomePageState extends State<HomePage> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text("Are you sure you want to log out?",
+                    title: Text("Are_you_sure_you_want_to_log_out?".tr(),
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.w500)),
                     actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -885,7 +885,7 @@ class _HomePageState extends State<HomePage> {
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
-                          "Cancel",
+                          "Cancel".tr(),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -895,7 +895,7 @@ class _HomePageState extends State<HomePage> {
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(true),
                         child: Text(
-                          "Logout",
+                          "Logout".tr(),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 17,
@@ -1095,7 +1095,7 @@ class _HomePageState extends State<HomePage> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              tr('Categories'),
+                              tr('categories'),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -1112,7 +1112,7 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                tr('Latest Posts'),
+                                tr('Latest_Posts'),
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -1128,7 +1128,7 @@ class _HomePageState extends State<HomePage> {
                                   );
                                 },
                                 child: Text(
-                                  'See More',
+                                  'See_More'.tr(),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.blue,
@@ -1147,11 +1147,11 @@ class _HomePageState extends State<HomePage> {
                                     child: CircularProgressIndicator());
                               } else if (snapshot.hasError) {
                                 return Center(
-                                    child: Text('Failed to load market posts'));
+                                    child: Text('Failed_to_load_market_posts'));
                               } else if (!snapshot.hasData ||
                                   snapshot.data!.isEmpty) {
                                 return Center(
-                                    child: Text('No market posts available.'));
+                                    child: Text('No_market_posts_available'));
                               }
 
                               final posts = snapshot.data!.take(3).toList();
@@ -1316,7 +1316,7 @@ class _HomePageState extends State<HomePage> {
         } else if (snapshot.hasError || !snapshot.hasData) {
           return Container(
             height: 110,
-            child: Center(child: Text(tr("Error loading mandi rates"))),
+            child: Center(child: Text(tr("Error_loading_mandi_rates"))),
           );
         }
 
@@ -1627,9 +1627,9 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Service Status 🛠️'),
+            title: const Text('Service_Status_🛠️').tr(),
             content: const Text(
-              'This module is Under Maintenance. \n We will be back soon!...',
+              'This_module_is_Under_Maintenance._\n_We_will_be_back_soon!...',
               textAlign: TextAlign.center,
             ),
             actions: <Widget>[

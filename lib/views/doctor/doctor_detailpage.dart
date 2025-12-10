@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/doctor/doctor.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -83,33 +84,13 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
             Expanded(
               child: Padding(
                 padding: detailItemPadding,
-                child: _detailItem("Phone", widget.doctor.phone, Icons.phone, isPhone: true),
+                child: _detailItem("phone".tr(), widget.doctor.phone, Icons.phone, isPhone: true),
               ),
             ),
             Expanded(
               child: Padding(
                 padding: detailItemPadding,
-                child: _detailItem("Gender", widget.doctor.gender, Icons.person),
-              ),
-            ),
-          ],
-        ),
-        
-        verticalGap,
-
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: detailItemPadding,
-                child: _detailItem("District", widget.doctor.district, Icons.map),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: detailItemPadding,
-                child: _detailItem("Taluka", widget.doctor.taluka, Icons.location_city),
+                child: _detailItem("Gender".tr(), widget.doctor.gender, Icons.person),
               ),
             ),
           ],
@@ -123,13 +104,33 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
             Expanded(
               child: Padding(
                 padding: detailItemPadding,
-                child: _detailItem("Village", widget.doctor.village, Icons.home),
+                child: _detailItem("district".tr(), widget.doctor.district, Icons.map),
               ),
             ),
             Expanded(
               child: Padding(
                 padding: detailItemPadding,
-                child: _detailItem("Address", widget.doctor.address, Icons.location_on),
+                child: _detailItem("taluka".tr(), widget.doctor.taluka, Icons.location_city),
+              ),
+            ),
+          ],
+        ),
+        
+        verticalGap,
+
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: detailItemPadding,
+                child: _detailItem("village".tr(), widget.doctor.village, Icons.home),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: detailItemPadding,
+                child: _detailItem("Address".tr(), widget.doctor.address, Icons.location_on),
               ),
             ),
           ],
@@ -146,13 +147,13 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
         Expanded(
           child: Padding(
             padding: detailItemPadding,
-            child: _detailItem("Specialization", widget.doctor.designation, Icons.medical_services),
+            child: _detailItem("Specialization".tr(), widget.doctor.designation, Icons.medical_services),
           ),
         ),
         Expanded(
           child: Padding(
             padding: detailItemPadding,
-            child: _detailItem("Status", widget.doctor.status, Icons.info_outline),
+            child: _detailItem("statusLabel", widget.doctor.status, Icons.info_outline),
           ),
         ),
       ],
@@ -329,8 +330,8 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildTabButton("Personal Details", 0),
-                      _buildTabButton("Professional Details", 1),
+                      _buildTabButton("Personal_Details", 0),
+                      _buildTabButton("Professional_Details", 1),
                     ],
                   ),
                   const Divider(

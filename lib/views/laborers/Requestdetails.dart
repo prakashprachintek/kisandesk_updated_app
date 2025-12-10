@@ -1,5 +1,4 @@
-// RequestDetailsPage.dart
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -26,7 +25,7 @@ class RequestDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Request Details",
+        title: const Text("Request_Details",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: Padding(
@@ -46,38 +45,38 @@ class RequestDetailsPage extends StatelessWidget {
                   case 0:
                     return _buildDetailRow(
                       icon: Icons.confirmation_num,
-                      label: "Order ID",
+                      label: "Order_ID".tr(),
                       value: requestData['order_id']?.toString() ?? 'N/A',
                     );
                   case 1:
                     return _buildDetailRow(
                       icon: Icons.person_pin,
-                      label: "Farmer ID",
+                      label: "Farmer_ID".tr(),
                       value: requestData['farmer_id']?.toString() ?? 'N/A',
                     );
                   case 2:
                     return _buildDetailRow(
                       icon: Icons.work_outline,
-                      label: "Work Description",
+                      label: "work_description".tr(),
                       value: requestData['work']?.toString() ?? 'N/A',
                     );
                   case 3:
                     return _buildDetailRow(
                       icon: Icons.calendar_today,
-                      label: "Work Date",
+                      label: "Work_Date".tr(),
                       value: _formatDate(
                           requestData['work_date_from']?.toString()),
                     );
                   case 4:
                     return _buildDetailRow(
                       icon: Icons.info_outline,
-                      label: "Status",
+                      label: "Status".tr(),
                       value: requestData['status']?.toString() ?? 'N/A',
                     );
                   case 5:
                     return _buildDetailRow(
                       icon: Icons.people_alt,
-                      label: "Labour Type",
+                      label: "Labour_Type".tr(),
                       value: requestData['labour_type']?.toString() ?? 'N/A',
                     );
                   default:

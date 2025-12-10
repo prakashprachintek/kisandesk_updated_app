@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
@@ -234,13 +235,13 @@ class _MarketPageState extends State<MarketPage>
                     ? item['farmerDetails'][0]
                     : null;
             return {
-              'name': item['post_name'] ?? 'Unknown market',
+              'name': item['post_name'] ?? 'Unknown_market'.tr(),
               'price': item['price'] ?? 0,
-              'description': item['description'] ?? 'No description available',
-              'location': item['village'] ?? 'Unknown location',
+              'description': item['description'] ?? 'no_description'.tr(),
+              'location': item['village'] ?? 'unknown_location'.tr(),
               'fileName': item['post_url'] ?? 'assets/market1.webp',
               'quantity': item['quantity'] ?? 'N/A',
-              'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
+              'FarmerName': farmerDetails?['full_name'] ?? 'unknown_farmer'.tr(),
               'Phone': farmerDetails?['phone'] ?? 'N/A',
               'taluka': farmerDetails?['taluka'] ?? 'N/A',
               'postType': _normalizePostName(item['post_name']),
@@ -395,10 +396,10 @@ class _MarketPageState extends State<MarketPage>
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
-              ),
+              ).tr(),
               const SizedBox(height: 10),
               RadioListTile<String>(
-                title: const Text('Price: Low to High'),
+                title: const Text('price_low_to_high').tr(),
                 value: 'Price: Low to High',
                 groupValue: selectedFilter,
                 onChanged: (value) {
@@ -406,7 +407,7 @@ class _MarketPageState extends State<MarketPage>
                 },
               ),
               RadioListTile<String>(
-                title: const Text('Price: High to Low'),
+                title: const Text('price_high_to_low').tr(),
                 value: 'Price: High to Low',
                 groupValue: selectedFilter,
                 onChanged: (value) {
@@ -444,7 +445,7 @@ class _MarketPageState extends State<MarketPage>
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
-                hintText: "Search market",
+                hintText: "Search_market".tr(),
                 hintStyle: const TextStyle(color: Colors.white),
                 filled: true,
                 fillColor: const Color.fromRGBO(255, 255, 255, 0.3),
@@ -480,9 +481,9 @@ class _MarketPageState extends State<MarketPage>
           );
         },
         label: const Text(
-          'My Posts',
+          'myPost',
           style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        ).tr(),
         icon: const Icon(Icons.person),
         backgroundColor: const Color.fromARGB(255, 29, 108, 92),
         foregroundColor: Colors.white,
@@ -628,7 +629,7 @@ class _MarketPageState extends State<MarketPage>
                                     },
                                     child: MarketCard(
                                       name: marketItem['name'],
-                                      taluka: marketItem['taluka'] ?? 'N/A',
+                                      taluka: marketItem['taluka'] ?? 'not_available'.tr(),
                                       price: '₹${marketItem['price']}',
                                       imagePath: marketItem['fileName'],
                                     ),
@@ -871,7 +872,7 @@ class MarketCard extends StatelessWidget {
                           onPressed: onDelete,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          tooltip: 'Delete Post',
+                          tooltip: 'Delete_Post'.tr(),
                         ),
                       ),
                   ],

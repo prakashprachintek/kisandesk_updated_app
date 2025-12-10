@@ -28,7 +28,7 @@ class FertilizerApiService {
 
   // --- MOCK PHONEPE ENDPOINTS (Kept for future backend integration) ---
   // NOTE: This ngrok URL may change.
-  static const String _backendBaseUrl = 'https://mock.phonepe.backend.url.placeholder'; 
+  static const String _backendBaseUrl = 'https://dev.kisandesk.com'; 
   static const String _phonePeInitiateUrl = '$_backendBaseUrl/phonepe/initiate'; 
   static const String _phonePeStatusUrl = '$_backendBaseUrl/phonepe/status'; 
 

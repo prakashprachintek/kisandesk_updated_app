@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -65,7 +66,7 @@ class _BookPageState extends State<BookPage> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load machinery data")),
+          SnackBar(content: Text("Failed_to_load_machinery_data".tr())),
         );
       }
     } catch (e) {
@@ -158,7 +159,7 @@ class _BookPageState extends State<BookPage> {
     // Show error if any field is invalid
     if (fieldErrors.values.any((e) => e)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please fill all fields")),
+        SnackBar(content: Text("Please_fill_all_fields")),
       );
       return;
     }
@@ -201,7 +202,7 @@ class _BookPageState extends State<BookPage> {
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            title: Text("Booking Successful"),
+            title: Text("Booking_Successful".tr()),
             content: Text(responseData["message"]),
             actions: [
               TextButton(
@@ -213,7 +214,7 @@ class _BookPageState extends State<BookPage> {
                         builder: (context) => MachineryRentPage()),
                   );
                 },
-                child: Text("OK"),
+                child: Text("OK".tr()),
               ),
             ],
           ),
@@ -250,7 +251,7 @@ class _BookPageState extends State<BookPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Book Machinery",
+        title: Text("Book_Machinery".tr(),
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -303,7 +304,7 @@ class _BookPageState extends State<BookPage> {
                       contentPadding:
                           EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
-                    hintText: "Select Machinery",
+                    hintText: "Select_Machinery".tr(),
                     initialSelection: selectedMachinery,
                     dropdownMenuEntries: machineryData
                         .asMap()
@@ -443,14 +444,14 @@ class _BookPageState extends State<BookPage> {
                             EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       hintText: workTypeList.isEmpty
-                          ? "Select machinery first"
-                          : "Select Work Type",
+                          ? "Select_machinery_first".tr()
+                          : "Select_Work_Type".tr(),
                       initialSelection: selectedWorkType,
                       dropdownMenuEntries: workTypeList.isEmpty
                           ? [
                               DropdownMenuEntry<String>(
                                 value: '',
-                                label: 'Select machinery first',
+                                label: 'Select_machinery_first'.tr(),
                                 enabled: false, // Non-selectable placeholder
                                 labelWidget: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,7 +494,7 @@ class _BookPageState extends State<BookPage> {
                                             SizedBox(width: 16),
                                             Expanded(
                                               child: Text(
-                                                'Select machinery first',
+                                                'Select_machinery_first'.tr(),
                                                 style: TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w500,
@@ -578,7 +579,7 @@ class _BookPageState extends State<BookPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
                       child: Text(
-                        "This field is required",
+                        "This-field_is_required".tr(),
                         style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
@@ -608,7 +609,7 @@ class _BookPageState extends State<BookPage> {
                             child: Row(
                               children: [
                                 Radio<String>(
-                                  value: "Acres",
+                                  value: "Acres".tr(),
                                   groupValue: selectedUnit,
                                   onChanged: (value) {
                                     setState(() {
@@ -617,10 +618,10 @@ class _BookPageState extends State<BookPage> {
                                   },
                                   activeColor: Color(0xFF00AD83),
                                 ),
-                                Text("Acres"),
+                                Text("Acres".tr()),
                                 SizedBox(width: 12),
                                 Radio<String>(
-                                  value: "Hours",
+                                  value: "Hours".tr(),
                                   groupValue: selectedUnit,
                                   onChanged: (value) {
                                     setState(() {
@@ -629,7 +630,7 @@ class _BookPageState extends State<BookPage> {
                                   },
                                   activeColor: Color(0xFF00AD83),
                                 ),
-                                Text("Hours"),
+                                Text("Hours".tr()),
                               ],
                             ),
                           ),
@@ -673,7 +674,7 @@ class _BookPageState extends State<BookPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
                       child: Text(
-                        "This field is required",
+                        "This_field_is_required".tr(),
                         style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
@@ -689,7 +690,7 @@ class _BookPageState extends State<BookPage> {
                     onTap: _pickDate,
                     child: InputDecorator(
                       decoration: InputDecoration(
-                        labelText: "Booking Date",
+                        labelText: "Booking_Date".tr(),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide(
@@ -724,7 +725,7 @@ class _BookPageState extends State<BookPage> {
                             EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                       ),
                       child: Text(
-                        bookingDate ?? "Select a date",
+                        bookingDate ?? "Select_a_date",
                         style: TextStyle(
                             color: fieldErrors['date']!
                                 ? Colors.red
@@ -736,7 +737,7 @@ class _BookPageState extends State<BookPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
                       child: Text(
-                        "This field is required",
+                        "This_field_is_required",
                         style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
@@ -748,25 +749,25 @@ class _BookPageState extends State<BookPage> {
                   TextField(
                     controller: descriptionController,
                     decoration: InputDecoration(
-                      labelText: "Description / Notes",
+                      labelText: "Description/Notes".tr(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide(
-                            color: fieldErrors['description']!
+                            color: fieldErrors['description'.tr()]!
                                 ? Colors.red
                                 : Colors.grey),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide(
-                            color: fieldErrors['description']!
+                            color: fieldErrors['description'.tr()]!
                                 ? Colors.red
                                 : Colors.grey),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide(
-                            color: fieldErrors['description']!
+                            color: fieldErrors['description'.tr()]!
                                 ? Colors.red
                                 : Color(0xFF00AD83),
                             width: 1.5),
@@ -784,14 +785,14 @@ class _BookPageState extends State<BookPage> {
                     ),
                     maxLines: 3,
                     onChanged: (value) => setState(() {
-                      fieldErrors['description'] = value.isEmpty;
+                      fieldErrors['description'.tr()] = value.isEmpty;
                     }),
                   ),
-                  if (fieldErrors['description']!)
+                  if (fieldErrors['description'.tr()]!)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
                       child: Text(
-                        "This field is required",
+                        "This_field_is_required".tr(),
                         style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
@@ -812,7 +813,7 @@ class _BookPageState extends State<BookPage> {
                         ),
                       ),
                       child: const Text(
-                        "Submit Booking",
+                        "submit_booking",
                         style: TextStyle(
                             fontSize: 18,
                             color: Colors.white,

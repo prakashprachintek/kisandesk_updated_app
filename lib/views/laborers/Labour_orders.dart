@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/laborers/Requestdetails.dart';
@@ -57,8 +58,8 @@ class LabourRequestOrdersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Labour Requests Dashboard",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text("Labour_Requests_Dashboard",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)).tr(),
         // centerTitle: true,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
@@ -69,7 +70,7 @@ class LabourRequestOrdersPage extends StatelessWidget {
           } else if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No Labour Requests Available"));
+            return const Center(child: Text("No_Labour_Requests_Available"));
           }
 
           List<Map<String, dynamic>> requests = snapshot.data!;
@@ -100,7 +101,7 @@ class LabourRequestOrdersPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item['order_id']?.toString() ?? 'orderId unavailable',
+                          item['order_id']?.toString() ?? 'orderId_unavailable'.tr(),
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -130,7 +131,7 @@ class LabourRequestOrdersPage extends StatelessWidget {
                           ],
                         ),
                         Text(item['work']?.toString() ??
-                            'No description provided.'),
+                            'No_description_provided.'.tr()),
                       ],
                     ),
                   ),

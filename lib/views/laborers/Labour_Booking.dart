@@ -36,7 +36,7 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
   Future<List<dynamic>> _fetchRecentOrders() async {
     final String? farmerId = UserSession.userId;
     if (farmerId == null) {
-      throw Exception("User not logged in. Cannot fetch requests.");
+      throw Exception("User_not_logged_in._Cannot_fetch_requests.");
     }
 
     final Uri apiUrl = Uri.parse('${KD.api}/admin/get_labours_request');
@@ -102,11 +102,11 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
         context: context,
         builder: (_) => AlertDialog(
           title: Text(
-            tr("Incomplete Profile"),
+            tr("Incomplete_Profile"),
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
           content: Text(
-            tr("Please update your information to book labour"),
+            tr("Please_update_your_information_to_book_labour"),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           actions: [
@@ -130,7 +130,7 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
                 );
               },
               child: Text(
-                tr("Update Profile"),
+                tr("Update_Profile"),
                 style: TextStyle(
                   color: Color.fromARGB(255, 29, 108, 92),
                   fontSize: 16,
@@ -154,7 +154,7 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          tr("Labour Booking"),
+          tr("Labour_Booking"),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -223,7 +223,7 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
                     _buildTile(
                       context,
                       icon: Icons.list_alt,
-                      label: tr("My Orders"),
+                      label: tr("My_Orders"),
                       color: Colors.orange,
                       onTap: () {
                         Navigator.push(
@@ -238,7 +238,7 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  tr("Recent Orders"),
+                  tr("Recent_Orders"),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
@@ -250,7 +250,7 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
                     } else if (snapshot.hasError) {
                       return Center(child: Text(tr("Error: ${snapshot.error}")));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text(tr("No recent orders found.")));
+                      return Center(child: Text(tr("No_recent_orders_found.")));
                     }
 
                     final recentOrders = snapshot.data!;
@@ -282,7 +282,7 @@ class _LabourBookingPageState extends State<LabourBookingPage> {
                                 children: [
                                   Text(
                                     item['order_id']?.toString() ??
-                                        tr('orderId unavailable'),
+                                        tr('orderId_unavailable'),
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold),
