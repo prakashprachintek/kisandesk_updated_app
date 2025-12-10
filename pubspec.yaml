@@ -88,6 +88,10 @@ dependencies:
   permission_handler: ^12.0.1
   webview_flutter: ^4.13.0
   get: ^4.7.2
+  open_file: ^3.5.10
+  pdf: ^3.11.3
+  flutter_downloader: ^1.12.0
+
 
 dev_dependencies:
   flutter_test:
@@ -211,6 +215,9 @@ flutter:
     - assets/machinery/machine_type/tractor.jpg
 
     - assets/privacy_policy.txt
+
+    - assets/fonts/NotoSans-Regular.ttf
+    - assets/fonts/NotoSans-Bold.ttf
 
 
 
