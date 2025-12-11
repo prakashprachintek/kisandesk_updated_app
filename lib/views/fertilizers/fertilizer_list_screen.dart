@@ -158,7 +158,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.clear),
-              title: const Text('Clear_Sorting'),
+              title: const Text('Clear_Sorting').tr(),
               trailing: _sortOrder == 'none'
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/fertilizers/fertilizer_api_service.dart';
 import '../services/user_session.dart';
@@ -129,7 +130,7 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
   Future<void> _submitReview() async {
     if (_reviewController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please write a review')),
+        SnackBar(content: Text('Please_write_a_review').tr()),
       );
       return;
     }
@@ -146,8 +147,8 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
 
       if (response['status'] == 'success') {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Thank you! Your review has been submitted'),
+          SnackBar(
+            content: Text('Thank_you!_Your_review_has_been_submitted').tr(),
             duration: Duration(seconds: 1),
             backgroundColor: Colors.green,
           ),
@@ -159,7 +160,7 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
         // Optional: Refresh product to show new review
         // You can refetch the product if needed
       } else {
-        throw Exception(response['message'] ?? 'Failed to submit');
+        throw Exception(response['message'] ?? 'Failed_to_submit'.tr());
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -241,8 +242,8 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Details',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Product_Details',
+            style: TextStyle(fontWeight: FontWeight.bold)).tr(),
         elevation: 0,
         actions: [
           // Cart Icon with Live Badge
@@ -284,7 +285,7 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
           // My Orders Icon
           IconButton(
             icon: const Icon(Icons.inventory_2_outlined),
-            tooltip: 'My Orders',
+            tooltip: 'My_Orders'.tr(),
             onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -527,9 +528,9 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: const Text('Add to Cart',
+                          child: const Text('Add_to_Cart',
                               style: TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold)),
+                                  fontSize: 17, fontWeight: FontWeight.bold)).tr(),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -543,9 +544,9 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: const Text('Buy Now',
+                          child: const Text('Buy_Now',
                               style: TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold)),
+                                  fontSize: 17, fontWeight: FontWeight.bold)).tr(),
                         ),
                       ),
                     ],
@@ -559,16 +560,16 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
 
                   // Product Details
                   if (details != null && details.content.trim().isNotEmpty) ...[
-                    const Text('Product Details',
+                    const Text('Product_Details',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                            fontSize: 18, fontWeight: FontWeight.bold)).tr(),
                     const SizedBox(height: 4),
                     Text(details.content,
                         style: const TextStyle(fontSize: 15, height: 1.5)),
                     const SizedBox(height: 20),
                     const Text('Usage',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                            fontSize: 18, fontWeight: FontWeight.bold)).tr(),
                     const SizedBox(height: 4),
                     Text(details.usage,
                         style: const TextStyle(fontSize: 15, height: 1.5)),
@@ -576,9 +577,9 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                   ],
                   // Description
                   if (description!.isNotEmpty) ...[
-                    const Text('Description',
+                    const Text('description',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                            fontSize: 18, fontWeight: FontWeight.bold)).tr(),
                     const SizedBox(height: 4),
                     Text(description,
                         style: const TextStyle(fontSize: 15, height: 1.5)),
@@ -601,13 +602,13 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                         children: [
                           // Title
                           const Text(
-                            'Customer Reviews',
+                            'Customer_Reviews',
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
                             ),
-                          ),
+                          ).tr(),
                           const SizedBox(height: 18),
 
                           // Average Rating + Distribution Bars
@@ -740,15 +741,15 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            children: const [
+                            children:  [
                               Icon(Icons.rate_review_outlined,
                                   color: Colors.green, size: 32),
                               SizedBox(width: 12),
                               Text(
-                                'Write Your Review',
+                                'Write_Your_Review',
                                 style: TextStyle(
                                     fontSize: 21, fontWeight: FontWeight.bold),
-                              ),
+                              ).tr(),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -760,7 +761,7 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                             textCapitalization: TextCapitalization.sentences,
                             decoration: InputDecoration(
                               hintText:
-                                  'Share your experience with this fertilizer...',
+                                  'Share_your_experience_with_this_fertilizer...'.tr(),
                               hintStyle: TextStyle(
                                   color: Colors.grey[600],
                                   fontStyle: FontStyle.italic),
@@ -801,10 +802,10 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                                       width: 26,
                                       child: CircularProgressIndicator(
                                           color: Colors.white, strokeWidth: 3))
-                                  : const Text('Submit Review',
+                                  : const Text('Submit_Review',
                                       style: TextStyle(
                                           fontSize: 18,
-                                          fontWeight: FontWeight.bold)),
+                                          fontWeight: FontWeight.bold)).tr(),
                             ),
                           ),
                         ],

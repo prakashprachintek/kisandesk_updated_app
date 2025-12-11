@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'fertilizer_model.dart';
 import 'fertilizer_api_service.dart';
@@ -27,8 +28,8 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Fertilizer Orders',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('My_Fertilizer_Orders',
+            style: TextStyle(fontWeight: FontWeight.bold)).tr(),
         // backgroundColor: Colors.green.shade700,
         // foregroundColor: Colors.white,
       ),
@@ -40,8 +41,8 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.results.isEmpty) {
-            return const Center(
-              child: Text('No orders yet',
+            return  Center(
+              child: Text('No_orders_yet'.tr(),
                   style: TextStyle(fontSize: 18, color: Colors.grey)),
             );
           }

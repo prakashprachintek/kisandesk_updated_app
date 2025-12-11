@@ -1,5 +1,4 @@
-// fertilizer_order_details_screen.dart
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/services/pdf_generator.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,7 +27,7 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
   actions: [
     IconButton(
       icon: const Icon(Icons.picture_as_pdf, color: Colors.red),
-      tooltip: 'Download Invoice',
+      tooltip: 'Download_Invoice'.tr(),
       onPressed: () => generateAndSaveInvoice(context, order),
     ),
     if (order.status == 'Pending')
@@ -92,7 +91,7 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Amount', style: TextStyle(fontSize: 18)),
+                        const Text('Total_Amount', style: TextStyle(fontSize: 18)).tr(),
                         Text(
                           '₹${order.amount}',
                           style: const TextStyle(
@@ -156,9 +155,9 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
 
             // === Products Header ===
             const Text(
-              'Products Ordered',
+              'Products_Ordered',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+            ).tr(),
             const SizedBox(height: 12),
 
             // === Products List ===
@@ -238,7 +237,7 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
 
                       if (detail != null) ...[
                         const Divider(height: 30),
-                        const Text('Usage Instructions:', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Usage_Instructions', style: TextStyle(fontWeight: FontWeight.w600)).tr(),
                         const SizedBox(height: 6),
                         Text(
                           detail.usage,
@@ -246,7 +245,7 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                         ),
                         if (detail.content.isNotEmpty) ...[
                           const SizedBox(height: 8),
-                          const Text('Description:', style: TextStyle(fontWeight: FontWeight.w600)),
+                          const Text('Description:', style: TextStyle(fontWeight: FontWeight.w600)).tr(),
                           const SizedBox(height: 6),
                           Text(detail.content),
                         ],

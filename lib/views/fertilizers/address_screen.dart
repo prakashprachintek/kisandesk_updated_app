@@ -107,7 +107,7 @@ class _AddressScreenState extends State<AddressScreen> {
   Future<void> _placeOrder() async {
     if (_selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a delivery address')),
+         SnackBar(content: Text('Please_select_a_delivery_address').tr()),
       );
       return;
     }
@@ -121,7 +121,7 @@ class _AddressScreenState extends State<AddressScreen> {
 
       if (cart.items.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text ('Your cart is empty')),
+          SnackBar(content: Text ('Your_cart_is_empty').tr()),
         );
         return;
       }
@@ -129,7 +129,7 @@ class _AddressScreenState extends State<AddressScreen> {
       final userId = UserSession.userId;
       if (userId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please login again')),
+          SnackBar(content: Text('Please_login_again').tr()),
         );
         return;
       }

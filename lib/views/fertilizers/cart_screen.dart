@@ -302,7 +302,7 @@ class _CartScreenState extends State<CartScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 6,
                         ),
-                        child: const Text('Proceed_to_Address', style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white)),
+                        child: const Text('Proceed_to_Address', style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white)).tr(),
                       ),
                     ),
                   ],
