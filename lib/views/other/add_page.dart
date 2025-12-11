@@ -161,10 +161,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   };
 
   Map<String, String> _currentFieldLabels = {
-    'cropName': 'Title',
-    'description': 'Description',
-    'price': 'Price',
-    'quantity': 'Quantity',
+    'cropName'.tr(): 'Title'.tr(),
+    'description'.tr(): 'description'.tr(),
+    'price'.tr(): 'price'.tr(),
+    'quantity'.tr(): 'quantity'.tr(),
   };
 
   @override
@@ -378,7 +378,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   .toList(),
               dropdownDecoratorProps: DropDownDecoratorProps(
                 dropdownSearchDecoration: InputDecoration(
-                  labelText: tr(_currentFieldLabels['cropName'] ?? "Title"),
+                  labelText: tr(_currentFieldLabels['cropName'] ?? "Title".tr()),
                   labelStyle: TextStyle(color: Colors.grey[600]),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   enabledBorder: OutlineInputBorder(
@@ -407,7 +407,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 });
               },
               selectedItem: _cropName,
-              validator: (value) => value == null ? tr('Please select a title') : null,
+              validator: (value) => value == null ? tr('Please_select_a_title') : null,
               popupProps: PopupProps.menu(
                 showSearchBox: false,
                 constraints: const BoxConstraints(maxHeight: 400),
@@ -447,7 +447,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             SizedBox(height: 16),
             TextFormField(
               decoration: InputDecoration(
-                labelText: tr(_currentFieldLabels['description'] ?? "Description"),
+                labelText: tr(_currentFieldLabels['description'] ?? "description".tr()),
                 labelStyle: TextStyle(color: Colors.grey[600]),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 enabledBorder: OutlineInputBorder(
@@ -474,12 +474,12 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 setState(() {});
               },
               initialValue: _description,
-              validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a description') : null,
+              validator: (value) => value == null || value.trim().isEmpty ? tr('Please_enter_a_description') : null,
             ),
             SizedBox(height: 16),
             TextFormField(
               decoration: InputDecoration(
-                labelText: tr("Phone Number"),
+                labelText: tr("phone_number_label"),
                 labelStyle: TextStyle(color: Colors.grey[600]),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 enabledBorder: OutlineInputBorder(
@@ -513,10 +513,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               initialValue: _phoneNumber,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return tr('Please enter a phone number');
+                  return tr('please_enter_phone_number');
                 }
                 if (value.length != 10) {
-                  return tr('Phone number must be 10 digits');
+                  return tr('phone_number_must_be_10_digits');
                 }
                 return null;
               },
@@ -524,7 +524,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             SizedBox(height: 16),
             TextFormField(
               decoration: InputDecoration(
-                labelText: tr(_currentFieldLabels['price'] ?? "Price"),
+                labelText: tr(_currentFieldLabels['price'] ?? "price".tr()),
                 labelStyle: TextStyle(color: Colors.grey[600]),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 enabledBorder: OutlineInputBorder(
@@ -552,7 +552,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 setState(() {});
               },
               initialValue: _price,
-              validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a price') : null,
+              validator: (value) => value == null || value.trim().isEmpty ? tr('Please_enter_a_price') : null,
             ),
             SizedBox(height: 16),
             // QUANTITY: Always shown
@@ -561,7 +561,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 items: _quantityOptions[_selectedCategory] ?? [],
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
-                    labelText: tr(_currentFieldLabels['quantity'] ?? "Quantity"),
+                    labelText: tr(_currentFieldLabels['quantity'] ?? "quantity".tr()),
                     labelStyle: TextStyle(color: Colors.grey[600]),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     enabledBorder: OutlineInputBorder(
@@ -590,7 +590,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   });
                 },
                 selectedItem: _quantity,
-                validator: (value) => value == null ? tr('Please select a quantity') : null,
+                validator: (value) => value == null ? tr('Please_select_a_quantity') : null,
                 popupProps: PopupProps.menu(
                   showSearchBox: false,
                   menuProps: MenuProps(
@@ -602,7 +602,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             else
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: tr(_currentFieldLabels['quantity'] ?? "Quantity"),
+                  labelText: tr(_currentFieldLabels['quantity'] ?? "quantity".tr()),
                   labelStyle: TextStyle(color: Colors.grey[600]),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   enabledBorder: OutlineInputBorder(
@@ -630,7 +630,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   setState(() {});
                 },
                 initialValue: _quantity,
-                validator: (value) => value == null || value.trim().isEmpty ? tr('Please enter a quantity') : null,
+                validator: (value) => value == null || value.trim().isEmpty ? tr('Please_enter_a_quantity') : null,
               ),
             SizedBox(height: 16),
             GestureDetector(
@@ -652,7 +652,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                     Expanded(
                       child: Text(
                         _base64Image == null
-                            ? tr("Upload Image")
+                            ? tr("Upload_Image")
                             : tr("Image selected: ${_fileName ?? 'Base64'}"),
                         style: TextStyle(
                           color: _hasSubmitted && _base64Image == null ? Colors.red : Colors.grey.shade400,
@@ -679,7 +679,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               Padding(
                 padding: EdgeInsets.only(top: 8, left: 12),
                 child: Text(
-                  tr('Please upload an image'),
+                  tr('Please_upload_an_image'),
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
@@ -715,7 +715,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             SizedBox(height: 10),
             Center(
               child: Text(
-                tr("Enter Location & Submit"),
+                tr("Enter_Location_&_Submit"),
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
@@ -727,7 +727,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 items: _states,
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
-                    labelText: tr('State'),
+                    labelText: tr('state'),
                     labelStyle: TextStyle(color: Colors.grey[600]),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     enabledBorder: OutlineInputBorder(
@@ -757,7 +757,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   });
                 },
                 selectedItem: _selectedState,
-                validator: (value) => !_useCurrentLocation && value == null ? tr('Please select a state') : null,
+                validator: (value) => !_useCurrentLocation && value == null ? tr('please_select_state') : null,
                 popupProps: PopupProps.menu(
                   showSearchBox: true,
                   menuProps: MenuProps(
@@ -771,7 +771,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 items: _districts,
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
-                    labelText: tr('District'),
+                    labelText: tr('district'),
                     labelStyle: TextStyle(color: Colors.grey[600]),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     enabledBorder: OutlineInputBorder(
@@ -802,7 +802,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 },
                 selectedItem: _selectedDistrict,
                 validator: (value) =>
-                    !_useCurrentLocation && _selectedState != null && value == null ? tr('Please select a district') : null,
+                    !_useCurrentLocation && _selectedState != null && value == null ? tr('please_select_district') : null,
                 popupProps: PopupProps.menu(
                   showSearchBox: true,
                   menuProps: MenuProps(
@@ -816,7 +816,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 items: _talukas,
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
-                    labelText: tr('Taluka'),
+                    labelText: tr('taluka'),
                     labelStyle: TextStyle(color: Colors.grey[600]),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     enabledBorder: OutlineInputBorder(
@@ -847,7 +847,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 },
                 selectedItem: _selectedTaluka,
                 validator: (value) => !_useCurrentLocation && _selectedDistrict != null && value == null
-                    ? tr('Please select a taluka')
+                    ? tr('please_enter_taluka')
                     : null,
                 popupProps: PopupProps.menu(
                   showSearchBox: true,
@@ -862,7 +862,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 items: _villages,
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
-                    labelText: tr('Village'),
+                    labelText: tr('village'),
                     labelStyle: TextStyle(color: Colors.grey[600]),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     enabledBorder: OutlineInputBorder(
@@ -892,7 +892,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 },
                 selectedItem: _selectedVillage,
                 validator: (value) => !_useCurrentLocation && _selectedTaluka != null && value == null
-                    ? tr('Please select a village')
+                    ? tr('please_enter_village')
                     : null,
                 popupProps: PopupProps.menu(
                   showSearchBox: true,
@@ -905,7 +905,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               SizedBox(height: 16),
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: tr("Pincode"),
+                  labelText: tr("pincode"),
                   labelStyle: TextStyle(color: Colors.grey[600]),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   enabledBorder: OutlineInputBorder(
@@ -940,10 +940,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                 validator: (value) {
                   if (!_useCurrentLocation) {
                     if (value == null || value.trim().isEmpty) {
-                      return tr('Please enter a pincode');
+                      return tr('Please_enter_a_pincode');
                     }
                     if (value.length != 6) {
-                      return tr('Pincode must be 6 digits');
+                      return tr('pincode_must_be_6_digits');
                     }
                   }
                   return null;
@@ -960,7 +960,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
                   gradientColors: [Colors.grey, Colors.grey],
                 ),
                 _GradientButton(
-                  text: tr("Submit"),
+                  text: tr("submit"),
                   onPressed: _isSubmitting ? null : _submitMarketPost,
                   gradientColors: isFormValid()
                       ? [Color.fromARGB(255, 29, 108, 92), Color.fromARGB(255, 29, 108, 92)]
@@ -1015,7 +1015,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Location services are disabled"))),
+        SnackBar(content: Text(tr("Location_services_are_disabled"))),
       );
       setState(() => _useCurrentLocation = false);
       return;
@@ -1025,7 +1025,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr("Location permission is denied"))),
+          SnackBar(content: Text(tr("Location_permission_is_denied"))),
         );
         setState(() => _useCurrentLocation = false);
         return;
@@ -1033,7 +1033,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     }
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Location permission is permanently denied"))),
+        SnackBar(content: Text(tr("Location_permission_is_permanently_denied"))),
       );
       setState(() => _useCurrentLocation = false);
       return;
@@ -1063,7 +1063,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
 
     if (_useCurrentLocation && (_latitude == null || _longitude == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Unable to fetch current location"))),
+        SnackBar(content: Text(tr("Unable_to_fetch_current_location"))),
       );
       setState(() => _isSubmitting = false);
       return;
@@ -1090,7 +1090,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
         final responseData = jsonDecode(await imageResponse.stream.bytesToString());
 
         if (imageResponse.statusCode == 200 || imageResponse.statusCode == 201) {
-          if (responseData['message'] == 'File uploaded successfully') {
+          if (responseData['message'] == 'File_uploaded_successfully'.tr()) {
             imageUploaded = true;
             break;
           }
@@ -1150,8 +1150,8 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
             context: context,
             barrierDismissible: false,
             builder: (_) => AlertDialog(
-              title: Text(tr("Submission Successful")),
-              content: Text(tr("Market Post Initiated Successfully. Redirecting to Marketplace...")),
+              title: Text(tr("Submission_Successful")),
+              content: Text(tr("Market_Post_Initiated_Successfully._Redirecting_to_Marketplace...")),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -1188,7 +1188,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       }
     } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Please check your internet connection"))),
+        SnackBar(content: Text(tr("Please_check_your_internet_connection"))),
       );
     } catch (e) {
       print("Submission error: $e");
@@ -1223,7 +1223,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: Colors.black54),
-                title: Text(tr('Select from Gallery'), style: TextStyle(color: Colors.black54)),
+                title: Text(tr('Select_from_Gallery').tr(), style: TextStyle(color: Colors.black54)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final XFile? pickedFile = await picker.pickImage(
@@ -1244,7 +1244,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   Future<void> _handleImageSelection(XFile? pickedFile) async {
     if (pickedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("No image selected"))),
+        SnackBar(content: Text(tr("No_image_selected"))),
       );
       return;
     }
@@ -1272,7 +1272,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
     } catch (e) {
       print("Error processing image: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Failed to process and convert image"))),
+        SnackBar(content: Text(tr("Failed_to_process_and_convert_image"))),
       );
     }
   }

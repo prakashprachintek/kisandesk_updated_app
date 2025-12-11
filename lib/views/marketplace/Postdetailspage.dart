@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/services/image_caching.dart';
 import 'package:share_plus/share_plus.dart'; 
@@ -75,9 +76,9 @@ class _PostdetailspageState extends State<Postdetailspage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'About this post',
+          'About_this_post',
           style: TextStyle(color: Colors.white),
-        ),
+        ).tr(),
         actions: [
           IconButton(
             icon: const Icon(Icons.share, color: Colors.white),
@@ -130,22 +131,22 @@ class _PostdetailspageState extends State<Postdetailspage> {
                   children: [
                     _buildDetailRow(
                       icon: Icons.location_on,
-                      label: 'Location',
+                      label: 'location'.tr(),
                       value: widget.location,
                     ),
                     _buildDetailRow(
                       icon: Icons.list, 
-                      label: 'Description',
+                      label: 'description'.tr(),
                       value: widget.description,
                     ),
                     _buildDetailRow(
                       icon: Icons.person,
-                      label: 'Farmer Name',
+                      label: 'farmerName'.tr(),
                       value: widget.FarmerName,
                     ),
                     _buildDetailRow(
                       icon: Icons.call,
-                      label: 'Phone',
+                      label: 'phone'.tr(),
                       value: widget.Phone,
                     ),
                   ],

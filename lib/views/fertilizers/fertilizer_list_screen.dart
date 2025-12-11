@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../services/user_session.dart';
 import 'fertilizer_model.dart';
@@ -129,7 +130,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.arrow_upward),
-              title: const Text('Price: Low to High'),
+              title: const Text('Price: Low to High').tr(),
               trailing: _sortOrder == 'ascending'
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
@@ -143,7 +144,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.arrow_downward),
-              title: const Text('Price: High to Low'),
+              title: const Text('Price: High to Low').tr(),
               trailing: _sortOrder == 'descending'
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
@@ -157,7 +158,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.clear),
-              title: const Text('Clear Sorting'),
+              title: const Text('Clear_Sorting'),
               trailing: _sortOrder == 'none'
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
@@ -202,7 +203,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fertilizers',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.bold)).tr(),
         elevation: 0,
         actions: [
           FutureBuilder<Cart>(
@@ -216,7 +217,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.shopping_cart),
-                    tooltip: 'Cart',
+                    tooltip: 'Cart'.tr(),
                     onPressed: () => Navigator.push(context,
                         MaterialPageRoute(builder: (_) => const CartScreen())),
                   ),
@@ -248,7 +249,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.inventory_2_outlined),
-            tooltip: 'My Orders',
+            tooltip: 'My_Orders'.tr(),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
@@ -273,7 +274,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                       focusNode: _searchFocus,
                       onChanged: _filterFertilizers,
                       decoration: InputDecoration(
-                        hintText: 'Search fertilizers...',
+                        hintText: 'Search_fertilizers...'.tr(),
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
@@ -315,7 +316,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                   const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.filter_list),
-                    tooltip: 'Sort',
+                    tooltip: 'Sort'.tr(),
                     onPressed: _openSortBottomSheet,
                   ),
                 ],
@@ -329,15 +330,15 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildCategoryChip("All", ""),
+                    _buildCategoryChip("All".tr(), ""),
                     const SizedBox(width: 10),
-                    _buildCategoryChip("Herbicides", "herbicide"),
+                    _buildCategoryChip("Herbicides".tr(), "herbicide"),
                     const SizedBox(width: 10),
-                    _buildCategoryChip("Insecticides", "insecticide"),
+                    _buildCategoryChip("Insecticides".tr(), "insecticide"),
                     const SizedBox(width: 10),
-                    _buildCategoryChip("Rodenticides", "rodenticide"),
+                    _buildCategoryChip("Rodenticides".tr(), "rodenticide"),
                     const SizedBox(width: 10),
-                    _buildCategoryChip("Acaricides", "acaricide")
+                    _buildCategoryChip("Acaricides".tr(), "acaricide")
                   ],
                 ),
               ),
@@ -499,7 +500,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                             if (f.availableStock <= 20)
                                               Text(
                                                 f.availableStock <= 0
-                                                    ? 'Out of stock'
+                                                    ? 'Out_of_stock'.tr()
                                                     : 'Only ${f.availableStock} left',
                                                 style: TextStyle(
                                                   fontSize: 11,
@@ -519,7 +520,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                             width: double.infinity,
                                             child: OutlinedButton(
                                               onPressed: null,
-                                              child: Text('Out of Stock',
+                                              child: Text('Out of stock',
                                                   style: TextStyle(
                                                       color: Colors.grey)),
                                             ),
