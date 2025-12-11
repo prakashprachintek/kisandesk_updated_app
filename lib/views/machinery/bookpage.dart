@@ -753,21 +753,21 @@ class _BookPageState extends State<BookPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide(
-                            color: fieldErrors['description'.tr()]!
+                            color: fieldErrors['description']!
                                 ? Colors.red
                                 : Colors.grey),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide(
-                            color: fieldErrors['description'.tr()]!
+                            color: fieldErrors['description']!
                                 ? Colors.red
                                 : Colors.grey),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide(
-                            color: fieldErrors['description'.tr()]!
+                            color: fieldErrors['description']!
                                 ? Colors.red
                                 : Color(0xFF00AD83),
                             width: 1.5),
@@ -785,10 +785,10 @@ class _BookPageState extends State<BookPage> {
                     ),
                     maxLines: 3,
                     onChanged: (value) => setState(() {
-                      fieldErrors['description'.tr()] = value.isEmpty;
+                      fieldErrors['description'] = value.isEmpty;
                     }),
                   ),
-                  if (fieldErrors['description'.tr()]!)
+                  if (fieldErrors['description']!)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
                       child: Text(
