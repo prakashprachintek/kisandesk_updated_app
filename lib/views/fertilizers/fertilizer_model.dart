@@ -22,7 +22,7 @@ class Fertilizer {
   final List<Review>? reviews;
 
   // COMPUTED VALUES (SUPER USEFUL)
-  String get unit => '$productQuantity ${_formatUnit(productUnit)}'; // "500 Gm", "1 Ltr"
+  String get unit => '$productQuantity ${_formatUnit(productUnit)}';
   double get mrp => double.tryParse(mrpPrice) ?? 0.0;
   double get sell => double.tryParse(sellPrice) ?? 0.0;
   double get discountPercent => mrp > 0 ? ((mrp - sell) / mrp) * 100 : 0.0;
@@ -99,7 +99,6 @@ class Fertilizer {
     );
   }
 
-  // Format unit properly
   static String _formatUnit(String unit) {
     final map = {
       'Ltr': 'Ltr',
@@ -121,12 +120,12 @@ class Fertilizer {
   }
 }
 
-// Supporting Classes
+// Supporting Classes (unchanged)
 class FertilizerImage {
   final String fileName;
   final String url;
 
-  FertilizerImage({required this.fileName, required this.url});
+  FertilizerImage({this.fileName = '', required this.url});
 
   factory FertilizerImage.fromJson(Map<String, dynamic> json) {
     return FertilizerImage(
@@ -193,7 +192,167 @@ class Review {
   }
 }
 
-// Response Wrapper
+// NEW: Fully Updated Rich Order Models for the latest API
+
+class RichFertilizerOrder {
+  final String id;
+  final String orderId;
+  final String amount;
+  final String status;
+  final String createdAt;
+  final String deliveryAddress;
+  final String? paymentMode;
+
+  final String farmerName;
+  final String farmerPhone;
+  final String farmerVillage;
+
+  final List<OrderProductItem> products;
+
+  RichFertilizerOrder({
+    required this.id,
+    required this.orderId,
+    required this.amount,
+    required this.status,
+    required this.createdAt,
+    required this.deliveryAddress,
+    this.paymentMode,
+    required this.farmerName,
+    required this.farmerPhone,
+    required this.farmerVillage,
+    required this.products,
+  });
+
+  factory RichFertilizerOrder.fromJson(Map<String, dynamic> json) {
+    final productsList = (json['products'] as List<dynamic>?) ?? [];
+    final orderProducts = productsList
+        .map((item) => OrderProductItem.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    return RichFertilizerOrder(
+      id: json['_id'] as String? ?? '',
+      orderId: json['order_id'] as String? ?? '',
+      amount: json['amount'] as String? ?? '0',
+      status: json['status'] as String? ?? 'Pending',
+      createdAt: json['created_at'] as String? ?? '',
+      deliveryAddress: json['delivery_address'] as String? ?? '',
+      paymentMode: json['payment_mode'] as String?,
+      farmerName: json['farmer_name'] as String? ?? 'Unknown Farmer',
+      farmerPhone: json['farmer_phone'] as String? ?? '',
+      farmerVillage: json['farmer_village'] as String? ?? '',
+      products: orderProducts,
+    );
+  }
+
+  String formatDate() {
+    try {
+      final date = DateTime.parse(createdAt);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return 'N/A';
+    }
+  }
+}
+
+class OrderProductItem {
+  final String id;
+  final String quantity;
+  final NestedProduct product;
+
+  OrderProductItem({
+    required this.id,
+    required this.quantity,
+    required this.product,
+  });
+
+  factory OrderProductItem.fromJson(Map<String, dynamic> json) {
+    return OrderProductItem(
+      id: json['id'] as String? ?? '',
+      quantity: json['quantity'] as String? ?? '1',
+      product: NestedProduct.fromJson(json['product'] as Map<String, dynamic>),
+    );
+  }
+}
+
+class NestedProduct {
+  final String productName;
+  final String mrpPrice;
+  final String sellPrice;
+  final String productUnit;
+  final String productQuantity;
+  final String productCategory;
+  final String? productDescriptions;
+  final ProductDetail productDetails;
+  final List<FertilizerImage> images;
+
+  NestedProduct({
+    required this.productName,
+    required this.mrpPrice,
+    required this.sellPrice,
+    required this.productUnit,
+    required this.productQuantity,
+    required this.productCategory,
+    this.productDescriptions,
+    required this.productDetails,
+    required this.images,
+  });
+
+  factory NestedProduct.fromJson(Map<String, dynamic> json) {
+    final imagesList = (json['images'] as List<dynamic>?) ?? [];
+    final parsedImages = imagesList
+        .map((img) => FertilizerImage.fromJson(img as Map<String, dynamic>))
+        .toList();
+
+    return NestedProduct(
+      productName: json['product_name'] as String? ?? 'Unknown Product',
+      mrpPrice: json['mrp_price'] as String? ?? '0',
+      sellPrice: json['sell_price'] as String? ?? '0',
+      productUnit: json['product_unit'] as String? ?? 'Unit',
+      productQuantity: json['product_quantity'] as String? ?? '1',
+      productCategory: json['product_category'] as String? ?? 'Unknown',
+      productDescriptions: json['product_descriptions'] as String?,
+      productDetails: ProductDetail.fromJson(
+          json['product_details'] as Map<String, dynamic>? ?? {}),
+      images: parsedImages,
+    );
+  }
+
+  // Helpful computed properties
+  double get sell => double.tryParse(sellPrice) ?? 0.0;
+  double get mrp => double.tryParse(mrpPrice) ?? 0.0;
+  String get unit => '$productQuantity ${_formatUnit(productUnit)}';
+
+  static String _formatUnit(String unit) {
+    final map = {
+      'Ltr': 'Ltr',
+      'ltr': 'Ltr',
+      'Gm': 'Gm',
+      'gm': 'Gm',
+      'Kg': 'Kg',
+      'kg': 'Kg',
+      'Ml': 'ml',
+      'ml': 'ml',
+    };
+    return map[unit.trim()] ?? unit.trim();
+  }
+}
+
+class ProductDetail {
+  final String content;
+  final String usage;
+
+  ProductDetail({required this.content, required this.usage});
+
+  factory ProductDetail.fromJson(Map<String, dynamic> json) {
+    return ProductDetail(
+      content: json['content'] as String? ?? '',
+      usage: json['usage'] as String? ?? '',
+    );
+  }
+}
+
+// Response Wrappers
+
 class FertilizerResponse {
   final String status;
   final String message;
@@ -220,7 +379,31 @@ class FertilizerResponse {
   }
 }
 
-// Keep all your other models (Cart, Order, etc.) — they are perfect!
+class RichFertilizerOrderResponse {
+  final String status;
+  final String message;
+  final List<RichFertilizerOrder> results;
+
+  RichFertilizerOrderResponse({
+    required this.status,
+    required this.message,
+    required this.results,
+  });
+
+  factory RichFertilizerOrderResponse.fromJson(Map<String, dynamic> json) {
+    final resultsList = (json['results'] as List<dynamic>?) ?? [];
+
+    return RichFertilizerOrderResponse(
+      status: json['status'] as String? ?? '',
+      message: json['message'] as String? ?? '',
+      results: resultsList
+          .map((item) => RichFertilizerOrder.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+// Cart Models (kept as they were — still good!)
 class CartItem {
   final String productId;
   final int quantity;
@@ -267,149 +450,6 @@ class Cart {
           .map((item) => CartItem.fromJson(item as Map<String, dynamic>))
           .toList(),
       totalCartValue: json['totalCartValue'] as double? ?? 0.0,
-    );
-  }
-}
-
-// Order models (unchanged — perfect as is)
-class OrderProduct {
-  final String id;
-  final String quantity;
-
-  OrderProduct({required this.id, required this.quantity});
-
-  factory OrderProduct.fromJson(Map<String, dynamic> json) {
-    return OrderProduct(
-      id: json['id'] as String,
-      quantity: json['quantity'] as String,
-    );
-  }
-}
-
-// ADD THIS NEW MODEL FOR RICH ORDER DATA
-class RichFertilizerOrder {
-  final String id;
-  final String orderId;
-  final String amount;
-  final String status;
-  final String createdAt;
-  
-  // Farmer info
-  final String farmerName;
-  final String farmerPhone;
-  final String farmerVillage;
-
-  // Parallel arrays for products
-  final List<String> productIds;
-  final List<String> productNames;
-  final List<String> sellPrices;
-  final List<String> productQuantities;
-  final List<String> productCategories;
-
-  // Nested product details & images
-  final List<ProductDetail> productDetails;
-  final List<List<FertilizerImage>> productImages; // List of list of images per product
-
-  RichFertilizerOrder({
-    required this.id,
-    required this.orderId,
-    required this.amount,
-    required this.status,
-    required this.createdAt,
-    required this.farmerName,
-    required this.farmerPhone,
-    required this.farmerVillage,
-    required this.productIds,
-    required this.productNames,
-    required this.sellPrices,
-    required this.productQuantities,
-    required this.productCategories,
-    required this.productDetails,
-    required this.productImages,
-  });
-
-  factory RichFertilizerOrder.fromJson(Map<String, dynamic> json) {
-    var productIds = (json['product_id'] as List<dynamic>?)?.cast<String>() ?? [];
-    var productNames = (json['product_name'] as List<dynamic>?)?.cast<String>() ?? [];
-    var sellPrices = (json['sell_price'] as List<dynamic>?)?.cast<String>() ?? [];
-    var quantities = (json['product_quantity'] as List<dynamic>?)?.cast<String>() ?? [];
-    var categories = (json['product_category'] as List<dynamic>?)?.cast<String>() ?? [];
-
-    // Parse product_details (list of maps)
-    var detailsList = (json['product_details'] as List<dynamic>?) ?? [];
-    var productDetails = detailsList.map((d) => ProductDetail.fromJson(d as Map<String, dynamic>)).toList();
-
-    // Parse images: [[{url:...}], [{url:...}, {url:...}]]
-    var rawImages = (json['images'] as List<dynamic>?) ?? [];
-    var productImages = rawImages.map<List<FertilizerImage>>((item) {
-      if (item is List) {
-        return item.map((img) => FertilizerImage.fromJson(img as Map<String, dynamic>)).toList();
-      }
-      return <FertilizerImage>[];
-    }).toList();
-
-    return RichFertilizerOrder(
-      id: json['_id'] as String? ?? '',
-      orderId: json['order_id'] as String? ?? '',
-      amount: json['amount'] as String? ?? '0',
-      status: json['status'] as String? ?? 'Pending',
-      createdAt: json['created_at'] as String? ?? '',
-      farmerName: json['farmer_name'] as String? ?? 'Unknown Farmer',
-      farmerPhone: json['farmer_phone'] as String? ?? '',
-      farmerVillage: json['farmer_village'] as String? ?? '',
-      productIds: productIds,
-      productNames: productNames,
-      sellPrices: sellPrices,
-      productQuantities: quantities,
-      productCategories: categories,
-      productDetails: productDetails,
-      productImages: productImages,
-    );
-  }
-
-  String formatDate() {
-    try {
-      final date = DateTime.parse(createdAt);
-      return '${date.day}/${date.month}/${date.year}';
-    } catch (e) {
-      return 'N/A';
-    }
-  }
-}
-
-// New simple product detail class
-class ProductDetail {
-  final String content;
-  final String usage;
-
-  ProductDetail({required this.content, required this.usage});
-
-  factory ProductDetail.fromJson(Map<String, dynamic> json) {
-    return ProductDetail(
-      content: json['content'] as String? ?? '',
-      usage: json['usage'] as String? ?? '',
-    );
-  }
-}
-
-class RichFertilizerOrderResponse {
-  final String status;
-  final String message;
-  final List<RichFertilizerOrder> results;
-
-  RichFertilizerOrderResponse({
-    required this.status,
-    required this.message,
-    required this.results,
-  });
-
-  factory RichFertilizerOrderResponse.fromJson(Map<String, dynamic> json) {
-    return RichFertilizerOrderResponse(
-      status: json['status'] as String? ?? '',
-      message: json['message'] as String? ?? '',
-      results: (json['results'] as List<dynamic>? ?? [])
-          .map((item) => RichFertilizerOrder.fromJson(item as Map<String, dynamic>))
-          .toList(),
     );
   }
 }
