@@ -158,6 +158,10 @@ flutter:
     - assets/Plots.png
     - assets/irrigationland.png
     - assets/DryLand.png
+    - assets/machinerynew.png
+    - assets/Laboursnew.png
+    - assets/fertilizersnew.png
+    - assets/doctorsnew.png
 
     - assets/machines.webp
 

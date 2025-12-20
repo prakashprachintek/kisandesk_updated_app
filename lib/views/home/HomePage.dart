@@ -57,7 +57,7 @@ class _CategoryCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 280,
+        height: 320,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
@@ -355,6 +355,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _refreshMarketPosts() {
+    setState(() {
+      marketPostsFuture = fetchMarketPosts();
+    });
+  }
+
   Future<void> _fetchProfilePic() async {
     final userId = UserSession.userId;
     if (userId == null) {
@@ -607,7 +613,9 @@ class _HomePageState extends State<HomePage> {
               isUserExists: true,
             ),
           ),
-        );
+        ).then((_) {
+          _refreshMarketPosts();
+        });
       }
     }
   }
@@ -922,7 +930,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1169,8 +1176,8 @@ class _HomePageState extends State<HomePage> {
                                       leading: CachedImageWidget(
                                         imageUrl: post.imageUrl,
                                         fit: BoxFit.cover,
-                                          width: 60,
-                                          height: 60,
+                                        width: 60,
+                                        height: 60,
                                       ),
                                       // Image.network(
                                       //   post.imageUrl,
@@ -1501,31 +1508,31 @@ class _HomePageState extends State<HomePage> {
   /// 6 Categories Grid
   Widget _buildCategoriesGrid() {
     final List<String> imagePaths = [
-      'assets/Labor.jpeg',
-      'assets/machines.webp',
-      'assets/fertilizers.jpg',
-      'assets/veterinary.webp',
-      'assets/loan.webp',
-      'assets/govtschemes.png',
+      'assets/Laboursnew.png',
+      'assets/machinerynew.png',
+      'assets/fertilizersnew.png',
+      'assets/doctorsnew.png',
+      //'assets/loan.webp',
+      //'assets/govtschemes.png',
     ];
     final List<String> labels = [
       tr('Labours'),
       tr('Machinery'),
       tr('Fertilizers'),
       tr('Doctors'),
-      tr('Loan/Insurance'),
-      tr('Govt Schemes'),
+      //tr('Loan/Insurance'),
+      //tr('Govt Schemes'),
     ];
 
     return GridView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: 6,
+      itemCount: 4,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 10.0,
-        mainAxisSpacing: 20.0,
-        childAspectRatio: 1 / 1.2,
+        crossAxisCount: 2,
+        crossAxisSpacing: 14.0,
+        mainAxisSpacing: 18.0,
+        childAspectRatio: 1 / 1.05,
       ),
       itemBuilder: (context, index) {
         return _CategoryCard(
@@ -1619,8 +1626,8 @@ class _HomePageState extends State<HomePage> {
     1: {'page': MachineryRentPage(), 'key': 'machinery'},
     2: {'page': FertilizerListScreen(), 'key': ''},
     3: {'page': DoctorPage(), 'key': 'doctors'},
-    4: {'page': ComingSoonPage(), 'key': ''},
-    5: {'page': ComingSoonPage(), 'key': ''},
+    //4: {'page': ComingSoonPage(), 'key': ''},
+    //5: {'page': ComingSoonPage(), 'key': ''},
   };
   void _showMaintenancePopup(BuildContext context) {
     showDialog(
