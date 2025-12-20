@@ -1508,10 +1508,10 @@ class _HomePageState extends State<HomePage> {
   /// 6 Categories Grid
   Widget _buildCategoriesGrid() {
     final List<String> imagePaths = [
-      'assets/Labor.jpeg',
-      'assets/machines.webp',
-      'assets/fertilizers.jpg',
-      'assets/veterinary.webp',
+      'assets/Laboursnew.png',
+      'assets/machinerynew.png',
+      'assets/fertilizersnew.png',
+      'assets/doctorsnew.png',
       //'assets/loan.webp',
       //'assets/govtschemes.png',
     ];
