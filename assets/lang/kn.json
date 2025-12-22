@@ -464,7 +464,18 @@
   "Delete_Address?": "ವಿಳಾಸ ಅಳಿಸಬೇಕೇ?",
   "Maximum_5_addresses_allowed": "ಗರಿಷ್ಠ 5 ವಿಳಾಸಗಳಿಗೆ ಮಾತ್ರ ಅನುಮತಿ ಇದೆ",
   "My_Fertilizer_Orders": "ನನ್ನ ರಸಗೊಬ್ಬರ ಆರ್ಡರ್‌ಗಳು",
-  "No_orders_yet": "ಇನ್ನೂ ಯಾವುದೇ ಆರ್ಡರ್‌ಗಳು ಇಲ್ಲ"
+  "No_orders_yet": "ಇನ್ನೂ ಯಾವುದೇ ಆರ್ಡರ್‌ಗಳು ಇಲ್ಲ",
+  "Upload_failed": "ಅಪ್‌ಲೋಡ್ ಆಗಲಿಲ್ಲ",
+  "Edit Profile": "ಪ್ರೊಫೈಲ್ ಬದಲಾಯಿಸಿ",
+  "My_Transactions": "ನನ್ನ ವ್ಯವಹಾರಗಳು",
+  "Orders_&_Transactions": "ಆರ್ಡರ್ ಮತ್ತು ವ್ಯವಹಾರಗಳು",
+  "Crop_Description": "ಬೆಳೆ ಬಗ್ಗೆ ವಿವರ",
+  "Land_Name": "ಜಮೀನು ಹೆಸರು",
+  "Land_Description": "ಜಮೀನು ಬಗ್ಗೆ ವಿವರ",
+  "Total_Area_(Acres)": "ಒಟ್ಟು ಜಮೀನು (ಏಕರೆ)",
+  "Machine_Name": "ಯಂತ್ರದ ಹೆಸರು",
+  "Machine_Description": "ಯಂತ್ರದ ಬಗ್ಗೆ ವಿವರ",
+  "Quantity_Available": "ಲಭ್ಯ ಇರುವ ಪ್ರಮಾಣ"
 }
 
 
