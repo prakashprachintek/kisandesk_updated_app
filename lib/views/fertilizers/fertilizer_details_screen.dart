@@ -243,7 +243,8 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product_Details',
-            style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+                style: TextStyle(fontWeight: FontWeight.bold))
+            .tr(),
         elevation: 0,
         actions: [
           // Cart Icon with Live Badge
@@ -525,12 +526,22 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                                 const Color.fromARGB(255, 29, 108, 92),
                             foregroundColor: Colors.white,
                             minimumSize: const Size(0, 52),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                          child: const Text('Add_to_Cart',
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: const Text(
+                              'Add_to_Cart',
+                              maxLines: 1,
                               style: TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold)).tr(),
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ).tr(),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -538,15 +549,25 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                         child: ElevatedButton(
                           onPressed: isOutOfStock ? null : _buyNow,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange.shade600,
+                            backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
                             minimumSize: const Size(0, 52),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                          child: const Text('Buy_Now',
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: const Text(
+                              'Buy_Now',
+                              maxLines: 1,
                               style: TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold)).tr(),
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ).tr(),
+                          ),
                         ),
                       ),
                     ],
@@ -561,15 +582,17 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                   // Product Details
                   if (details != null && details.content.trim().isNotEmpty) ...[
                     const Text('Product_Details',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)).tr(),
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold))
+                        .tr(),
                     const SizedBox(height: 4),
                     Text(details.content,
                         style: const TextStyle(fontSize: 15, height: 1.5)),
                     const SizedBox(height: 20),
                     const Text('Usage',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)).tr(),
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold))
+                        .tr(),
                     const SizedBox(height: 4),
                     Text(details.usage,
                         style: const TextStyle(fontSize: 15, height: 1.5)),
@@ -578,8 +601,9 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                   // Description
                   if (description!.isNotEmpty) ...[
                     const Text('description',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)).tr(),
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold))
+                        .tr(),
                     const SizedBox(height: 4),
                     Text(description,
                         style: const TextStyle(fontSize: 15, height: 1.5)),
@@ -741,7 +765,7 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            children:  [
+                            children: [
                               Icon(Icons.rate_review_outlined,
                                   color: Colors.green, size: 32),
                               SizedBox(width: 12),
@@ -761,7 +785,8 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                             textCapitalization: TextCapitalization.sentences,
                             decoration: InputDecoration(
                               hintText:
-                                  'Share_your_experience_with_this_fertilizer...'.tr(),
+                                  'Share_your_experience_with_this_fertilizer...'
+                                      .tr(),
                               hintStyle: TextStyle(
                                   color: Colors.grey[600],
                                   fontStyle: FontStyle.italic),
@@ -803,9 +828,10 @@ class _FertilizerDetailsScreenState extends State<FertilizerDetailsScreen> {
                                       child: CircularProgressIndicator(
                                           color: Colors.white, strokeWidth: 3))
                                   : const Text('Submit_Review',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold)).tr(),
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold))
+                                      .tr(),
                             ),
                           ),
                         ],
