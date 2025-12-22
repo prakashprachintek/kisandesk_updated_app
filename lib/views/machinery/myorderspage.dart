@@ -15,7 +15,7 @@ class MyOrdersPage extends StatefulWidget {
 }
 
 class _MyOrdersPageState extends State<MyOrdersPage> {
-  List<Map<String, String>> orders = [];
+  List<Map<String, dynamic>> orders = [];
   bool _isLoading = true; // Track initial loading state
 
   @override
@@ -26,7 +26,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
 
   Future<void> _fetchOrdersFromApi() async {
     setState(() {
-      _isLoading = true; // Show loading only for initial fetch
+      _isLoading = true;
     });
 
     print("Fetching orders for userId: ${UserSession.userId}");
@@ -35,10 +35,8 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
     try {
       final response = await http.post(
         url,
-        body: jsonEncode({
-          "userId": UserSession.userId,
-          "type": "transactions"
-        }),
+        body:
+            jsonEncode({"userId": UserSession.userId, "type": "transactions"}),
         headers: {
           "Content-Type": "application/json",
         },
@@ -50,10 +48,22 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
 
         if (json['status'] == 'success') {
           final List results = json['results'];
-          orders = results.map<Map<String, String>>((item) {
-            // Validate ownerDetails
-            final ownerDetails = item['ownerDetails'] as List<dynamic>?;
-            final hasOwnerDetails = ownerDetails != null && ownerDetails.isNotEmpty;
+
+          orders = results.map<Map<String, dynamic>>((item) {
+            // Safely extract owner details
+            String fullName = 'Unknown';
+            String phone = 'Not Available';
+
+            final ownerDetailsRaw = item['ownerDetails'];
+            if (ownerDetailsRaw is List && ownerDetailsRaw.isNotEmpty) {
+              final firstOwner = ownerDetailsRaw.first;
+              if (firstOwner is Map<String, dynamic>) {
+                fullName = firstOwner['full_name'] ?? 'Unknown';
+                phone = firstOwner['phone'] ?? 'Not Available';
+              }
+            }
+            // If ownerDetails is null, missing, or empty → defaults stay 'Unknown'/'Not Available'
+
             return {
               "orderId": item['order_id'] ?? '',
               "machinery": item['machinery_type'] ?? 'Unknown',
@@ -63,10 +73,18 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
               "status": item['status'] ?? '',
               "booked": item['created_at']?.split('T')[0] ?? '',
               "description": item['description'] ?? 'No Description available',
-              "full_name": hasOwnerDetails ? ownerDetails[0]['full_name'] ?? 'Unknown' : 'Unknown',
-              "phone": hasOwnerDetails ? ownerDetails[0]['phone'] ?? 'Not Available' : 'Not Available'
+              "full_name": fullName,
+              "phone": phone,
+              // Raw fields for retry functionality
+              "rawOrderId": item['order_id'] ?? '',
+              "rawMachineryType": item['machinery_type'] ?? '',
+              "rawWorkType": item['work_type'] ?? '',
+              "createdAt": item['created_at'] ??
+                  '', // fallback to empty string if missing
+                  "rawMongoId": item['_id'] ?? '',
             };
           }).toList();
+
           setState(() {
             _isLoading = false;
           });
@@ -113,21 +131,12 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      /*
-      appBar: AppBar(
-        automaticallyImplyLeading: false, // back button removed
-        title: const Text(
-          "My Orders",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        // iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      */
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _fetchOrdersFromApi,
-              color: const Color.fromARGB(255, 29, 108, 92), // Match TransactionDetailPage color
+              color: const Color.fromARGB(
+                  255, 29, 108, 92), // Match TransactionDetailPage color
               backgroundColor: Colors.white,
               child: orders.isEmpty
                   ? const Center(
@@ -145,13 +154,25 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 4,
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           child: InkWell(
                             onTap: () {
+                              final selectedOrder = orders[index];
+                              if (selectedOrder['orderId'] == null ||
+                                  selectedOrder['orderId'].toString().isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "Cannot open details for this order")),
+                                );
+                                return;
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => OrderDetailPage(order: order),
+                                  builder: (context) =>
+                                      OrderDetailPage(order: selectedOrder),
                                 ),
                               );
                             },
@@ -169,12 +190,14 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text("Booked: ${order['booked']}"),
                                       Text(
                                         "Status: ${order['status']}",
-                                        style: const TextStyle(color: Colors.blue),
+                                        style:
+                                            const TextStyle(color: Colors.blue),
                                       ),
                                     ],
                                   ),
@@ -186,15 +209,18 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                                         : null,
                                     child: Row(
                                       children: [
-                                        Icon(Icons.phone, size: 20, color: Colors.grey[600]),
+                                        Icon(Icons.phone,
+                                            size: 20, color: Colors.grey[600]),
                                         const SizedBox(width: 8),
                                         Text(
                                           "${order['phone']}",
                                           style: TextStyle(
-                                            color: order['phone'] != 'Not Available'
+                                            color: order['phone'] !=
+                                                    'Not Available'
                                                 ? Colors.blue
                                                 : Colors.grey,
-                                            decoration: order['phone'] != 'Not Available'
+                                            decoration: order['phone'] !=
+                                                    'Not Available'
                                                 ? TextDecoration.underline
                                                 : null,
                                           ),
