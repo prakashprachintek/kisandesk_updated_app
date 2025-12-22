@@ -482,6 +482,10 @@
   "Delete_Address?":"Delete Address?",
   "Maximum_5_addresses_allowed":"Maximum 5 addresses allowed",
   "My_Fertilizer_Orders":"My Fertilizer Orders",
-  "No_orders_yet":"No orders yet"
+  "No_orders_yet":"No orders yet",
+
+
+  "Upload_failed":"Upload failed",
+  "Edit Profile":"Edit Profile"
 
 }
