@@ -483,9 +483,19 @@
   "Maximum_5_addresses_allowed":"Maximum 5 addresses allowed",
   "My_Fertilizer_Orders":"My Fertilizer Orders",
   "No_orders_yet":"No orders yet",
+  "Quantity_(Kg)": "Quantity (Kg)",
 
 
   "Upload_failed":"Upload failed",
-  "Edit Profile":"Edit Profile"
+  "Edit Profile":"Edit Profile",
+  "My_Transactions":"My Transactions",
+  "Orders_&_Transactions":"Orders & Transactions",
+  "Crop_Description":"Crop Description",
+  "Land_Name":"Land Name",
+  "Land_Description":"Land Description",
+  "Total_Area_(Acres)":"Total Area (Acres)",
+  "Machine_Name":"Machine Name",
+  "Machine_Description":"Machine Description",
+  "Quantity_Available":"Quantity Available"
 
 }

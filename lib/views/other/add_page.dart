@@ -60,34 +60,34 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   final _formKeyStep2 = GlobalKey<FormState>();
 
   final Map<String, Map<String, String>> _categoryFieldLabels = {
-    'cattle'.tr(): {
-      'cropName': 'Cattle Name',
-      'description': 'Cattle Description',
-      'price': 'Price',
-      'quantity': 'Number of Cattle',
+    'cattle': {
+      'cropName': 'Cattle_Name'.tr(),
+      'description': 'Cattle_Description'.tr(),
+      'price': 'Price'.tr(),
+      'quantity': 'Number_of_Cattle'.tr(),
     },
-    'crop'.tr(): {
-      'cropName': 'Crop Name',
-      'description': 'Crop Description',
-      'price': 'Price',
-      'quantity': 'Quantity (kg)',
+    'crop': {
+      'cropName': 'Crop_Name'.tr(),
+      'description': 'Crop_Description'.tr(),
+      'price': 'Price'.tr(),
+      'quantity': 'Quantity_(kg)'.tr(),
     },
-    'land'.tr(): {
-      'cropName': 'Land Name'.tr(),
-      'description': 'Land Description'.tr(),
-      'price': 'Price per Acre',
-      'quantity': 'Total Area (Acres)',
+    'land': {
+      'cropName': 'Land_Name'.tr(),
+      'description': 'Land_Description'.tr(),
+      'price': 'Price'.tr(),
+      'quantity': 'Total_Area_(Acres)'.tr(),
     },
     'machinery': {
-      'cropName': 'Machine Name',
-      'description': 'Machine Description',
-      'price': 'Price',
-      'quantity': 'Quantity Available',
+      'cropName': 'Machine_Name'.tr(),
+      'description': 'Machine_Description'.tr(),
+      'price': 'Price'.tr(),
+      'quantity': 'Quantity_Available'.tr(),
     },
   };
 
   final Map<String, List<Map<String, String>>> _categoryOptions = {
-    'cattle'.tr(): [
+    'cattle': [
       {'name': 'Cow', 'image': 'assets/cow.png'},
       {'name': 'Ox', 'image': 'assets/oxnew.png'},
       {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
@@ -161,10 +161,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   };
 
   Map<String, String> _currentFieldLabels = {
-    'cropName'.tr(): 'Title'.tr(),
-    'description'.tr(): 'description'.tr(),
-    'price'.tr(): 'price'.tr(),
-    'quantity'.tr(): 'quantity'.tr(),
+    'cropName': 'Title',
+    'description': 'description',
+    'price': 'price',
+    'quantity': 'quantity',
   };
 
   @override

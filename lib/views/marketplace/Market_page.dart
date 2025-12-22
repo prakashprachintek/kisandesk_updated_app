@@ -36,54 +36,54 @@ class _MarketPageState extends State<MarketPage>
   };
 
   final Map<String, String> categoryNames = {
-    '': 'All',
-    'crop': 'Crop',
-    'cattle': 'Cattle',
-    'machinery': 'Machinery',
-    'land': "Properties"
+    '': 'All'.tr(),
+    'crop': 'Crop'.tr(),
+    'cattle': 'Cattle'.tr(),
+    'machinery': 'Machinery'.tr(),
+    'land': "Properties".tr()
   };
 
   // CENTRALIZED MAP for all subcategories
   final Map<String, Map<String, Map<String, String>>> subCategoriesData = {
     'cattle': {
-      'cow': {'name': 'Cow', 'image': 'assets/cow.png'},
-      'ox': {'name': 'Ox', 'image': 'assets/oxnew.png'},
-      'buffalo': {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
-      'sheep': {'name': 'Sheep', 'image': 'assets/Sheep.png'},
-      'goat': {'name': 'Goat', 'image': 'assets/goat (2).png'},
-      'hen': {'name': 'Hen', 'image': 'assets/Henm.png'},
-      'duck': {'name': 'Duck', 'image': 'assets/Duck.png'},
+      'cow': {'name': 'Cow'.tr(), 'image': 'assets/cow.png'},
+      'ox': {'name': 'Ox'.tr(), 'image': 'assets/oxnew.png'},
+      'buffalo': {'name': 'Buffalo'.tr(), 'image': 'assets/Buffalom.png'},
+      'sheep': {'name': 'Sheep'.tr(), 'image': 'assets/Sheep.png'},
+      'goat': {'name': 'Goat'.tr(), 'image': 'assets/goat (2).png'},
+      'hen': {'name': 'Hen'.tr(), 'image': 'assets/Henm.png'},
+      'duck': {'name': 'Duck'.tr(), 'image': 'assets/Duck.png'},
     },
     'machinery': {
       'farming_machines': {
-        'name': 'Farming Machines',
+        'name': 'Farming_Machines'.tr(),
         'image': 'assets/FarmingMachine.png'
       },
       'farming_equipment': {
-        'name': 'Farming Equipment',
+        'name': 'Farming_Equipment'.tr(),
         'image': 'assets/FarmingEqui.png'
       },
       'transport': {
-        'name': 'Transport Vehicles',
+        'name': 'Transport_Vehicles'.tr(),
         'image': 'assets/Transportm.png'
       },
     },
     'crop': {
-      'oil_seed': {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'},
-      'vegetables': {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'},
-      'fruits': {'name': 'Fruits', 'image': 'assets/fruitsm.png'},
-      'pulses': {'name': 'Pulses', 'image': 'assets/pulses.png'},
-      'cerals': {'name': 'Cerals', 'image': 'assets/cerealsm.png'},
-      'dry_fruits': {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
+      'oil_seed': {'name': 'Oil_Seed'.tr(), 'image': 'assets/oil_seedsm.png'},
+      'vegetables': {'name': 'Vegetables'.tr(), 'image': 'assets/vegetablesm.png'},
+      'fruits': {'name': 'Fruits'.tr(), 'image': 'assets/fruitsm.png'},
+      'pulses': {'name': 'Pulses'.tr(), 'image': 'assets/pulses.png'},
+      'cerals': {'name': 'Cerals'.tr(), 'image': 'assets/cerealsm.png'},
+      'dry_fruits': {'name': 'Dry_Fruits'.tr(), 'image': 'assets/dryfruitsm.png'}
     },
     'land': {
-      'home': {'name': 'Home', 'image': 'assets/homen.webp'},
-      'dry_land': {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
+      'home': {'name': 'Home'.tr(), 'image': 'assets/homen.webp'},
+      'dry_land': {'name': 'Dry_Land'.tr(), 'image': 'assets/DryLand.png'},
       'irrigation_land': {
-        'name': 'Irrigation Land',
+        'name': 'Irrigation_Land'.tr(),
         'image': 'assets/irrigationland.png'
       },
-      'plots': {'name': 'Plots', 'image': 'assets/Plots.png'},
+      'plots': {'name': 'Plots'.tr(), 'image': 'assets/Plots.png'},
     },
   };
 
