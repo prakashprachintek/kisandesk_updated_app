@@ -330,8 +330,8 @@ class _DoctorDetailPageState extends State<DoctorDetailPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildTabButton("Personal_Details", 0),
-                      _buildTabButton("Professional_Details", 1),
+                      _buildTabButton(tr("Personal_Details"), 0),
+                      _buildTabButton(tr("Professional_Details"), 1),
                     ],
                   ),
                   const Divider(

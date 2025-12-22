@@ -213,7 +213,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 // Terms and Conditions text
                 Text.rich(
                   TextSpan(
-                    text: "By_continuing,_you_agree_to_our_",
+                    text: "By_continuing,_you_agree_to_our_".tr(),
                     style: const TextStyle(fontSize: 13, color: Colors.black54),
                     children: [
                       TextSpan(

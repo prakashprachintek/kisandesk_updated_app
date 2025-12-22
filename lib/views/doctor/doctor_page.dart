@@ -185,8 +185,8 @@ class _DoctorPageState extends State<DoctorPage> {
                     children: [
                       Expanded(
                         child: TextField(
-                          decoration: const InputDecoration(
-                            hintText: 'Search_by_name',
+                          decoration:  InputDecoration(
+                            hintText: tr('Search_by_name'),
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.search),
                           ),

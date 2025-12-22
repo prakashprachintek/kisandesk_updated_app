@@ -77,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     SizedBox(height: 40),
                     if (index == onboardingFiles.length - 1)
                       GradientButton(
-                        text: "Get Started".tr(),
+                        text: "Get_Started".tr(),
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,

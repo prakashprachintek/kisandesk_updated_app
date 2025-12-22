@@ -60,21 +60,21 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   final _formKeyStep2 = GlobalKey<FormState>();
 
   final Map<String, Map<String, String>> _categoryFieldLabels = {
-    'cattle': {
+    'cattle'.tr(): {
       'cropName': 'Cattle Name',
       'description': 'Cattle Description',
       'price': 'Price',
       'quantity': 'Number of Cattle',
     },
-    'crop': {
+    'crop'.tr(): {
       'cropName': 'Crop Name',
       'description': 'Crop Description',
       'price': 'Price',
       'quantity': 'Quantity (kg)',
     },
-    'land': {
-      'cropName': 'Land Name',
-      'description': 'Land Description',
+    'land'.tr(): {
+      'cropName': 'Land Name'.tr(),
+      'description': 'Land Description'.tr(),
       'price': 'Price per Acre',
       'quantity': 'Total Area (Acres)',
     },
@@ -87,7 +87,7 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
   };
 
   final Map<String, List<Map<String, String>>> _categoryOptions = {
-    'cattle': [
+    'cattle'.tr(): [
       {'name': 'Cow', 'image': 'assets/cow.png'},
       {'name': 'Ox', 'image': 'assets/oxnew.png'},
       {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},

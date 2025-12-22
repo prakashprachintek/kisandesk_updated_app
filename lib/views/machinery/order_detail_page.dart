@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
@@ -167,7 +168,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final orderId = widget.order['orderId'] ?? 'N/A';
+    final orderId = widget.order['orderId'] ?? 'N/A'.tr();
     final owner = widget.order['full_name'] ?? 'Unknown';
     final phone = widget.order['phone'] ?? 'Not Available';
     final status = widget.order['status'] ?? '';
@@ -176,7 +177,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title:  Text(
           "Order Details",
           style: TextStyle(color: Colors.white),
         ),
@@ -209,8 +210,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 _row("Booked Date", bookedDate, Icons.calendar_today),
                 _row("Status", status, Icons.info),
                 const SizedBox(height: 16),
-                const Text(
-                  "Description",
+                Text(
+                  "Description".tr(),
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),

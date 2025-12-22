@@ -226,7 +226,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
                       ),
                     const SizedBox(height: 30),
                     Text(
-                      tr("Work Details"),
+                      tr("Work_Details"),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
