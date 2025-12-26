@@ -425,7 +425,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
     if (myPosts.isEmpty) {
       return _buildErrorOrEmptyState(
         isError: false,
-        message: 'You_have_not_created_any_market_posts_yet'.tr(),
+        message: 'You_have_not_created_any_market_posts_yet.'.tr(),
         subMessage: 'Tap_the_(+)_button_on_the_home_screen_to_create_one.'.tr(),
         icon: Icons.post_add,
         color: Colors.grey,

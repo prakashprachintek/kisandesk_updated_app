@@ -725,7 +725,7 @@ class _BookPageState extends State<BookPage> {
                             EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                       ),
                       child: Text(
-                        bookingDate ?? "Select_a_date",
+                        bookingDate ?? "Select_a_date".tr(),
                         style: TextStyle(
                             color: fieldErrors['date']!
                                 ? Colors.red
@@ -737,7 +737,7 @@ class _BookPageState extends State<BookPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
                       child: Text(
-                        "This_field_is_required",
+                        "This_field_is_required".tr(),
                         style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
@@ -812,8 +812,8 @@ class _BookPageState extends State<BookPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text(
-                        "submit_booking",
+                      child: Text(
+                        "submit_booking".tr(),
                         style: TextStyle(
                             fontSize: 18,
                             color: Colors.white,

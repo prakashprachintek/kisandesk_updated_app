@@ -354,7 +354,7 @@
 
   "User_not_logged_in._Cannot_fetch_requests.": "ಬಳಕೆದಾರರು ಲಾಗಿನ್ ಆಗಿಲ್ಲ. ವಿನಂತಿಗಳನ್ನು ಪಡೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ.",
   "Please_update_your_information_to_book_labour": "ಕಾರ್ಮಿಕರನ್ನು ಬುಕ್ ಮಾಡಲು ದಯವಿಟ್ಟು ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ನವೀಕರಿಸಿ",
-  "No_recent_orders_found.": "ಇತ್ತೀಚಿನ ಯಾವುದೇ ಆರ್ಡರ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+  "No_recent_orders_found": "ಇತ್ತೀಚಿನ ಯಾವುದೇ ಆರ್ಡರ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
   "orderId_unavailable": "ಆರ್ಡರ್ ಐಡಿ ಲಭ್ಯವಿಲ್ಲ",
   "No_description_provided.": "ಯಾವುದೇ ವಿವರಣೆ ನೀಡಲಾಗಿಲ್ಲ",
   "No_Labour_Requests_Available": "ಯಾವುದೇ ಕಾರ್ಮಿಕ ವಿನಂತಿಗಳು ಲಭ್ಯವಿಲ್ಲ",
@@ -464,7 +464,18 @@
   "Delete_Address?": "ವಿಳಾಸ ಅಳಿಸಬೇಕೇ?",
   "Maximum_5_addresses_allowed": "ಗರಿಷ್ಠ 5 ವಿಳಾಸಗಳಿಗೆ ಮಾತ್ರ ಅನುಮತಿ ಇದೆ",
   "My_Fertilizer_Orders": "ನನ್ನ ರಸಗೊಬ್ಬರ ಆರ್ಡರ್‌ಗಳು",
-  "No_orders_yet": "ಇನ್ನೂ ಯಾವುದೇ ಆರ್ಡರ್‌ಗಳು ಇಲ್ಲ"
+  "No_orders_yet": "ಇನ್ನೂ ಯಾವುದೇ ಆರ್ಡರ್‌ಗಳು ಇಲ್ಲ",
+  "Upload_failed": "ಅಪ್‌ಲೋಡ್ ವಿಫಲವಾಗಿದೆ",
+  "Edit Profile": "ಪ್ರೊಫೈಲ್ ಸಂಪಾದಿಸಿ",
+  "My_Transactions": "ನನ್ನ ವ್ಯವಹಾರಗಳು",
+  "Orders_&_Transactions": "ಆರ್ಡರ್‌ಗಳು ಮತ್ತು ವ್ಯವಹಾರಗಳು",
+  "Crop_Description": "ಬೆಳೆ ವಿವರಣೆ",
+  "Land_Name": "ಭೂಮಿ ಹೆಸರು",
+  "Land_Description": "ಭೂಮಿ ವಿವರಣೆ",
+  "Total_Area_(Acres)": "ಒಟ್ಟು ವಿಸ್ತೀರ್ಣ (ಏಕರೆ)",
+  "Machine_Name": "ಯಂತ್ರದ ಹೆಸರು",
+  "Machine_Description": "ಯಂತ್ರದ ವಿವರಣೆ",
+  "Quantity_Available": "ಲಭ್ಯವಿರುವ ಪ್ರಮಾಣ"
 }
 
 
