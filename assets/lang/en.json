@@ -496,6 +496,7 @@
   "Total_Area_(Acres)":"Total Area (Acres)",
   "Machine_Name":"Machine Name",
   "Machine_Description":"Machine Description",
-  "Quantity_Available":"Quantity Available"
+  "Quantity_Available":"Quantity Available",
+  "Full_Description":"Full Description"
 
 }

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -139,11 +140,11 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                   255, 29, 108, 92), // Match TransactionDetailPage color
               backgroundColor: Colors.white,
               child: orders.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         "No orders found",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
+                      ).tr(),
                     )
                   : ListView.builder(
                       itemCount: orders.length,

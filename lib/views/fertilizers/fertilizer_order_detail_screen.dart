@@ -376,7 +376,7 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                         const Divider(height: 30),
                         if (product.productDetails.usage.isNotEmpty) ...[
                           Text(
-                            'Usage_Instructions'.tr(),
+                            'Usage_Instructions:'.tr(),
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
@@ -392,7 +392,7 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                         ],
                         if (product.productDetails.content.isNotEmpty) ...[
                           const Text(
-                            'Description',
+                            'description',
                             style: TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 15),
                           ).tr(),
@@ -409,11 +409,11 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                       if (product.productDescriptions != null &&
                           product.productDescriptions!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text(
-                          'Full_Description',
+                        Text(
+                          'Full_Description'.tr(),
                           style: TextStyle(
                               fontWeight: FontWeight.w600, fontSize: 15),
-                        ).tr(),
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           product.productDescriptions!,
