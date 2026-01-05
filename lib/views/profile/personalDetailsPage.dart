@@ -156,7 +156,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 29, 108, 92),
         title: Text(
-          "Personal Details".tr(),
+          "Personal_Details".tr(),
           style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
         ),
         elevation: 0,
@@ -212,7 +212,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                                   _showSnackBar("Success", isSuccess: true);
                                   _fetchProfilePic(); // Refresh image
                                 } else {
-                                  final msg = result['message'] ?? 'Upload failed';
+                                  final msg = result['message'] ?? 'Upload_failed'.tr();
                                   _showSnackBar(msg, isSuccess: false);
                                 }
                               }
@@ -252,7 +252,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "Your Information",
+                                "Your_Information".tr(),
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -261,7 +261,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                               ),
                               IconButton(
                                 icon: Icon(Icons.edit, color: Color.fromARGB(255, 29, 108, 92), size: 24),
-                                tooltip: "Edit Profile",
+                                tooltip: "Edit_Profile".tr(),
                                 onPressed: () async {
                                   final result = await Navigator.of(context).push(
                                     MaterialPageRoute(
@@ -277,25 +277,25 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          _buildInfoItem("Name", UserSession.user?['full_name']),
+                          _buildInfoItem("name".tr(), UserSession.user?['full_name']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Number", UserSession.user?['phone']),
+                          _buildInfoItem("Number".tr(), UserSession.user?['phone']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("DOB", UserSession.user?['dob']),
+                          _buildInfoItem("DOB".tr(), UserSession.user?['dob']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Gender", UserSession.user?['gender']),
+                          _buildInfoItem("Gender".tr(), UserSession.user?['gender']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Taluq", UserSession.user?['taluka']),
+                          _buildInfoItem("Taluq".tr(), UserSession.user?['taluka']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Village", UserSession.user?['village']),
+                          _buildInfoItem("village".tr(), UserSession.user?['village']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("District", UserSession.user?['district']),
+                          _buildInfoItem("district".tr(), UserSession.user?['district']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("State", UserSession.user?['state']),
+                          _buildInfoItem("state".tr(), UserSession.user?['state']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Pincode", UserSession.user?['pincode']),
+                          _buildInfoItem("pincode".tr(), UserSession.user?['pincode']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Address", UserSession.user?['address']),
+                          _buildInfoItem("Address".tr(), UserSession.user?['address']),
                         ],
                       ),
                     ),

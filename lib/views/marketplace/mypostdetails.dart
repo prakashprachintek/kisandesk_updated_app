@@ -51,7 +51,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
       if (mounted) {
         setState(() {
           isLoading = false;
-          errorMessage = 'User not logged in. Cannot access posts.'.tr();
+          errorMessage = 'User_not_logged_in._Cannot_fetch_posts.'.tr();
         });
       }
       return;
@@ -90,7 +90,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
       if (mounted) {
         setState(() {
           isLoading = false;
-          errorMessage = 'User not logged in. Cannot fetch posts.';
+          errorMessage = 'User_not_logged_in._Cannot_fetch_posts.'.tr();
         });
       }
       return;
@@ -161,7 +161,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
       if (!isBackground && mounted) {
         setState(() {
           isLoading = false;
-          errorMessage = 'User not logged in. Cannot fetch posts.';
+          errorMessage = 'User_not_logged_in._Cannot_fetch_posts.'.tr();
         });
       }
       return;
@@ -270,19 +270,19 @@ class _MyPostsPageState extends State<MyPostsPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Confirm Deletion'),
+              title: const Text('Confirm_Deletion').tr(),
               content: const Text(
-                  'Are you sure you want to delete this post? This cannot be undone.'),
+                  'Are_you_sure_you_want_to_delete_this_post?_This_cannot_be_undone.').tr(),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
+                  child: const Text('Cancel').tr(),
                 ),
                 ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(true),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                   child: const Text('Delete',
-                      style: TextStyle(color: Colors.white)),
+                      style: TextStyle(color: Colors.white)).tr(),
                 ),
               ],
             );
@@ -326,7 +326,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text(data['message'] ?? 'Post deleted successfully!')),
+                content: Text(data['message'] ?? 'Post_deleted_successfully!'.tr)),
           );
 
 
@@ -341,7 +341,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
           await cacheBox.put('last_updated_my_posts_$userId', now);
         }
       } else {
-        throw Exception(data['message'] ?? 'Failed to delete post. Unknown server error.');
+        throw Exception(data['message'] ?? 'Failed_to_delete_post._Unknown_server_error.'.tr());
       }
     } catch (e) {
       print('❌ Delete error: $e');
@@ -367,7 +367,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Posts'),
+        title: const Text('myPost').tr(),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -398,7 +398,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
              await _loadFromCacheOrFetch(forceNetwork: true);
           }
         },
-        tooltip: 'Create New Post',
+        tooltip: 'Create_New_Post'.tr(),
         child: const Icon(Icons.add),
       ),
 
@@ -425,8 +425,8 @@ class _MyPostsPageState extends State<MyPostsPage> {
     if (myPosts.isEmpty) {
       return _buildErrorOrEmptyState(
         isError: false,
-        message: 'You have not created any market posts yet.',
-        subMessage: 'Tap the (+) button on the home screen to create one.',
+        message: 'You_have_not_created_any_market_posts_yet.'.tr(),
+        subMessage: 'Tap_the_(+)_button_on_the_home_screen_to_create_one.'.tr(),
         icon: Icons.post_add,
         color: Colors.grey,
       );
@@ -522,7 +522,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
             if (isError)
               OutlinedButton(
                 onPressed: () => _loadFromCacheOrFetch(forceNetwork: true),
-                child: const Text('Try Again'),
+                child: const Text('Try_Again').tr(),
               ),
           ],
         ),

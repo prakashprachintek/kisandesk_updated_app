@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'fertilizer_model.dart';
 import 'fertilizer_api_service.dart';
@@ -103,13 +104,13 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Icon(Icons.shopping_cart_outlined, size: 90, color: Colors.grey[400]),
                   const SizedBox(height: 16),
-                  const Text('Your cart is empty', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.grey)),
+                  const Text('Your_cart_is_empty', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.grey)).tr(),
                   const SizedBox(height: 8),
-                  const Text('Explore products and add to cart!', style: TextStyle(color: Colors.grey)),
+                  const Text('Explore_products_and_add_to_cart!', style: TextStyle(color: Colors.grey)).tr(),
                   const SizedBox(height: 20),
                   OutlinedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Continue Shopping'),
+                    child: const Text('Continue Shopping').tr(),
                   ),
                 ],
               ),
@@ -256,7 +257,7 @@ class _CartScreenState extends State<CartScreen> {
                                     Padding(
                                       padding: const EdgeInsets.only(top: 6),
                                       child: Text(
-                                        isOutOfStock ? 'Out of stock' : 'Max available: ${fertilizer.availableQuantity}',
+                                        isOutOfStock ? 'Out_of_stock'.tr() : 'Max available: ${fertilizer.availableQuantity}',
                                         style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600),
                                       ),
                                     ),
@@ -283,7 +284,7 @@ class _CartScreenState extends State<CartScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Amount', style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+                        const Text('Total_Amount', style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold)).tr(),
                         Text(
                           '₹${cart.totalCartValue.toStringAsFixed(0)}',
                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green),
@@ -301,7 +302,7 @@ class _CartScreenState extends State<CartScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 6,
                         ),
-                        child: const Text('Proceed to Address', style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white)),
+                        child: const Text('Proceed_to_Address', style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white)).tr(),
                       ),
                     ),
                   ],

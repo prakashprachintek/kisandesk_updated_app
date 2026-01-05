@@ -41,7 +41,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
     if (!(_isMaleSelected || _isFemaleSelected)) {
       isValid = false;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Please select at least one labour type"))),
+        SnackBar(content: Text(tr("Please_select_at_least_one_labour_type"))),
       );
     }
     if (_fromDate == null) {
@@ -82,13 +82,13 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(tr("Server error, please try again later")),
+            content: Text(tr("Server_error,_please_try_again_later")),
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Network error, please check your connection"))),
+        SnackBar(content: Text(tr("Network_error,_please_check_your_connection"))),
       );
     }
   }
@@ -107,7 +107,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
               Text(tr('Success'), style: TextStyle(color: _primaryColor)),
             ],
           ),
-          content: Text(tr('Labour Request Initiated Successfully')),
+          content: Text(tr('Labour_Request_Initiated_Successfully')),
         );
       },
     );
@@ -167,7 +167,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
                   children: [
                     Center(
                       child: Text(
-                        tr("Create Labour Request"),
+                        tr("Create_Labour_Request"),
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -177,7 +177,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
                     ),
                     const SizedBox(height: 30),
                     Text(
-                      tr("Select Labour Type"),
+                      tr("Select_Labour_Type"),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -220,13 +220,13 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
                       Padding(
                         padding: const EdgeInsets.only(top: 8, left: 4),
                         child: Text(
-                          tr("Please select at least one labour type"),
+                          tr("Please_select_at_least_one_labour_type"),
                           style: TextStyle(color: Colors.red, fontSize: 12),
                         ),
                       ),
                     const SizedBox(height: 30),
                     Text(
-                      tr("Work Details"),
+                      tr("Work_Details"),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -239,7 +239,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
                       Padding(
                         padding: const EdgeInsets.only(top: 8, left: 4),
                         child: Text(
-                          tr("Please select a work date"),
+                          tr("Please_select_a_work_date"),
                           style: TextStyle(color: Colors.red, fontSize: 12),
                         ),
                       ),
@@ -256,7 +256,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
                           elevation: 5,
                         ),
                         child: Text(
-                          tr("Submit Request"),
+                          tr("Submit_Request"),
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.white,
@@ -334,7 +334,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
       label: Text(
         _fromDate != null
             ? DateFormat('yyyy-MM-dd').format(_fromDate!)
-            : tr("Select Work Date"),
+            : tr("Select_Work_Date"),
         style: const TextStyle(fontSize: 16, color: Colors.white),
       ),
       style: ElevatedButton.styleFrom(
@@ -354,7 +354,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
       controller: _workDescriptionController,
       maxLines: 2,
       decoration: InputDecoration(
-        labelText: tr('Work Description'),
+        labelText: tr('work_description'),
         labelStyle: TextStyle(color: _primaryColor),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         enabledBorder: OutlineInputBorder(
@@ -377,7 +377,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
         fillColor: Colors.grey[50],
         alignLabelWithHint: true,
       ),
-      validator: (value) => value == null || value.trim().isEmpty ? tr("Please enter a work description") : null,
+      validator: (value) => value == null || value.trim().isEmpty ? tr("Please_enter_a_work_description") : null,
       onChanged: (value) {
         if (hasSubmitted) {
           _formKey.currentState!.validate();
@@ -392,7 +392,7 @@ class _LabourRequestPageState extends State<LabourrequestNew> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          tr("Labour Request"),
+          tr("Labour_Request"),
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: _primaryColor,

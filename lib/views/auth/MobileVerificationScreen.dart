@@ -29,12 +29,12 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
     // Check for 10 digits, starting with 6, 7, 8, or 9
     final regex = RegExp(r'^[6-9]\d{9}$');
     if (!regex.hasMatch(phone)) {
-      phoneError = tr("Please enter a valid phone number");
+      phoneError = tr("error_invalid_phone");
       return false;
     }
     // Check for repetitive numbers (e.g., 1111111111, 0000000000)
     if (RegExp(r'^(\d)\1{9}$').hasMatch(phone)) {
-      phoneError = tr("Invalid phone number. Try a different number.");
+      phoneError = tr("Invalid_phone_number._Try_a_different_number.");
       return false;
     }
     phoneError = null;
@@ -46,7 +46,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
 
     if (!isValid10Digit(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(phoneError ?? tr("Invalid phone number"))),
+        SnackBar(content: Text(phoneError ?? tr("Invalid_phone_number"))),
       );
       return;
     }
@@ -91,7 +91,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
           } catch (e) {
             print("Signup dialog error: $e");
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(tr("Something went wrong. Try again."))),
+              SnackBar(content: Text(tr("Something_went_wrong._Try_again."))),
             );
           }
         }
@@ -103,7 +103,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Network error. Try again."))),
+        SnackBar(content: Text(tr("Network_error._Try_again."))),
       );
     } finally {
       setState(() => isLoading = false);
@@ -137,7 +137,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
-          tr("Mobile Verification"),
+          tr("Mobile_Verification"),
           style: TextStyle(color: Colors.grey[700]),
         ),
         backgroundColor: Colors.white,
@@ -159,7 +159,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  tr("Enter Your Phone Number"),
+                  tr("phone_number_hint"),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 22,
@@ -169,7 +169,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  tr("We'll send an OTP to verify your number (+91)"),
+                  tr("We'll_send_an_OTP_to_verify_your_number_(+91)"),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 ),
@@ -213,7 +213,7 @@ class _MobileVerificationScreenState extends State<MobileVerificationScreen> {
                 // Terms and Conditions text
                 Text.rich(
                   TextSpan(
-                    text: "By_continuing,_you_agree_to_our_",
+                    text: "By_continuing,_you_agree_to_our_".tr(),
                     style: const TextStyle(fontSize: 13, color: Colors.black54),
                     children: [
                       TextSpan(

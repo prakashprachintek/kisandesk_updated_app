@@ -1,4 +1,5 @@
 // lib/screens/manage_addresses_screen.dart
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'address_model.dart';
 import 'address_service.dart';
@@ -30,7 +31,7 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Addresses', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('My_Addresses', style: TextStyle(fontWeight: FontWeight.bold)).tr(),
         backgroundColor: const Color.fromARGB(255, 29, 108, 92),
         foregroundColor: Colors.white,
       ),
@@ -47,7 +48,7 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
             children: [
               Expanded(
                 child: addresses.isEmpty
-                    ? const Center(child: Text('No addresses saved yet'))
+                    ? Center(child: Text('No_addresses_saved_yet').tr())
                     : ListView.builder(
                         padding: const EdgeInsets.all(12),
                         itemCount: addresses.length,
@@ -79,12 +80,12 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
                                       final confirm = await showDialog<bool>(
                                         context: context,
                                         builder: (ctx) => AlertDialog(
-                                          title: const Text('Delete Address?'),
+                                          title: const Text('Delete_Address?').tr(),
                                           actions: [
-                                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel').tr()),
                                             TextButton(
                                               onPressed: () => Navigator.pop(ctx, true),
-                                              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                              child: const Text('delete', style: TextStyle(color: Colors.red)).tr(),
                                             ),
                                           ],
                                         ),
@@ -119,7 +120,7 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
                             if (result == true) _loadAddresses();
                           },
                     icon: const Icon(Icons.add),
-                    label: Text(addresses.length >= 5 ? 'Maximum 5 addresses allowed' : 'Add New Address'),
+                    label: Text(addresses.length >= 5 ? 'Maximum_5_addresses_allowed'.tr() : 'Add_New_Address'.tr()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 29, 108, 92),
                       padding: const EdgeInsets.symmetric(vertical: 16),

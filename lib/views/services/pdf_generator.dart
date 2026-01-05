@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -33,7 +34,8 @@ Future<void> generateAndSaveInvoice(
       ),
     ),
   );
-  try{
+
+  try {
     final pdf = pw.Document();
 
     // Load your logo
@@ -74,16 +76,11 @@ Future<void> generateAndSaveInvoice(
                           style: pw.TextStyle(font: boldUnicodeFont)),
                       pw.Text('Date: ${order.formatDate()}',
                           style: pw.TextStyle(font: boldUnicodeFont)),
-                          /*
-                      pw.Text('Status: ${order.status}',
-                          style: pw.TextStyle(
-                            font: unicodeFont,
-                            color: order.status == 'Pending'
-                                ? PdfColors.orange
-                                : PdfColors.green,
-                            fontWeight: pw.FontWeight.bold,
-                          )),
-                          */
+                      // pw.Text('Status: ${order.status}',
+                      //     style: pw.TextStyle(
+                      //       font: boldUnicodeFont,
+                      //       fontSize: 14,
+                      //     )),
                     ],
                   ),
                   pw.SizedBox(
@@ -94,9 +91,9 @@ Future<void> generateAndSaveInvoice(
                 ],
               ),
 
-              pw.SizedBox(height: 10),
+              pw.SizedBox(height: 5),
               pw.Divider(thickness: 2),
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: 5),
 
               // Company Info
               pw.Text('Sold by:', style: pw.TextStyle(font: boldUnicodeFont)),
@@ -107,26 +104,31 @@ Future<void> generateAndSaveInvoice(
                   style: pw.TextStyle(font: unicodeFont)),
               pw.Text('Email: info@yourcompany.com',
                   style: pw.TextStyle(font: unicodeFont)),
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: 10),
 
-              // Bill To
+              // Bill To (with new delivery address!)
               pw.Text('Bill to:', style: pw.TextStyle(font: boldUnicodeFont)),
               pw.Text(order.farmerName, style: pw.TextStyle(font: unicodeFont)),
               pw.Text(order.farmerPhone,
                   style: pw.TextStyle(font: unicodeFont)),
               pw.Text(order.farmerVillage,
                   style: pw.TextStyle(font: unicodeFont)),
+              pw.SizedBox(height: 5),
+              pw.Text('Delivery Address:',
+                  style: pw.TextStyle(font: boldUnicodeFont, fontSize: 12)),
+              pw.Text(order.deliveryAddress,
+                  style: pw.TextStyle(font: unicodeFont, fontSize: 11)),
               pw.SizedBox(height: 30),
 
-              // Products Table
+              // Products Table (UPDATED for new nested structure!)
               pw.Table(
                 border: pw.TableBorder.all(),
                 columnWidths: {
-                  0: const pw.FlexColumnWidth(1.3), // S.No
-                  1: const pw.FlexColumnWidth(3.5), // Product
-                  2: const pw.FlexColumnWidth(1), // Qty
-                  3: const pw.FlexColumnWidth(2), // Price
-                  4: const pw.FlexColumnWidth(2), // Total
+                  0: const pw.FlexColumnWidth(1), // S.No
+                  1: const pw.FlexColumnWidth(4), // Product
+                  2: const pw.FlexColumnWidth(1.2), // Qty x Unit
+                  3: const pw.FlexColumnWidth(1.5), // Price
+                  4: const pw.FlexColumnWidth(1.5), // Total
                 },
                 children: [
                   // Header
@@ -136,37 +138,50 @@ Future<void> generateAndSaveInvoice(
                     children: [
                       _tableCell('S.No', bold: true, font: boldUnicodeFont),
                       _tableCell('Product', bold: true, font: boldUnicodeFont),
-                      _tableCell('Qty', bold: true, font: boldUnicodeFont),
+                      _tableCell('Qty x Unit',
+                          bold: true, font: boldUnicodeFont),
                       _tableCell('Price', bold: true, font: boldUnicodeFont),
                       _tableCell('Total', bold: true, font: boldUnicodeFont),
                     ],
                   ),
 
-                  // Items
-                  ...List.generate(order.productNames.length, (i) {
-                    final qty = int.tryParse(order.productQuantities[i]) ?? 0;
-                    final price = double.tryParse(order.sellPrices[i]) ?? 0.0;
+                  // Items (NEW: Using order.products nested structure)
+                  ...order.products.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final orderItem = entry.value;
+                    final product = orderItem.product;
+                    final qty = int.tryParse(orderItem.quantity) ?? 1;
+                    final price = double.tryParse(product.sellPrice) ?? 0.0;
                     final total = qty * price;
+
                     return pw.TableRow(
                       children: [
                         _tableCell('${i + 1}', font: unicodeFont),
-                        _tableCell(order.productNames[i], font: unicodeFont),
-                        _tableCell('$qty', font: unicodeFont),
-                        _tableCell('₹$price', font: unicodeFont),
-                        _tableCell('₹$total', font: unicodeFont),
+                        _tableCell(
+                          '${product.productName}\n(${product.productCategory})',
+                          font: unicodeFont,
+                          size: 10,
+                        ),
+                        _tableCell('$qty × ${product.unit}', font: unicodeFont),
+                        _tableCell('₹${price.toStringAsFixed(0)}',
+                            font: unicodeFont),
+                        _tableCell('₹${total.toStringAsFixed(0)}',
+                            font: unicodeFont),
                       ],
                     );
                   }),
 
                   // Total Row
                   pw.TableRow(
+                    decoration:
+                        const pw.BoxDecoration(color: PdfColors.grey100),
                     children: [
                       _tableCell('TOTAL', bold: true, font: boldUnicodeFont),
                       pw.Container(),
                       pw.Container(),
                       pw.Container(),
-                      _tableCell('₹${order.amount}.00',
-                          bold: true, font: boldUnicodeFont),
+                      _tableCell('₹${order.amount}',
+                          bold: true, font: boldUnicodeFont, size: 14),
                     ],
                   ),
                 ],
@@ -194,7 +209,6 @@ Future<void> generateAndSaveInvoice(
     // Close loading & open PDF automatically
     if (context.mounted) Navigator.pop(context); // close dialog
     await OpenFile.open(file.path);
-
   } catch (e) {
     if (context.mounted) Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -205,11 +219,15 @@ Future<void> generateAndSaveInvoice(
 
 // Helper for clean table cells
 pw.Widget _tableCell(String text,
-    {bool bold = false, required pw.Font font, double size = 12}) {
+    {bool bold = false,
+    required pw.Font font,
+    double size = 12,
+    pw.TextAlign? align = pw.TextAlign.center}) {
   return pw.Padding(
-    padding: const pw.EdgeInsets.all(10),
+    padding: const pw.EdgeInsets.all(8),
     child: pw.Text(
       text,
+      textAlign: align,
       style: pw.TextStyle(
         font: font,
         fontSize: size,

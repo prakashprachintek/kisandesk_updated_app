@@ -14,6 +14,8 @@ class FertilizerApiService {
       '${KD.api}/fertilizer/book_fertilizer';
   static const String _addRatingUrl = '${KD.api}/fertilizer/add_rating';
   static const String _fertilizersOfferUrl = '${KD.api}/app/get_master_data';
+  static const String _cancelOrderUrl =
+      '${KD.api}/fertilizer/cancel_fertilizer_order';
 
   Future<FertilizerResponse> fetchFertilizers() async {
     try {
@@ -29,23 +31,24 @@ class FertilizerApiService {
   }
 
   // In FertilizerApiService class
-Future<RichFertilizerOrderResponse> fetchFertilizerOrders(String farmerId) async {
-  try {
-    final response = await http.post(
-      Uri.parse(_fetchOrdersUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'farmerId': farmerId}),
-    );
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> json = jsonDecode(response.body);
-      return RichFertilizerOrderResponse.fromJson(json);
-    } else {
-      throw Exception('Failed to load orders: ${response.statusCode}');
+  Future<RichFertilizerOrderResponse> fetchFertilizerOrders(
+      String farmerId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(_fetchOrdersUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'farmerId': farmerId}),
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> json = jsonDecode(response.body);
+        return RichFertilizerOrderResponse.fromJson(json);
+      } else {
+        throw Exception('Failed to load orders: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching orders: $e');
     }
-  } catch (e) {
-    throw Exception('Error fetching orders: $e');
   }
-}
 
   Future<Map<String, dynamic>> bookFertilizerOrder({
     required String userId,
@@ -78,7 +81,6 @@ Future<RichFertilizerOrderResponse> fetchFertilizerOrders(String farmerId) async
 
   //Ratings
   Future<Map<String, dynamic>> addRating({
-    
     required String fid,
     required String userId,
     required String rating,
@@ -136,6 +138,31 @@ Future<RichFertilizerOrderResponse> fetchFertilizerOrders(String farmerId) async
     } catch (e) {
       print('Error fetching offers: $e');
       return [];
+    }
+  }
+
+  //Order Cancellation
+  Future<Map<String, dynamic>> cancelFertilizerOrder({
+    required String orderId,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(_cancelOrderUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'orderId': orderId,
+        }),
+      );
+
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return jsonResponse; // Usually { "status": "success", "message": "..." }
+      } else {
+        throw Exception(jsonResponse['message'] ?? 'Failed to cancel order');
+      }
+    } catch (e) {
+      throw Exception('Error cancelling order: $e');
     }
   }
 }

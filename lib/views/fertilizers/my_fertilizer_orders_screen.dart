@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'fertilizer_model.dart';
 import 'fertilizer_api_service.dart';
@@ -19,190 +20,310 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
   @override
   void initState() {
     super.initState();
-    _ordersFuture =
-        FertilizerApiService().fetchFertilizerOrders(widget.farmerId);
+    _loadOrders();
+  }
+
+  // Load orders - can be called multiple times
+  Future<void> _loadOrders() async {
+    setState(() {
+      _ordersFuture =
+          FertilizerApiService().fetchFertilizerOrders(widget.farmerId);
+    });
+  }
+
+  // Pull-to-refresh
+  Future<void> _onRefresh() async {
+    await _loadOrders();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Fertilizer Orders',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        // backgroundColor: Colors.green.shade700,
-        // foregroundColor: Colors.white,
+        title: Text(
+          'My_Fertilizer_Orders'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
-      body: FutureBuilder<RichFertilizerOrderResponse>(
-        future: _ordersFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.results.isEmpty) {
-            return const Center(
-              child: Text('No orders yet',
-                  style: TextStyle(fontSize: 18, color: Colors.grey)),
-            );
-          }
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: Colors.green,
+        child: FutureBuilder<RichFertilizerOrderResponse>(
+          future: _ordersFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          final orders = snapshot.data!.results;
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: orders.length,
-            itemBuilder: (context, index) {
-              final order = orders[index];
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          FertilizerOrderDetailsScreen(order: order),
-                    ),
-                  );
-                },
-                child: Card(
-                  elevation: 5,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header: Order ID + Date
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              order.orderId,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            Text(
-                              order.formatDate(),
-                              style: const TextStyle(
-                                  color: Colors.grey, fontSize: 12),
-                            ),
-                          ],
+            if (snapshot.hasError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 60, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error_loading_orders'.tr(),
+                        style: const TextStyle(fontSize: 18),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        snapshot.error.toString(),
+                        style: const TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: _loadOrders,
+                        icon: const Icon(Icons.refresh),
+                        label: Text('Retry'.tr()),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
                         ),
-                        const SizedBox(height: 8),
-
-                        // Farmer Info
-                        Row(
-                          children: [
-                            const Icon(Icons.person,
-                                size: 16, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            Text(order.farmerName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w500)),
-                            const Spacer(),
-                            Text(order.farmerVillage,
-                                style: const TextStyle(color: Colors.grey)),
-                          ],
-                        ),
-                        const Divider(height: 20),
-
-                        // Products List
-                        ...List.generate(order.productNames.length, (i) {
-                          final name = order.productNames[i];
-                          final qty = order.productQuantities[i];
-                          final price = order.sellPrices[i];
-                          final images = order.productImages.length > i
-                              ? order.productImages[i]
-                              : <FertilizerImage>[];
-                          final detail = order.productDetails.length > i
-                              ? order.productDetails[i]
-                              : null;
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Product Image
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: images.isNotEmpty
-                                      ? Image.network(
-                                          images[0].url,
-                                          width: 60,
-                                          height: 60,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) =>
-                                              const Icon(Icons.image, size: 60),
-                                        )
-                                      : const Icon(Icons.medication,
-                                          size: 60, color: Colors.grey),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(name,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      Text('$qty units × ₹$price',
-                                          style: const TextStyle(
-                                              color: Colors.green)),
-                                      if (detail != null)
-                                        Text(
-                                          detail.usage,
-                                          style: const TextStyle(
-                                              fontSize: 11,
-                                              color: Colors.blueGrey),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-
-                        const Divider(),
-
-                        // Total & Status
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Total: ₹${order.amount}',
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green),
-                            ),
-                            Chip(
-                              label: Text(order.status),
-                              backgroundColor: order.status == 'Pending'
-                                  ? Colors.orange.shade100
-                                  : Colors.green.shade100,
-                              labelStyle: TextStyle(
-                                color: order.status == 'Pending'
-                                    ? Colors.orange.shade900
-                                    : Colors.green.shade900,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
-            },
-          );
-        },
+            }
+
+            if (!snapshot.hasData || snapshot.data!.results.isEmpty) {
+              return Center(
+                child: Text(
+                  'No_orders_yet'.tr(),
+                  style: const TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              );
+            }
+
+            final orders = snapshot.data!.results;
+
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(), // Enables pull-to-refresh even with few items
+              padding: const EdgeInsets.all(12),
+              itemCount: orders.length,
+              itemBuilder: (context, index) {
+                final order = orders[index];
+
+                return InkWell(
+                  onTap: () async {
+                    // Navigate and wait for result
+                    final bool? cancelled = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FertilizerOrderDetailsScreen(order: order),
+                      ),
+                    );
+
+                    // If order was cancelled, refresh the list
+                    if (cancelled == true) {
+                      _loadOrders();
+                    }
+                  },
+                  child: Card(
+                    elevation: 5,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header: Order ID + Date
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                order.orderId,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              Text(
+                                order.formatDate(),
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Farmer & Village
+                          Row(
+                            children: [
+                              const Icon(Icons.person, size: 16, color: Colors.grey),
+                              const SizedBox(width: 6),
+                              Text(
+                                order.farmerName,
+                                style: const TextStyle(fontWeight: FontWeight.w500),
+                              ),
+                              const Spacer(),
+                              Text(
+                                order.farmerVillage,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+
+                          // Delivery Address
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  order.deliveryAddress,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const Divider(height: 24),
+
+                          // Products List
+                          ...order.products.map((orderItem) {
+                            final product = orderItem.product;
+                            final quantity = orderItem.quantity;
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Product Image
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: product.images.isNotEmpty
+                                        ? Image.network(
+                                            product.images[0].url,
+                                            width: 70,
+                                            height: 70,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Container(
+                                              color: Colors.grey.shade200,
+                                              child: const Icon(
+                                                Icons.medication,
+                                                size: 40,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          )
+                                        : Container(
+                                            width: 70,
+                                            height: 70,
+                                            color: Colors.grey.shade200,
+                                            child: const Icon(
+                                              Icons.medication,
+                                              size: 40,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                  ),
+                                  const SizedBox(width: 12),
+
+                                  // Product Details
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          product.productName,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '$quantity × ${product.unit}',
+                                          style: const TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          '₹${product.sellPrice}',
+                                          style: const TextStyle(
+                                            color: Colors.green,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        if (product.productDetails.usage.isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 4),
+                                            child: Text(
+                                              product.productDetails.usage,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.blueGrey,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+
+                          const Divider(height: 24),
+
+                          // Total & Status
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total: ₹${order.amount}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                ),
+                              ),
+                              Chip(
+                                label: Text(order.status),
+                                backgroundColor: order.status == 'Pending'
+                                    ? Colors.orange.shade100
+                                    : Colors.green.shade100,
+                                labelStyle: TextStyle(
+                                  color: order.status == 'Pending'
+                                      ? Colors.orange.shade900
+                                      : Colors.green.shade900,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

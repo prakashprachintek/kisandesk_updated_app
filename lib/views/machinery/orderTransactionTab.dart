@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 
 import 'myorderspage.dart';
 import 'mytransactionspage.dart';
@@ -14,9 +16,9 @@ class Ordertransactiontab extends StatelessWidget {
         appBar: AppBar(
           centerTitle: true,
           title: const Text(
-            "Orders & Transactions",
+            "Orders_&_Transactions",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+          ).tr(),
           iconTheme: const IconThemeData(color: Colors.white),
           bottom: TabBar(
             labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -26,8 +28,8 @@ class Ordertransactiontab extends StatelessWidget {
             tabs: [
               // Tab(text: "Orders", icon: Icon(Icons.list_alt)),
               // Tab(text: "Transactions", icon: Icon(Icons.account_balance_wallet)),
-              Tab(text: "My Orders"),
-              Tab(text: "My Transactions"),
+              Tab(text: tr("My_Orders")),
+              Tab(text: tr("My_Transactions")),
             ],
           ),
         ),

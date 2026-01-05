@@ -83,12 +83,12 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           setState(() {
             recentOrders = recent;
             isLoading = false;
-            errorMessage = recent.isEmpty ? tr("No recent orders found") : null;
+            errorMessage = recent.isEmpty ? tr("No_recent_orders_found") : null;
           });
         } else {
           setState(() {
             isLoading = false;
-            errorMessage = json['message'] ?? tr("Failed to fetch orders");
+            errorMessage = json['message'] ?? tr("Failed_to_fetch_orders");
           });
         }
       } else {
@@ -136,11 +136,11 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
         context: context,
         builder: (_) => AlertDialog(
           title: Text(
-            tr("Incomplete Profile"),
+            tr("Incomplete_Profile"),
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
           content: Text(
-            tr("Please update your information to book machinery"),
+            tr("Please_update_your_information_to_book_machinery"),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           actions: [
@@ -164,7 +164,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                 );
               },
               child: Text(
-                tr("Update Profile"),
+                tr("Update_Profile"),
                 style: TextStyle(
                   color: Color.fromARGB(255, 29, 108, 92),
                   fontSize: 16,
@@ -188,7 +188,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          tr("Machinery Rent"),
+          tr("Machinery_Rent"),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -258,7 +258,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                     _buildTile(
                       context,
                       icon: Icons.list_alt,
-                      label: tr("My Orders"),
+                      label: tr("My_Orders"),
                       color: Colors.orange,
                       onTap: () {
                         Navigator.push(
@@ -273,7 +273,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  tr("Recent Orders"),
+                  tr("Recent_Orders"),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
@@ -282,7 +282,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                     : errorMessage != null
                         ? Center(child: Text(tr(errorMessage!)))
                         : recentOrders.isEmpty
-                            ? Center(child: Text(tr("No recent orders found")))
+                            ? Center(child: Text(tr("No_recent_orders_found")))
                             : ListView.builder(
                                 itemCount: recentOrders.length,
                                 shrinkWrap: true,
@@ -325,11 +325,11 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
-                                              "${tr('Machine Booked')}: ${order['machine']}"),
+                                              "${tr('Machine_Booked')}: ${order['machine']}"),
                                           Text(
                                               "${tr('Date')}: ${order['date']}"),
                                           Text(
-                                              "${tr('Machine Owner')}: ${order['name']}"),
+                                              "${tr('Machine_Owner')}: ${order['name']}"),
                                           Text(
                                               "${tr('Contact')}: ${order['phone']}"),
                                           Text(

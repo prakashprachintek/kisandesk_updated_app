@@ -89,13 +89,13 @@ class _DoctorPageState extends State<DoctorPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Filter Doctors").tr(),
+        title: const Text("Filter_Doctors").tr(),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButton<String>(
               isExpanded: true,
-              hint: const Text("District").tr(),
+              hint: const Text("district").tr(),
               value: tempDistrict.isEmpty ? null : tempDistrict,
               items: allDoctors
                   .map((d) => d.district)
@@ -111,7 +111,7 @@ class _DoctorPageState extends State<DoctorPage> {
             ),
             DropdownButton<String>(
               isExpanded: true,
-              hint: const Text("Taluka").tr(),
+              hint: const Text("taluka").tr(),
               value: tempTaluka.isEmpty ? null : tempTaluka,
               items: allDoctors
                   .map((d) => d.taluka)
@@ -127,7 +127,7 @@ class _DoctorPageState extends State<DoctorPage> {
             ),
             DropdownButton<String>(
               isExpanded: true,
-              hint: const Text("Village").tr(),
+              hint: const Text("village").tr(),
               value: tempVillage.isEmpty ? null : tempVillage,
               items: allDoctors
                   .map((d) => d.village)
@@ -170,9 +170,9 @@ class _DoctorPageState extends State<DoctorPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Veterinary Doctors",
+          "Veterinary_Doctors",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
+        ).tr(),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: isLoading
@@ -185,8 +185,8 @@ class _DoctorPageState extends State<DoctorPage> {
                     children: [
                       Expanded(
                         child: TextField(
-                          decoration: const InputDecoration(
-                            hintText: 'Search by name',
+                          decoration:  InputDecoration(
+                            hintText: tr('Search_by_name'),
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.search),
                           ),
@@ -206,7 +206,7 @@ class _DoctorPageState extends State<DoctorPage> {
                 ),
                 Expanded(
                   child: filteredDoctors.isEmpty
-                      ? const Center(child: Text("No doctors found."))
+                      ? const Center(child: Text("No_doctors_found"))
                       : ListView.builder(
                           itemCount: filteredDoctors.length,
                           itemBuilder: (context, index) {

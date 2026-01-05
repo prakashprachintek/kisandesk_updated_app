@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mainproject1/src/features/auth/view/login_screen.dart';
@@ -17,9 +18,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentIndex = 0;
 
   final List<String> onboardingTexts = [
-    "Buy & Sell Agricultural Crops with Ease",
-    "Find the Best Machinery & Equipment",
-    "Connect with Dealers & Manufacturers",
+    "Buy_&_Sell_Agricultural_Crops_with_Ease".tr(),
+    "Find_the_Best_Machinery_&_Equipment".tr(),
+    "Connect with Dealers & Manufacturers".tr(),
   ];
 
   final List<String> onboardingFiles = [
@@ -76,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     SizedBox(height: 40),
                     if (index == onboardingFiles.length - 1)
                       GradientButton(
-                        text: "Get Started",
+                        text: "Get_Started".tr(),
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,
@@ -86,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       )
                     else
                       GradientButton(
-                        text: "Next",
+                        text: "Next".tr(),
                         onPressed: _nextPage,
                       ),
                   ],
@@ -101,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: GestureDetector(
               onTap: _skip,
               child: Text(
-                "Skip",
+                "Skip".tr(),
                 style: TextStyle(
                   fontSize: 16,
                   color: Color(0xFF1B5E20),

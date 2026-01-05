@@ -1,4 +1,5 @@
 // lib/screens/add_address_screen.dart
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import 'address_model.dart';
@@ -62,7 +63,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.existingAddress == null ? 'Add New Address' : 'Edit Address'),
+        title: Text(widget.existingAddress == null ? 'Add_New_Address'.tr() : 'Edit_Address'.tr()),
         backgroundColor: const Color.fromARGB(255, 29, 108, 92),
         foregroundColor: Colors.white,
       ),
@@ -72,23 +73,23 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              _buildField(_nameController, 'Full Name', Icons.person),
+              _buildField(_nameController, 'full_name'.tr(), Icons.person),
               const SizedBox(height: 12),
-              _buildField(_phoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
+              _buildField(_phoneController, 'phone'.tr(), Icons.phone, keyboardType: TextInputType.phone),
               const SizedBox(height: 12),
-              _buildField(_houseController, 'House No., Street, Landmark', Icons.home),
+              _buildField(_houseController, 'House No.,_Street,_Landmark'.tr(), Icons.home),
               const SizedBox(height: 12),
-              _buildField(_villageController, 'Village', Icons.location_city),
+              _buildField(_villageController, 'village'.tr(), Icons.location_city),
               const SizedBox(height: 12),
-              _buildField(_talukaController, 'Taluka / Tehsil', Icons.maps_ugc),
+              _buildField(_talukaController, 'Taluka/Tehsil'.tr(), Icons.maps_ugc),
               const SizedBox(height: 12),
-              _buildField(_districtController, 'District', Icons.location_on),
+              _buildField(_districtController, 'district'.tr(), Icons.location_on),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: _buildField(_stateController, 'State', Icons.public)),
+                  Expanded(child: _buildField(_stateController, 'state'.tr(), Icons.public)),
                   const SizedBox(width: 12),
-                  Expanded(child: _buildField(_pincodeController, 'Pincode', Icons.pin_drop, keyboardType: TextInputType.number)),
+                  Expanded(child: _buildField(_pincodeController, 'pincode'.tr(), Icons.pin_drop, keyboardType: TextInputType.number)),
                 ],
               ),
               const SizedBox(height: 32),
@@ -98,7 +99,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   backgroundColor: const Color.fromARGB(255, 29, 108, 92),
                   minimumSize: const Size(double.infinity, 56),
                 ),
-                child: const Text('Save Address', style: TextStyle(fontSize: 18, color: Colors.white)),
+                child: const Text('Save_Address', style: TextStyle(fontSize: 18, color: Colors.white)).tr(),
               ),
             ],
           ),
@@ -111,7 +112,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     return TextFormField(
       controller: c,
       keyboardType: keyboardType,
-      validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+      validator: (v) => v!.trim().isEmpty ? 'Required'.tr() : null,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: const Color.fromARGB(255, 29, 108, 92)),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
@@ -35,54 +36,54 @@ class _MarketPageState extends State<MarketPage>
   };
 
   final Map<String, String> categoryNames = {
-    '': 'All',
-    'crop': 'Crop',
-    'cattle': 'Cattle',
-    'machinery': 'Machinery',
-    'land': "Properties"
+    '': 'All'.tr(),
+    'crop': 'Crop'.tr(),
+    'cattle': 'Cattle'.tr(),
+    'machinery': 'Machinery'.tr(),
+    'land': "Properties".tr()
   };
 
   // CENTRALIZED MAP for all subcategories
   final Map<String, Map<String, Map<String, String>>> subCategoriesData = {
     'cattle': {
-      'cow': {'name': 'Cow', 'image': 'assets/cow.png'},
-      'ox': {'name': 'Ox', 'image': 'assets/oxnew.png'},
-      'buffalo': {'name': 'Buffalo', 'image': 'assets/Buffalom.png'},
-      'sheep': {'name': 'Sheep', 'image': 'assets/Sheep.png'},
-      'goat': {'name': 'Goat', 'image': 'assets/goat (2).png'},
-      'hen': {'name': 'Hen', 'image': 'assets/Henm.png'},
-      'duck': {'name': 'Duck', 'image': 'assets/Duck.png'},
+      'cow': {'name': 'Cow'.tr(), 'image': 'assets/cow.png'},
+      'ox': {'name': 'Ox'.tr(), 'image': 'assets/oxnew.png'},
+      'buffalo': {'name': 'Buffalo'.tr(), 'image': 'assets/Buffalom.png'},
+      'sheep': {'name': 'Sheep'.tr(), 'image': 'assets/Sheep.png'},
+      'goat': {'name': 'Goat'.tr(), 'image': 'assets/goat (2).png'},
+      'hen': {'name': 'Hen'.tr(), 'image': 'assets/Henm.png'},
+      'duck': {'name': 'Duck'.tr(), 'image': 'assets/Duck.png'},
     },
     'machinery': {
       'farming_machines': {
-        'name': 'Farming Machines',
+        'name': 'Farming_Machines'.tr(),
         'image': 'assets/FarmingMachine.png'
       },
       'farming_equipment': {
-        'name': 'Farming Equipment',
+        'name': 'Farming_Equipment'.tr(),
         'image': 'assets/FarmingEqui.png'
       },
       'transport': {
-        'name': 'Transport Vehicles',
+        'name': 'Transport_Vehicles'.tr(),
         'image': 'assets/Transportm.png'
       },
     },
     'crop': {
-      'oil_seed': {'name': 'Oil Seed', 'image': 'assets/oil_seedsm.png'},
-      'vegetables': {'name': 'Vegetables', 'image': 'assets/vegetablesm.png'},
-      'fruits': {'name': 'Fruits', 'image': 'assets/fruitsm.png'},
-      'pulses': {'name': 'Pulses', 'image': 'assets/pulses.png'},
-      'cerals': {'name': 'Cerals', 'image': 'assets/cerealsm.png'},
-      'dry_fruits': {'name': 'Dry Fruits', 'image': 'assets/dryfruitsm.png'}
+      'oil_seed': {'name': 'Oil_Seed'.tr(), 'image': 'assets/oil_seedsm.png'},
+      'vegetables': {'name': 'Vegetables'.tr(), 'image': 'assets/vegetablesm.png'},
+      'fruits': {'name': 'Fruits'.tr(), 'image': 'assets/fruitsm.png'},
+      'pulses': {'name': 'Pulses'.tr(), 'image': 'assets/pulses.png'},
+      'cerals': {'name': 'Cerals'.tr(), 'image': 'assets/cerealsm.png'},
+      'dry_fruits': {'name': 'Dry_Fruits'.tr(), 'image': 'assets/dryfruitsm.png'}
     },
     'land': {
-      'home': {'name': 'Home', 'image': 'assets/homen.webp'},
-      'dry_land': {'name': 'Dry Land', 'image': 'assets/DryLand.png'},
+      'home': {'name': 'Home'.tr(), 'image': 'assets/homen.webp'},
+      'dry_land': {'name': 'Dry_Land'.tr(), 'image': 'assets/DryLand.png'},
       'irrigation_land': {
-        'name': 'Irrigation Land',
+        'name': 'Irrigation_Land'.tr(),
         'image': 'assets/irrigationland.png'
       },
-      'plots': {'name': 'Plots', 'image': 'assets/Plots.png'},
+      'plots': {'name': 'Plots'.tr(), 'image': 'assets/Plots.png'},
     },
   };
 
@@ -234,13 +235,13 @@ class _MarketPageState extends State<MarketPage>
                     ? item['farmerDetails'][0]
                     : null;
             return {
-              'name': item['post_name'] ?? 'Unknown market',
+              'name': item['post_name'] ?? 'Unknown_market'.tr(),
               'price': item['price'] ?? 0,
-              'description': item['description'] ?? 'No description available',
-              'location': item['village'] ?? 'Unknown location',
+              'description': item['description'] ?? 'no_description'.tr(),
+              'location': item['village'] ?? 'unknown_location'.tr(),
               'fileName': item['post_url'] ?? 'assets/market1.webp',
               'quantity': item['quantity'] ?? 'N/A',
-              'FarmerName': farmerDetails?['full_name'] ?? 'Unknown Farmer',
+              'FarmerName': farmerDetails?['full_name'] ?? 'unknown_farmer'.tr(),
               'Phone': farmerDetails?['phone'] ?? 'N/A',
               'taluka': farmerDetails?['taluka'] ?? 'N/A',
               'postType': _normalizePostName(item['post_name']),
@@ -395,10 +396,10 @@ class _MarketPageState extends State<MarketPage>
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
-              ),
+              ).tr(),
               const SizedBox(height: 10),
               RadioListTile<String>(
-                title: const Text('Price: Low to High'),
+                title: const Text('price_low_to_high').tr(),
                 value: 'Price: Low to High',
                 groupValue: selectedFilter,
                 onChanged: (value) {
@@ -406,7 +407,7 @@ class _MarketPageState extends State<MarketPage>
                 },
               ),
               RadioListTile<String>(
-                title: const Text('Price: High to Low'),
+                title: const Text('price_high_to_low').tr(),
                 value: 'Price: High to Low',
                 groupValue: selectedFilter,
                 onChanged: (value) {
@@ -444,7 +445,7 @@ class _MarketPageState extends State<MarketPage>
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
-                hintText: "Search market",
+                hintText: "Search_market".tr(),
                 hintStyle: const TextStyle(color: Colors.white),
                 filled: true,
                 fillColor: const Color.fromRGBO(255, 255, 255, 0.3),
@@ -480,9 +481,9 @@ class _MarketPageState extends State<MarketPage>
           );
         },
         label: const Text(
-          'My Posts',
+          'myPost',
           style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        ).tr(),
         icon: const Icon(Icons.person),
         backgroundColor: const Color.fromARGB(255, 29, 108, 92),
         foregroundColor: Colors.white,
@@ -628,7 +629,7 @@ class _MarketPageState extends State<MarketPage>
                                     },
                                     child: MarketCard(
                                       name: marketItem['name'],
-                                      taluka: marketItem['taluka'] ?? 'N/A',
+                                      taluka: marketItem['taluka'] ?? 'not_available'.tr(),
                                       price: '₹${marketItem['price']}',
                                       imagePath: marketItem['fileName'],
                                     ),
@@ -871,7 +872,7 @@ class MarketCard extends StatelessWidget {
                           onPressed: onDelete,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          tooltip: 'Delete Post',
+                          tooltip: 'Delete_Post'.tr(),
                         ),
                       ),
                   ],

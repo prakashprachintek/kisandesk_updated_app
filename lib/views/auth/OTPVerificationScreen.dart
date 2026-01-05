@@ -80,7 +80,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
     } catch (e) {
       print("Error initializing autofill: $e");
       setState(() {
-        errorMessage = tr("Failed to initialize autofill. Enter OTP manually.");
+        errorMessage = tr("Failed_to_initialize_autofill._Enter_OTP_manually.");
       });
     }
   }
@@ -121,7 +121,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
 
       if (response.statusCode == 200 && data["status"] == "success") {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr("OTP resent successfully"))),
+          SnackBar(content: Text(tr("OTP_resent_successfully"))),
         );
         startTimer();
         // Restart listening for new OTP
@@ -129,13 +129,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data["message"] ?? tr("Failed to resend OTP")),
+            content: Text(data["message"] ?? tr("Failed_to_resend_OTP")),
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Network error. Try again."))),
+        SnackBar(content: Text(tr("Network_error._Try_again."))),
       );
     } finally {
       setState(() => isResendLoading = false);
@@ -147,7 +147,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
 
     if (otp.length != 4 || !RegExp(r'^\d{4}$').hasMatch(otp)) {
       setState(() {
-        errorMessage = tr("Please enter a valid OTP");
+        errorMessage = tr("Please_enter_a_valid_OTP");
       });
       return;
     }
@@ -183,18 +183,18 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
         } else if (data["status"] == "failed") {
           setState(() {
             errorMessage = data["message"] == "Invalid OTP"
-                ? tr("Please enter a valid OTP")
-                : data["message"] ?? tr("OTP verification failed");
+                ? tr("Please_enter_a_valid_OTP")
+                : data["message"] ?? tr("OTP_verification_failed");
           });
         }
       } else {
         setState(() {
-          errorMessage = tr("Server error. Try again.");
+          errorMessage = tr("Server_error._Try_again.");
         });
       }
     } catch (e) {
       setState(() {
-        errorMessage = tr("Network error. Try again.");
+        errorMessage = tr("Network_error._Try_again.");
       });
     } finally {
       setState(() => isLoading = false);
@@ -214,7 +214,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(
-          tr("OTP Verification"),
+          tr("OTP_Verification"),
           style: TextStyle(color: Colors.grey[700]),
         ),
         backgroundColor: Colors.white,
@@ -240,7 +240,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
                           width: 180, height: 180),
                       const SizedBox(height: 20),
                       Text(
-                        tr("Enter OTP"),
+                        tr("Enter_OTP"),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22,
@@ -309,7 +309,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
                       ),
                       const SizedBox(height: 20),
                       GradientAuthButton(
-                        text: isLoading ? tr("Verifying...") : tr("Verify OTP"),
+                        text: isLoading ? tr("Verifying...") : tr("Verify_OTP"),
                         onTap: isLoading || !isOtpValid ? null : verifyOTP,
                         textStyle: TextStyle(
                           fontSize: 14,
@@ -335,7 +335,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
                                 );
                               },
                               child: Text(
-                                tr("Wrong number? Go back"),
+                                tr("Wrong_number?_Go_back"),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: const Color.fromARGB(255, 32, 90, 40),
@@ -349,7 +349,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen>
                                     child: Text(
                                       isResendLoading
                                           ? tr("Resending...")
-                                          : tr("Resend OTP"),
+                                          : tr("Resend_OTP"),
                                       style: TextStyle(
                                         color: Colors.blueAccent,
                                         fontWeight: FontWeight.bold,
