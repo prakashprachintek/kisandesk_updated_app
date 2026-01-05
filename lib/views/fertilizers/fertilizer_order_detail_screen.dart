@@ -19,7 +19,6 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
     }
   }
 
-  // Placeholder for cancel action - we'll connect API later
   // Updated cancel action with real API call
   Future<void> _onCancelOrder(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -106,6 +105,19 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
     }
   }
 
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Pending':
+        return Colors.orange.shade700;
+      case 'Delivered':
+        return Colors.green.shade700;
+      case 'Shipped':
+        return Colors.blue.shade700;
+      default:
+        return Colors.purple.shade700;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isPending = order.status == 'Pending';
@@ -113,19 +125,6 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Order #${order.orderId}'),
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf, color: Colors.red),
-            tooltip: 'Download_Invoice'.tr(),
-            onPressed: () => generateAndSaveInvoice(context, order),
-          ),
-          // You can add cancel button logic later
-          if (order.status == 'Pending')
-            IconButton(
-              icon: const Icon(Icons.cancel_outlined, color: Colors.red),
-              onPressed: () => _onCancelOrder(context),
-            ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -139,9 +138,11 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -151,55 +152,141 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                             Text(
                               order.orderId,
                               style: const TextStyle(
-                                fontSize: 20,
+                                fontSize: 21,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Text(
                               order.formatDate(),
-                              style: const TextStyle(
-                                color: Colors.grey,
+                              style: TextStyle(
                                 fontSize: 14,
+                                color: Colors.grey.shade600,
                               ),
                             ),
                           ],
                         ),
-                        Chip(
-                          label: Text(
-                            order.status,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 7),
+                          decoration: BoxDecoration(
+                            color:
+                                _getStatusColor(order.status).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _getStatusColor(order.status)
+                                  .withOpacity(0.3),
+                              width: 1.2,
+                            ),
                           ),
-                          backgroundColor: order.status == 'Pending'
-                              ? Colors.orange.shade100
-                              : order.status == 'Delivered'
-                                  ? Colors.green.shade100
-                                  : Colors.blue.shade100,
-                          labelStyle: TextStyle(
-                            color: order.status == 'Pending'
-                                ? Colors.orange.shade900
-                                : order.status == 'Delivered'
-                                    ? Colors.green.shade900
-                                    : Colors.blue.shade900,
+                          child: Text(
+                            order.status,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: _getStatusColor(order.status),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const Divider(height: 30),
+
+                    const SizedBox(height: 10),
+
+                    Divider(
+                      thickness: 1,
+                      color: Colors.grey.shade300,
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Bottom section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          'Total_Amount'.tr(),
-                          style: const TextStyle(fontSize: 18),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Total_Amount'.tr(),
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            if (order.status == 'Pending') ...[
+                            GestureDetector(
+                              onTap: () =>
+                                  generateAndSaveInvoice(context, order),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 9),
+                                decoration: BoxDecoration(
+                                  color: Colors.cyan.shade50,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border:
+                                      Border.all(color: Colors.cyan.shade300),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.picture_as_pdf,
+                                        color: Colors.cyan.shade700, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Download Invoice',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.cyan.shade800,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            ],
+                          ],
                         ),
-                        Text(
-                          '₹${order.amount}',
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '₹${order.amount}',
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                            if (order.status == 'Pending') ...[
+                              const SizedBox(height: 10),
+                              GestureDetector(
+                                onTap: () => _onCancelOrder(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 18, vertical: 9),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade50,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border:
+                                        Border.all(color: Colors.red.shade300),
+                                  ),
+                                  child: Text(
+                                    'Cancel Order',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red.shade700,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),
