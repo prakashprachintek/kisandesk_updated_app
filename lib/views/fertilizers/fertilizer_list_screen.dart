@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:mainproject1/views/fertilizers/fertilizer_requests_screen.dart';
+import 'package:mainproject1/views/fertilizers/fertilizer_delivery_requests_screen.dart';
 import '../services/user_session.dart';
 import 'fertilizer_model.dart';
 import 'fertilizer_api_service.dart';
@@ -260,12 +260,12 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.delivery_dining),
-            tooltip: 'My_Orders'.tr(),
+            tooltip: 'Delivery Requests'.tr(),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (_) =>
-                      FertilizerRequestsScreen()),
+                      DeliveryRequestsScreen(farmerId: _farmerId,)),
             ),
 
           )
