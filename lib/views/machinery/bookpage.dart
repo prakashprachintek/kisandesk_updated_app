@@ -133,7 +133,7 @@ class _BookPageState extends State<BookPage> {
       context: context,
       initialDate: today,
       firstDate: today,
-      lastDate: DateTime(2026),
+      lastDate: DateTime(2036),
     );
 
     if (picked != null) {
