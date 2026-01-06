@@ -24,6 +24,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
   String _searchQuery = '';
   String _sortOrder = 'none';
   late String _farmerId;
+  late String _deliveryPartnerId;
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
@@ -37,6 +38,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
   void initState() {
     super.initState();
     _farmerId = UserSession.userId!;
+    _deliveryPartnerId = UserSession.userId!;
     _fertilizerFuture = FertilizerApiService().fetchFertilizers();
     _cartFuture = CartService().getCart()..then((_) => _loadCartQuantities());
   }
@@ -265,7 +267,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
               context,
               MaterialPageRoute(
                   builder: (_) =>
-                      DeliveryRequestsScreen(farmerId: _farmerId,)),
+                      DeliveryRequestsScreen(deliveryPartnerId: _deliveryPartnerId)),
             ),
 
           )

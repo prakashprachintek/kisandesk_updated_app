@@ -16,6 +16,8 @@ class FertilizerApiService {
   static const String _fertilizersOfferUrl = '${KD.api}/app/get_master_data';
   static const String _cancelOrderUrl =
       '${KD.api}/fertilizer/cancel_fertilizer_order';
+  static const String _markOrderDeliveredUrl =
+      '${KD.api}/fertilizer/mark_as_delivered';
 
   Future<FertilizerResponse> fetchFertilizers() async {
     try {
@@ -163,6 +165,69 @@ class FertilizerApiService {
       }
     } catch (e) {
       throw Exception('Error cancelling order: $e');
+    }
+  }
+
+  //Delivery Partner Orders
+  Future<RichFertilizerOrderResponse> fetchDeliveryPartnerOrders(
+      String deliveryPartnerId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(_fetchOrdersUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'isDeliveryPartner': 'true', // string, not boolean!
+          'assignee': deliveryPartnerId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> json = jsonDecode(response.body);
+
+        // Delivery partner returns { "results": [ ... ] }
+        final List<dynamic> resultsList =
+            json['results'] as List<dynamic>? ?? [];
+
+        return RichFertilizerOrderResponse(
+          status: json['status'] ?? 'success',
+          message: json['message'] ?? '',
+          results: resultsList
+              .map((item) =>
+                  RichFertilizerOrder.fromJson(item as Map<String, dynamic>))
+              .toList(),
+        );
+      } else {
+        throw Exception(
+            'Failed to load delivery orders: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching delivery orders: $e');
+    }
+  }
+
+  // Mark Order as Delivered
+  Future<Map<String, dynamic>> markAsDelivered(
+      {required String orderId}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(_markOrderDeliveredUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'orderId': orderId,
+        }),
+      );
+
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        // Success
+        return jsonResponse; // e.g., { "status": "success", "message": "Order marked as delivered" }
+      } else {
+        throw Exception(
+            jsonResponse['message'] ?? 'Failed to mark as delivered');
+      }
+    } catch (e) {
+      throw Exception('Error marking order as delivered: $e');
     }
   }
 }

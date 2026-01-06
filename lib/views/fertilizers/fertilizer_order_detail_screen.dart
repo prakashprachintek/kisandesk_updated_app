@@ -217,37 +217,38 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            if (order.status == 'Pending') ...[
-                            GestureDetector(
-                              onTap: () =>
-                                  generateAndSaveInvoice(context, order),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 9),
-                                decoration: BoxDecoration(
-                                  color: Colors.cyan.shade50,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border:
-                                      Border.all(color: Colors.cyan.shade300),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.picture_as_pdf,
-                                        color: Colors.cyan.shade700, size: 18),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Download Invoice',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.cyan.shade800,
-                                        fontSize: 13,
+                            if (order.status == 'Pending' || order.status == 'Out for Delivery' || order.status == 'Delivered') ...[
+                              GestureDetector(
+                                onTap: () =>
+                                    generateAndSaveInvoice(context, order),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 9),
+                                  decoration: BoxDecoration(
+                                    color: Colors.cyan.shade50,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border:
+                                        Border.all(color: Colors.cyan.shade300),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.picture_as_pdf,
+                                          color: Colors.cyan.shade700,
+                                          size: 18),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Download Invoice',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.cyan.shade800,
+                                          fontSize: 13,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
                             ],
                           ],
                         ),
@@ -303,50 +304,63 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.all(16),
-                leading: CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.green.shade100,
-                  child:
-                      const Icon(Icons.person, color: Colors.green, size: 30),
-                ),
-                title: Text(
-                  order.farmerName,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.phone, size: 16, color: Colors.green),
-                        const SizedBox(width: 8),
-                        Text(order.farmerPhone),
-                      ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: Text(
+                      'Delivering to', // Heading for the card
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.grey.shade700,
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    Row(
+                  ),
+                  ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.green.shade100,
+                      child: const Icon(Icons.person,
+                          color: Colors.green, size: 30),
+                    ),
+                    title: Text(
+                      order.farmerName,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.location_on,
-                            size: 16, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            order.deliveryAddress,
-                            style: const TextStyle(fontSize: 14),
-                          ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.phone,
+                                size: 16, color: Colors.green),
+                            const SizedBox(width: 8),
+                            Text(order.farmerPhone),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                order.deliveryAddress,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.call, color: Colors.green, size: 28),
-                  onPressed: () => _launchPhone(order.farmerPhone),
-                ),
+                  ),
+                ],
               ),
             ),
 
