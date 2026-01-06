@@ -133,7 +133,7 @@ class _BookPageState extends State<BookPage> {
       context: context,
       initialDate: today,
       firstDate: today,
-      lastDate: DateTime(2026),
+      lastDate: DateTime(2036),
     );
 
     if (picked != null) {
@@ -159,7 +159,7 @@ class _BookPageState extends State<BookPage> {
     // Show error if any field is invalid
     if (fieldErrors.values.any((e) => e)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please_fill_all_fields")),
+        SnackBar(content: Text("Please_fill_all_fields").tr()),
       );
       return;
     }
@@ -579,7 +579,7 @@ class _BookPageState extends State<BookPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
                       child: Text(
-                        "This-field_is_required".tr(),
+                        "This_field_is_required".tr(),
                         style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),

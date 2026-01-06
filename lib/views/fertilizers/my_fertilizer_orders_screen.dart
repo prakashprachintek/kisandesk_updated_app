@@ -23,7 +23,6 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
     _loadOrders();
   }
 
-  // Load orders - can be called multiple times
   Future<void> _loadOrders() async {
     setState(() {
       _ordersFuture =
@@ -31,7 +30,6 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
     });
   }
 
-  // Pull-to-refresh
   Future<void> _onRefresh() async {
     await _loadOrders();
   }
@@ -103,7 +101,7 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
             final orders = snapshot.data!.results;
 
             return ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(), // Enables pull-to-refresh even with few items
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(12),
               itemCount: orders.length,
               itemBuilder: (context, index) {
@@ -111,7 +109,6 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
 
                 return InkWell(
                   onTap: () async {
-                    // Navigate and wait for result
                     final bool? cancelled = await Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -119,7 +116,6 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
                       ),
                     );
 
-                    // If order was cancelled, refresh the list
                     if (cancelled == true) {
                       _loadOrders();
                     }
@@ -197,95 +193,21 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
 
                           const Divider(height: 24),
 
-                          // Products List
-                          ...order.products.map((orderItem) {
-                            final product = orderItem.product;
-                            final quantity = orderItem.quantity;
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Product Image
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: product.images.isNotEmpty
-                                        ? Image.network(
-                                            product.images[0].url,
-                                            width: 70,
-                                            height: 70,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) => Container(
-                                              color: Colors.grey.shade200,
-                                              child: const Icon(
-                                                Icons.medication,
-                                                size: 40,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          )
-                                        : Container(
-                                            width: 70,
-                                            height: 70,
-                                            color: Colors.grey.shade200,
-                                            child: const Icon(
-                                              Icons.medication,
-                                              size: 40,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                  ),
-                                  const SizedBox(width: 12),
-
-                                  // Product Details
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          product.productName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '$quantity × ${product.unit}',
-                                          style: const TextStyle(
-                                            color: Colors.green,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Text(
-                                          '₹${product.sellPrice}',
-                                          style: const TextStyle(
-                                            color: Colors.green,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        if (product.productDetails.usage.isNotEmpty)
-                                          Padding(
-                                            padding: const EdgeInsets.only(top: 4),
-                                            child: Text(
-                                              product.productDetails.usage,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.blueGrey,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
+                          // NEW: Just show number of items instead of full product list
+                          Row(
+                            children: [
+                              const Icon(Icons.shopping_bag_outlined, size: 20, color: Colors.grey),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${order.products.length} ${order.products.length == 1 ? 'item' : 'items'}',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ).tr(),
+                            ],
+                          ),
 
                           const Divider(height: 24),
 

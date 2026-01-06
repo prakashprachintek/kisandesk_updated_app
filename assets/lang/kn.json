@@ -475,7 +475,9 @@
   "Total_Area_(Acres)": "ಒಟ್ಟು ವಿಸ್ತೀರ್ಣ (ಏಕರೆ)",
   "Machine_Name": "ಯಂತ್ರದ ಹೆಸರು",
   "Machine_Description": "ಯಂತ್ರದ ವಿವರಣೆ",
-  "Quantity_Available": "ಲಭ್ಯವಿರುವ ಪ್ರಮಾಣ"
+  "Quantity_Available": "ಲಭ್ಯವಿರುವ ಪ್ರಮಾಣ",
+  "Full_Description":"ಪೂರ್ಣ ವಿವರಣೆ"
+
 }
 
 

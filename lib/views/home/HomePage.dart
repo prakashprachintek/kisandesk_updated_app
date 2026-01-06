@@ -1154,11 +1154,11 @@ class _HomePageState extends State<HomePage> {
                                     child: CircularProgressIndicator());
                               } else if (snapshot.hasError) {
                                 return Center(
-                                    child: Text('Failed_to_load_market_posts'));
+                                    child: Text('Failed_to_load_market_posts').tr());
                               } else if (!snapshot.hasData ||
                                   snapshot.data!.isEmpty) {
                                 return Center(
-                                    child: Text('No_market_posts_available'));
+                                    child: Text('No_market_posts_available.').tr());
                               }
 
                               final posts = snapshot.data!.take(3).toList();

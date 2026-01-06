@@ -458,6 +458,7 @@ class _AddressScreenState extends State<AddressScreen> {
                               onChanged: (v) =>
                                   setState(() => _paymentMethod = v!),
                             ),
+                            /*
                             const Divider(height: 1),
                             RadioListTile<PaymentMethod>(
                               title: const Text('Online Payment',
@@ -471,7 +472,7 @@ class _AddressScreenState extends State<AddressScreen> {
                               groupValue: _paymentMethod,
                               onChanged: (v) =>
                                   setState(() => _paymentMethod = v!),
-                            ),
+                            ),*/
                           ],
                         ),
                       ),

@@ -70,7 +70,7 @@ class LabourRequestOrdersPage extends StatelessWidget {
           } else if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No_Labour_Requests_Available"));
+            return  Center(child: Text("No_Labour_Requests_Available").tr());
           }
 
           List<Map<String, dynamic>> requests = snapshot.data!;

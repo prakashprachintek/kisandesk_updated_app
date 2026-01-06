@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:mainproject1/views/fertilizers/fertilizer_delivery_requests_screen.dart';
 import '../services/user_session.dart';
 import 'fertilizer_model.dart';
 import 'fertilizer_api_service.dart';
@@ -23,6 +24,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
   String _searchQuery = '';
   String _sortOrder = 'none';
   late String _farmerId;
+  late String _deliveryPartnerId;
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
@@ -36,6 +38,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
   void initState() {
     super.initState();
     _farmerId = UserSession.userId!;
+    _deliveryPartnerId = UserSession.userId!;
     _fertilizerFuture = FertilizerApiService().fetchFertilizers();
     _cartFuture = CartService().getCart()..then((_) => _loadCartQuantities());
   }
@@ -130,7 +133,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.arrow_upward),
-              title: const Text('Price: Low to High').tr(),
+              title: const Text('price_low_to_high').tr(),
               trailing: _sortOrder == 'ascending'
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
@@ -144,7 +147,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.arrow_downward),
-              title: const Text('Price: High to Low').tr(),
+              title: const Text('price_high_to_low').tr(),
               trailing: _sortOrder == 'descending'
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
@@ -257,6 +260,17 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                       MyFertilizerOrdersScreen(farmerId: _farmerId)),
             ),
           ),
+          IconButton(
+            icon: const Icon(Icons.delivery_dining),
+            tooltip: 'Delivery Requests'.tr(),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) =>
+                      DeliveryRequestsScreen(deliveryPartnerId: _deliveryPartnerId)),
+            ),
+
+          )
         ],
       ),
       body: GestureDetector(
@@ -516,11 +530,11 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
 
 // MAIN BUTTON LOGIC
                                         if (isOutOfStock)
-                                          const SizedBox(
+                                          SizedBox(
                                             width: double.infinity,
                                             child: OutlinedButton(
                                               onPressed: null,
-                                              child: Text('Out of stock',
+                                              child: Text('Out_of_stock'.tr(),
                                                   style: TextStyle(
                                                       color: Colors.grey)),
                                             ),
@@ -573,8 +587,8 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                                     }
                                                   },
                                                   // icon: const Icon(Icons.add_shopping_cart, size: 20),
-                                                  label: const Text(
-                                                      "Add to Cart",
+                                                  label: Text(
+                                                      "Add_to_Cart".tr(),
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -614,7 +628,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                                                     );
                                                   },
                                                   // icon: const Icon(Icons.flash_on, size: 22), // Lightning = fast buy
-                                                  label: const Text("Buy Now",
+                                                  label: Text("Buy_Now".tr(),
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
