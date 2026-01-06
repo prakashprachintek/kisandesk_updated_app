@@ -44,6 +44,28 @@ class PushNotificationService {
 
   }
 
+  static void _handleNotificationAction(
+      NotificationResponse response) {
+
+    switch (response.actionId) {
+      case 'OPEN_APP':
+      // Navigate to specific screen
+        print('Open button clicked');
+        break;
+
+      case 'DISMISS':
+        print('Dismiss button clicked');
+        break;
+
+      default:
+        print('Notification tapped');
+    }
+
+    if (response.payload != null) {
+      print('Payload: ${response.payload}');
+    }
+  }
+
   // ======================
   // Local notifications setup
   // ======================
@@ -54,12 +76,19 @@ class PushNotificationService {
     const InitializationSettings initSettings =
         InitializationSettings(android: androidSettings);
 
+    // await _localNotifications.initialize(
+    //   initSettings,
+    //   onDidReceiveNotificationResponse: (response) {
+    //     _handleNotificationAction(response);
+    //   },
+    // );
     await _localNotifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        if (response.payload != null) {
-          _handlePayloadTap(response.payload!);
-        }
+        // if (response.payload != null) {
+        //   _handlePayloadTap(response.payload!);
+        // }
+        _handleNotificationAction(response);
       },
     );
   }
@@ -67,28 +96,77 @@ class PushNotificationService {
   // ======================
   // Show local notification for foreground messages
   // ======================
+  // static Future<void> _showLocalNotification(RemoteMessage message) async {
+  //   const AndroidNotificationDetails androidDetails =
+  //       AndroidNotificationDetails(
+  //     'default_channel_id',
+  //     'General Notifications',
+  //     channelDescription: 'Channel for app notifications',
+  //     importance: Importance.max,
+  //     priority: Priority.high,
+  //     icon: '@mipmap/ic_launcher',
+  //   );
+  //
+  //   const NotificationDetails notificationDetails =
+  //       NotificationDetails(android: androidDetails);
+  //
+  //   await _localNotifications.show(
+  //     message.notification.hashCode,
+  //     message.notification?.title ?? '',
+  //     message.notification?.body ?? '',
+  //     notificationDetails,
+  //     payload: message.data.isNotEmpty ? message.data.toString() : null,
+  //   );
+  // }
+
+
   static Future<void> _showLocalNotification(RemoteMessage message) async {
     const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      'default_channel_id',
-      'General Notifications',
-      channelDescription: 'Channel for app notifications',
+    AndroidNotificationDetails(
+      'alert_channel_v2',
+      'Alert Notifications',
+      channelDescription: 'Sticky alert notification',
+
       importance: Importance.max,
       priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
+
+      // 🔊 Sound
+      sound: RawResourceAndroidNotificationSound('alert_ringer'),
+      playSound: true,
+
+      // 📌 Stick to top
+      ongoing: true,
+      autoCancel: false,
+
+      // ⏱️ Remove automatically after 30 sec
+      timeoutAfter: 30000,
+
+      actions: [
+        AndroidNotificationAction(
+          'OPEN_APP',
+          'Open',
+          showsUserInterface: true,
+        ),
+        AndroidNotificationAction(
+          'DISMISS',
+          'Dismiss',
+          cancelNotification: true,
+        ),
+      ],
     );
 
     const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidDetails);
+    NotificationDetails(android: androidDetails);
 
     await _localNotifications.show(
-      message.notification.hashCode,
-      message.notification?.title ?? '',
+      1001,
+      message.notification?.title ?? 'Alert',
       message.notification?.body ?? '',
       notificationDetails,
-      payload: message.data.isNotEmpty ? message.data.toString() : null,
     );
   }
+
+
 
   // ======================
   // Handle notification tap (background/killed)
