@@ -5,7 +5,6 @@ import 'notification_page.dart';
 import 'notification_data.dart';
 import '../../main.dart';
 
-
 class PushNotificationService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
@@ -41,24 +40,26 @@ class PushNotificationService {
         _handleNotificationTap(initialMessage);
       });
     }
-
   }
 
-  static void _handleNotificationAction(
-      NotificationResponse response) {
-
+  static void _handleNotificationAction(NotificationResponse response) {
     switch (response.actionId) {
       case 'OPEN_APP':
-      // Navigate to specific screen
+        // Navigate to specific screen
+        MyApp.navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => NotificationPage(
+              notificationData: NotificationData.fromMap({}),
+            ),
+          ),
+        );
         print('Open button clicked');
         break;
 
       case 'DISMISS':
+        _localNotifications.cancel(1001);
         print('Dismiss button clicked');
         break;
-
-      default:
-        print('Notification tapped');
     }
 
     if (response.payload != null) {
@@ -85,10 +86,16 @@ class PushNotificationService {
     await _localNotifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // if (response.payload != null) {
-        //   _handlePayloadTap(response.payload!);
-        // }
-        _handleNotificationAction(response);
+        // 🔹 Action button clicked
+        if (response.actionId == null && response.payload == 'OPEN') {
+  _handlePayloadTap(response.payload!);
+}
+
+
+        // 🔹 Notification body clicked
+        if (response.payload != null) {
+          _handlePayloadTap(response.payload!);
+        }
       },
     );
   }
@@ -119,10 +126,9 @@ class PushNotificationService {
   //   );
   // }
 
-
   static Future<void> _showLocalNotification(RemoteMessage message) async {
     const AndroidNotificationDetails androidDetails =
-    AndroidNotificationDetails(
+        AndroidNotificationDetails(
       'alert_channel_v2',
       'Alert Notifications',
       channelDescription: 'Sticky alert notification',
@@ -135,7 +141,7 @@ class PushNotificationService {
       playSound: true,
 
       // 📌 Stick to top
-      ongoing: true,
+      ongoing: false,
       autoCancel: false,
 
       // ⏱️ Remove automatically after 30 sec
@@ -145,28 +151,25 @@ class PushNotificationService {
         AndroidNotificationAction(
           'OPEN_APP',
           'Open',
-          showsUserInterface: true,
+          showsUserInterface: false, // 🔴 IMPORTANT
+          cancelNotification: false,
         ),
         AndroidNotificationAction(
           'DISMISS',
           'Dismiss',
-          cancelNotification: true,
+          showsUserInterface: false,
+          cancelNotification: true, // 🔴 Only dismiss
         ),
       ],
     );
 
     const NotificationDetails notificationDetails =
-    NotificationDetails(android: androidDetails);
+        NotificationDetails(android: androidDetails);
 
-    await _localNotifications.show(
-      1001,
-      message.notification?.title ?? 'Alert',
-      message.notification?.body ?? '',
-      notificationDetails,
-    );
+    await _localNotifications.show(1001, message.notification?.title ?? 'Alert',
+        message.notification?.body ?? '', notificationDetails,
+        payload: 'OPEN');
   }
-
-
 
   // ======================
   // Handle notification tap (background/killed)
