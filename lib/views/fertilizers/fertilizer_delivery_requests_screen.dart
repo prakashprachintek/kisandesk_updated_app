@@ -48,12 +48,12 @@ class _DeliveryRequestsScreenState extends State<DeliveryRequestsScreen> {
   String _extractCustomerLine(String address) {
     final lines = address.split('\n');
     if (lines.length >= 2) return lines[1].trim();
-    return 'Customer details not available';
+    return 'Customer_details_not_available'.tr();
   }
 
   String _extractLocationLine(String address) {
     final lines = address.split('\n');
-    return lines.isNotEmpty ? lines.first.trim() : 'Location not available';
+    return lines.isNotEmpty ? lines.first.trim() : 'Location_not_available'.tr();
   }
 
   @override
@@ -61,7 +61,7 @@ class _DeliveryRequestsScreenState extends State<DeliveryRequestsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'My Deliveries'.tr(),
+          'My_Deliveries'.tr(),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),

@@ -497,6 +497,26 @@
   "Machine_Name":"Machine Name",
   "Machine_Description":"Machine Description",
   "Quantity_Available":"Quantity Available",
-  "Full_Description":"Full Description"
+  "Full_Description":"Full Description",
+
+
+  "Confirm_Delivery":"Confirm Delivery",
+  "Are_you_sure_this_order_has_been_delivered_to_the_customer?":"Are you sure this order has been delivered to the customer?",
+  "Yes,_Delivered":"Yes, Delivered",
+  "Marking_as_delivered...":"Marking as delivered...",
+  "Order_marked_as_delivered!":"Order marked as delivered!",
+  "Mark_as_Delivered":"Mark as Delivered",
+  "Products_to_Deliver":"Products to Deliver",
+  "Location_not_available":"Location not available",
+  "Customer_details_not_available":"Customer details not available",
+  "My_Deliveries":"My Deliveries",
+  "No deliveries assigned":"No_deliveries_assigned",
+  "Error_loading_orders":"Error loading orders",
+  "Cancel_Order":"Cancel Order",
+  "Are_you_sure_cancel_order":"Are you sure cancel order",
+  "No":"No",
+  "Yes_Cancel":"Yes Cancel",
+  "Order_cancelled_successfully":"Order cancelled successfully",
+  "Delivering_to":"Delivering to"
 
 }

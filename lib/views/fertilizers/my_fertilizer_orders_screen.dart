@@ -77,7 +77,7 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
                       ElevatedButton.icon(
                         onPressed: _loadOrders,
                         icon: const Icon(Icons.refresh),
-                        label: Text('Retry'.tr()),
+                        label: Text('retry'.tr()),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,

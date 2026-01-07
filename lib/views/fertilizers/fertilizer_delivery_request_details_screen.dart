@@ -39,7 +39,7 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
   // Extract location (first line)
   String _extractLocation() {
     final lines = order.deliveryAddress.split('\n');
-    return lines.isNotEmpty ? lines.first.trim() : 'Location not available';
+    return lines.isNotEmpty ? lines.first.trim() : 'Location_not_available'.tr();
   }
 
   // Launch phone dialer
@@ -57,9 +57,9 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Confirm Delivery'.tr()),
+        title: Text('Confirm_Delivery'.tr()),
         content: Text(
-            'Are you sure this order has been delivered to the customer?'.tr()),
+            'Are_you_sure_this_order_has_been_delivered_to_the_customer?'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -68,7 +68,7 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Yes, Delivered'.tr(),
+            child: Text('Yes,_Delivered'.tr(),
                 style: const TextStyle(color: Colors.white)),
           ),
         ],
@@ -79,7 +79,7 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
 
     // Show loading
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Marking as delivered...'.tr())),
+      SnackBar(content: Text('Marking_as_delivered...'.tr())),
     );
 
     try {
@@ -91,7 +91,7 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
-              Text(response['message'] ?? 'Order marked as delivered!'.tr()),
+              Text(response['message'] ?? 'Order_marked_as_delivered!'.tr()),
           backgroundColor: Colors.green,
         ),
       );
@@ -240,7 +240,7 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
                                       color: Colors.green.shade700, size: 20),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Mark as Delivered'.tr(),
+                                    'Mark_as_Delivered'.tr(),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.green.shade800,

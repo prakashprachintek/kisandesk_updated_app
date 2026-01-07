@@ -84,7 +84,7 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
-                Text(response['message'] ?? 'Order cancelled successfully'),
+                Text(response['message'] ?? 'Order_cancelled_successfully'.tr()),
             backgroundColor: Colors.green,
           ),
         );
@@ -238,13 +238,13 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                                           size: 18),
                                       const SizedBox(width: 6),
                                       Text(
-                                        'Download Invoice',
+                                        'Download_Invoice',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.cyan.shade800,
                                           fontSize: 13,
                                         ),
-                                      ),
+                                      ).tr(),
                                     ],
                                   ),
                                 ),
@@ -277,13 +277,13 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                                         Border.all(color: Colors.red.shade300),
                                   ),
                                   child: Text(
-                                    'Cancel Order',
+                                    'Cancel_Order',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.red.shade700,
                                       fontSize: 13,
                                     ),
-                                  ),
+                                  ).tr(),
                                 ),
                               ),
                             ],
@@ -310,13 +310,13 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                     child: Text(
-                      'Delivering to', // Heading for the card
+                      'Delivering_to', // Heading for the card
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.grey.shade700,
                       ),
-                    ),
+                    ).tr(),
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.all(16),
