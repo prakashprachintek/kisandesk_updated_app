@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocod;
 import 'package:mainproject1/src/core/constant/api_constants.dart';
 import 'package:mainproject1/src/shared/presentation/widgets/flutter_inappwebview.dart';
+import 'package:mainproject1/views/home/add_me_labor_page.dart';
 import 'package:mainproject1/views/home/app_settings.dart';
 import 'package:mainproject1/views/home/list_my_machinery_page.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
@@ -17,6 +18,7 @@ import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
 import 'package:mainproject1/views/services/image_caching.dart';
 import '../fertilizers/fertilizer_list_screen.dart';
+import '../other/AddMeAsLabour_page.dart';
 import '../other/coming.dart';
 import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
@@ -850,7 +852,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => LabourBookingPage(),
+                  builder: (context) => AddMeAsLabour(),
                 ),
               );
             },
