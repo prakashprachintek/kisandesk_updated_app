@@ -11,6 +11,7 @@ import 'package:geocoding/geocoding.dart' as geocod;
 import 'package:mainproject1/src/core/constant/api_constants.dart';
 import 'package:mainproject1/src/shared/presentation/widgets/flutter_inappwebview.dart';
 import 'package:mainproject1/views/home/app_settings.dart';
+import 'package:mainproject1/views/home/list_my_machinery_page.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
@@ -838,6 +839,32 @@ class _HomePageState extends State<HomePage> {
                 // MaterialPageRoute(builder: (context) => const Myprofile()),
                 MaterialPageRoute(
                     builder: (context) => PersonalDetailsScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.work_outline),
+            title: Text(tr("Add Me As Labour")),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LabourBookingPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.agriculture_outlined),
+            title: Text(tr("List My Machinery")),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ListMyMachineryPage(),
+                ),
               );
             },
           ),

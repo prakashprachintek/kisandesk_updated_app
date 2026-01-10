@@ -517,6 +517,13 @@
   "No":"No",
   "Yes_Cancel":"Yes Cancel",
   "Order_cancelled_successfully":"Order cancelled successfully",
-  "Delivering_to":"Delivering to"
+  "Delivering_to":"Delivering to",
 
+
+  "Camera":"Camera",
+  "Gallery":"Gallery",
+  "List_My_Machinery":"List My Machinery",
+  "Vehicle_Number":"Vehicle Number",
+  "Please_upload_the_image":"Please upload the image",
+  "Work_Type":"Work Type"
 }
