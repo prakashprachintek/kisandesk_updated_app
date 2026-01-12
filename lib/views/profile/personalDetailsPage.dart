@@ -70,12 +70,16 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 14, color: Colors.grey[700], fontWeight: FontWeight.w500),
+          style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 4),
         Text(
           value?.isNotEmpty == true ? value! : '—',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
+          style: const TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
         ),
       ],
     );
@@ -98,27 +102,10 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
 
     if (_profilePicUrl != null) {
       return CachedImageWidget(
-        imageUrl: _profilePicUrl!, fit: BoxFit.cover,
-        width: 150,
-        height: 150,);
-      return Image.network(
-        _profilePicUrl!,
+        imageUrl: _profilePicUrl!,
         fit: BoxFit.cover,
         width: 150,
         height: 150,
-        loadingBuilder: (context, child, progress) {
-          return progress == null
-              ? child
-              : Center(
-                  child: CircularProgressIndicator(
-                    value: progress.expectedTotalBytes != null
-                        ? progress.cumulativeBytesLoaded / (progress.expectedTotalBytes!)
-                        : null,
-                    color: Color.fromARGB(255, 29, 108, 92),
-                  ),
-                );
-        },
-        errorBuilder: (_, __, ___) => _fallback(),
       );
     }
 
@@ -157,7 +144,8 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
         backgroundColor: const Color.fromARGB(255, 29, 108, 92),
         title: Text(
           "Personal_Details".tr(),
-          style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
         ),
         elevation: 0,
       ),
@@ -165,8 +153,8 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
         onRefresh: _fetchProfilePic,
         child: Stack(
           children: [
-            Container(height: 140, color: const Color.fromARGB(255, 29, 108, 92)),
-
+            Container(
+                height: 140, color: const Color.fromARGB(255, 29, 108, 92)),
             SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.only(
@@ -189,7 +177,10 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                             shape: BoxShape.circle,
                             color: Colors.white,
                             boxShadow: [
-                              BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 5, spreadRadius: 2),
+                              BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  blurRadius: 5,
+                                  spreadRadius: 2),
                             ],
                           ),
                           child: ClipOval(child: _buildProfilePicture()),
@@ -212,7 +203,8 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                                   _showSnackBar("Success", isSuccess: true);
                                   _fetchProfilePic(); // Refresh image
                                 } else {
-                                  final msg = result['message'] ?? 'Upload_failed'.tr();
+                                  final msg =
+                                      result['message'] ?? 'Upload_failed'.tr();
                                   _showSnackBar(msg, isSuccess: false);
                                 }
                               }
@@ -224,7 +216,8 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                                 color: Color.fromARGB(255, 29, 108, 92),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.edit, color: Colors.white, size: 22),
+                              child: const Icon(Icons.edit,
+                                  color: Colors.white, size: 22),
                             ),
                           ),
                         ),
@@ -240,7 +233,10 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
-                        BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+                        BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4)),
                       ],
                     ),
                     child: Padding(
@@ -260,10 +256,13 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(Icons.edit, color: Color.fromARGB(255, 29, 108, 92), size: 24),
+                                icon: Icon(Icons.edit,
+                                    color: Color.fromARGB(255, 29, 108, 92),
+                                    size: 24),
                                 tooltip: "Edit_Profile".tr(),
                                 onPressed: () async {
-                                  final result = await Navigator.of(context).push(
+                                  final result =
+                                      await Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (_) => ProfileUpdatePage(
                                         phone: UserSession.user?['phone'] ?? '',
@@ -277,25 +276,36 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          _buildInfoItem("name".tr(), UserSession.user?['full_name']),
+                          _buildInfoItem(
+                              "name".tr(), UserSession.user?['full_name']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Number".tr(), UserSession.user?['phone']),
+                          _buildInfoItem(
+                              "Number".tr(), UserSession.user?['phone']),
                           const SizedBox(height: 15),
                           _buildInfoItem("DOB".tr(), UserSession.user?['dob']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Gender".tr(), UserSession.user?['gender']),
+                          _buildInfoItem("Registered as labour", UserSession.user?['isLabour'] == true ? "Yes".tr() : "No".tr()),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Taluq".tr(), UserSession.user?['taluka']),
+                          _buildInfoItem(
+                              "Gender".tr(), UserSession.user?['gender']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("village".tr(), UserSession.user?['village']),
+                          _buildInfoItem(
+                              "Taluq".tr(), UserSession.user?['taluka']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("district".tr(), UserSession.user?['district']),
+                          _buildInfoItem(
+                              "village".tr(), UserSession.user?['village']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("state".tr(), UserSession.user?['state']),
+                          _buildInfoItem(
+                              "district".tr(), UserSession.user?['district']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("pincode".tr(), UserSession.user?['pincode']),
+                          _buildInfoItem(
+                              "state".tr(), UserSession.user?['state']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Address".tr(), UserSession.user?['address']),
+                          _buildInfoItem(
+                              "pincode".tr(), UserSession.user?['pincode']),
+                          const SizedBox(height: 15),
+                          _buildInfoItem(
+                              "Address".tr(), UserSession.user?['address']),
                         ],
                       ),
                     ),

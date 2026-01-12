@@ -60,6 +60,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
   late Map<String, List<dynamic>> _talukasMap;
   late Map<String, List<dynamic>> _villagesMap;
 
+  // ---------- Checkbox ----------
+  bool _isLabour = false; // default: not labour
+
   // -------------------------------------------------------------------------
   @override
   void initState() {
@@ -76,14 +79,17 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     _villagesMap = Map.from(locationData['villages'] as Map);
 
     _talukasMap.forEach((k, v) {
-      v.sort((a, b) => a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
+      v.sort((a, b) =>
+          a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
     });
     _villagesMap.forEach((k, v) {
-      v.sort((a, b) => a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
+      v.sort((a, b) =>
+          a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
     });
 
     // 2. Populate districts (Karnataka only)
-    _districts = List<String>.from(locationData['districts']['Karnataka'] ?? []);
+    _districts =
+        List<String>.from(locationData['districts']['Karnataka'] ?? []);
     _districts.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
     // 3. Pre-fill from UserSession
@@ -104,6 +110,10 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
         _selectedDateOfBirth = DateFormat('dd-MM-yyyy').parse(user!['dob']);
       } catch (_) {}
     }
+
+    _isLabour = user?['isLabour'] == true ||
+        user?['islabour'] == true ||
+        user?['is_labour'] == true;
 
     // 4. Validate / reset invalid selections
     if (_selectedDistrict != null && !_districts.contains(_selectedDistrict)) {
@@ -203,15 +213,20 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
 
     // ---- Build payload (only changed fields) ----
     final Map<String, dynamic> payload = {
-      "_id": UserSession.user?["_id"]
+      "_id": UserSession.user?["_id"],
+      "isLabour": _isLabour,
     };
-    if (_nameController.text.isNotEmpty) payload["fullName"] = _nameController.text.trim();
-    if (_stateController.text.isNotEmpty) payload["state"] = _stateController.text.trim();
+    if (_nameController.text.isNotEmpty)
+      payload["fullName"] = _nameController.text.trim();
+    if (_stateController.text.isNotEmpty)
+      payload["state"] = _stateController.text.trim();
     if (_selectedDistrict != null) payload["district"] = _selectedDistrict;
     if (_selectedTaluk != null) payload["taluka"] = _selectedTaluk;
     if (_selectedVillage != null) payload["village"] = _selectedVillage;
-    if (_addressController.text.isNotEmpty) payload["address"] = _addressController.text.trim();
-    if (_pincodeController.text.isNotEmpty) payload["pincode"] = _pincodeController.text.trim();
+    if (_addressController.text.isNotEmpty)
+      payload["address"] = _addressController.text.trim();
+    if (_pincodeController.text.isNotEmpty)
+      payload["pincode"] = _pincodeController.text.trim();
     if (_selectedDateOfBirth != null) {
       payload["dob"] = DateFormat('dd-MM-yyyy').format(_selectedDateOfBirth!);
     }
@@ -273,7 +288,10 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(tr('Edit Personal Information'),style: TextStyle(fontWeight: FontWeight.bold),),
+        title: Text(
+          tr('Edit Personal Information'),
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         // centerTitle: true,
       ),
       body: SafeArea(
@@ -288,7 +306,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   controller: _nameController,
                   decoration: _inputDecoration(tr('Name')),
                   onChanged: (_) => setState(() {}),
-                  validator: (v) => v?.trim().isEmpty ?? true ? tr('Please enter your name') : null,
+                  validator: (v) => v?.trim().isEmpty ?? true
+                      ? tr('Please enter your name')
+                      : null,
                 ),
                 const SizedBox(height: 12),
 
@@ -310,7 +330,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                     child: Text(
                       _selectedDateOfBirth == null
                           ? tr('Select Date')
-                          : DateFormat('dd-MM-yyyy').format(_selectedDateOfBirth!),
+                          : DateFormat('dd-MM-yyyy')
+                              .format(_selectedDateOfBirth!),
                       style: const TextStyle(color: Colors.black87),
                     ),
                   ),
@@ -321,13 +342,15 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                 DropdownButtonFormField<String>(
                   value: _selectedGender,
                   decoration: _inputDecoration(tr('Gender')),
-                  hint: Text(tr('Select Gender'), style: TextStyle(color: Colors.grey[600])),
+                  hint: Text(tr('Select Gender'),
+                      style: TextStyle(color: Colors.grey[600])),
                   isExpanded: true,
                   items: ['Male', 'Female'].map((g) {
                     return DropdownMenuItem(value: g, child: Text(g));
                   }).toList(),
                   onChanged: (v) => setState(() => _selectedGender = v),
-                  validator: (v) => v == null ? tr('Please select a gender') : null,
+                  validator: (v) =>
+                      v == null ? tr('Please select a gender') : null,
                 ),
                 const SizedBox(height: 12),
 
@@ -336,7 +359,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   controller: _stateController,
                   decoration: _inputDecoration(tr('State')),
                   onChanged: (_) => setState(() {}),
-                  validator: (v) => v?.trim().isEmpty ?? true ? tr('Please enter a state') : null,
+                  validator: (v) => v?.trim().isEmpty ?? true
+                      ? tr('Please enter a state')
+                      : null,
                 ),
                 const SizedBox(height: 12),
 
@@ -344,7 +369,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                 DropdownButtonFormField<String>(
                   value: _selectedDistrict,
                   decoration: _inputDecoration(tr('District')),
-                  hint: Text(tr('Select District'), style: TextStyle(color: Colors.grey[600])),
+                  hint: Text(tr('Select District'),
+                      style: TextStyle(color: Colors.grey[600])),
                   isExpanded: true,
                   items: _districts.map((d) {
                     return DropdownMenuItem(value: d, child: Text(d));
@@ -358,7 +384,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                       _selectedVillage = null;
                     });
                   },
-                  validator: (v) => v == null ? tr('Please select a district') : null,
+                  validator: (v) =>
+                      v == null ? tr('Please select a district') : null,
                 ),
                 const SizedBox(height: 12),
 
@@ -367,7 +394,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   value: _selectedTaluk,
                   decoration: _inputDecoration(tr('Taluka')),
                   hint: Text(
-                    _selectedDistrict == null ? tr('Select District first') : tr('Select Taluka'),
+                    _selectedDistrict == null
+                        ? tr('Select District first')
+                        : tr('Select Taluka'),
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   isExpanded: true,
@@ -380,7 +409,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                       : (v) {
                           setState(() {
                             _selectedTaluk = v;
-                            _villages = List<String>.from(_villagesMap[v!] ?? []);
+                            _villages =
+                                List<String>.from(_villagesMap[v!] ?? []);
                             _selectedVillage = null;
                           });
                         },
@@ -395,7 +425,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   value: _selectedVillage,
                   decoration: _inputDecoration(tr('Village')),
                   hint: Text(
-                    _selectedTaluk == null ? tr('Select Taluka first') : tr('Select Village'),
+                    _selectedTaluk == null
+                        ? tr('Select Taluka first')
+                        : tr('Select Village'),
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   isExpanded: true,
@@ -403,7 +435,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                       .where((v) => v.isNotEmpty)
                       .map((v) => DropdownMenuItem(value: v, child: Text(v)))
                       .toList(),
-                  onChanged: _selectedTaluk == null ? null : (v) => setState(() => _selectedVillage = v),
+                  onChanged: _selectedTaluk == null
+                      ? null
+                      : (v) => setState(() => _selectedVillage = v),
                   validator: (v) => _selectedTaluk != null && v == null
                       ? tr('Please select a village')
                       : null,
@@ -415,7 +449,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   controller: _addressController,
                   decoration: _inputDecoration(tr('Address')),
                   onChanged: (_) => setState(() {}),
-                  validator: (v) => v?.trim().isEmpty ?? true ? tr('Please enter an address') : null,
+                  validator: (v) => v?.trim().isEmpty ?? true
+                      ? tr('Please enter an address')
+                      : null,
                 ),
                 const SizedBox(height: 12),
 
@@ -428,12 +464,53 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   onChanged: (_) => setState(() {}),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return tr('Please enter a pincode');
+                    if (v == null || v.trim().isEmpty)
+                      return tr('Please enter a pincode');
                     if (v.length != 6) return tr('Pincode must be 6 digits');
                     return null;
                   },
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
+
+                // ---------- Labour Checkbox ----------
+                InputDecorator(
+                  decoration:
+                      _inputDecoration(tr('Labour')).copyWith(
+                    // Optional: make it look less like a text field
+                    border: InputBorder.none,
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+                    errorMaxLines: 1,
+                  ),
+                  child: CheckboxListTile(
+                    title: Text(
+                      tr('Register me as Labour'),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    subtitle: Text(
+                      tr('Check if you want to be listed as available labour'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    value: _isLabour,
+                    activeColor: const Color.fromARGB(255, 29, 108, 92),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity
+                        .leading, // ← usually better on left
+                    dense: true,
+                    onChanged: _isSubmitting
+                        ? null
+                        : (bool? value) {
+                            setState(() => _isLabour = value ?? false);
+                          },
+                  ),
+                ),
+                const SizedBox(height: 16),
 
                 // ---------- Submit Button ----------
                 SizedBox(
@@ -448,14 +525,16 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: _isFormValid() && !_isSubmitting ? _submit : null,
+                    onPressed:
+                        _isFormValid() && !_isSubmitting ? _submit : null,
                     child: _isSubmitting
                         ? const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : Text(
