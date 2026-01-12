@@ -476,7 +476,25 @@
   "Machine_Name": "ಯಂತ್ರದ ಹೆಸರು",
   "Machine_Description": "ಯಂತ್ರದ ವಿವರಣೆ",
   "Quantity_Available": "ಲಭ್ಯವಿರುವ ಪ್ರಮಾಣ",
-  "Full_Description":"ಪೂರ್ಣ ವಿವರಣೆ"
+  "Full_Description":"ಪೂರ್ಣ ವಿವರಣೆ",
+    "Confirm_Delivery": "ವಿತರಣೆಯನ್ನು ದೃಢೀಕರಿಸಿ",
+  "Are_you_sure_this_order_has_been_delivered_to_the_customer?": "ಈ ಆರ್ಡರ್ ಗ್ರಾಹಕರಿಗೆ ವಿತರಿಸಲಾಗಿದೆ ಎಂಬುದು ನಿಮಗೆ ಖಚಿತವೇ?",
+  "Yes,_Delivered": "ಹೌದು, ವಿತರಿಸಲಾಗಿದೆ",
+  "Marking_as_delivered...": "ವಿತರಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗುತ್ತಿದೆ...",
+  "Order_marked_as_delivered!": "ಆರ್ಡರ್ ವಿತರಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ!",
+  "Mark_as_Delivered": "ವಿತರಿಸಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ",
+  "Products_to_Deliver": "ವಿತರಿಸಬೇಕಾದ ಉತ್ಪನ್ನಗಳು",
+  "Location_not_available": "ಸ್ಥಳ ಲಭ್ಯವಿಲ್ಲ",
+  "Customer_details_not_available": "ಗ್ರಾಹಕರ ವಿವರಗಳು ಲಭ್ಯವಿಲ್ಲ",
+  "My_Deliveries": "ನನ್ನ ವಿತರಣೆಗಳು",
+  "No deliveries assigned": "ಯಾವುದೇ ವಿತರಣೆಗಳನ್ನು ನಿಯೋಜಿಸಲಾಗಿಲ್ಲ",
+  "Error_loading_orders": "ಆರ್ಡರ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ದೋಷ",
+  "Cancel_Order": "ಆರ್ಡರ್ ರದ್ದುಮಾಡಿ",
+  "Are_you_sure_cancel_order": "ನೀವು ಈ ಆರ್ಡರ್ ಅನ್ನು ರದ್ದುಮಾಡಲು ಖಚಿತವಾಗಿದ್ದೀರಾ?",
+  "No": "ಇಲ್ಲ",
+  "Yes_Cancel": "ಹೌದು, ರದ್ದುಮಾಡಿ",
+  "Order_cancelled_successfully": "ಆರ್ಡರ್ ಯಶಸ್ವಿಯಾಗಿ ರದ್ದುಮಾಡಲಾಗಿದೆ",
+  "Delivering_to": "ವಿತರಿಸಲಾಗುತ್ತಿದೆ"
 
 }
 

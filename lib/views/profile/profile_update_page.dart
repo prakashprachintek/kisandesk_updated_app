@@ -252,10 +252,10 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
           // Pop page after success
           if (mounted) Navigator.of(context).pop();
         } else {
-          _showMessage(tr('Error: Updated user data not found'), isError: true);
+          _showMessage(tr('Error:_Updated_user_data_not_found'), isError: true);
         }
       } else {
-        _showMessage(data["message"] ?? tr('Update failed'), isError: true);
+        _showMessage(data["message"] ?? tr('Update_failed'), isError: true);
       }
     } catch (e) {
       _showMessage(tr('Error: $e'), isError: true);
@@ -289,7 +289,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          tr('Edit Personal Information'),
+          tr('Edit_Personal_Information'),
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         // centerTitle: true,
@@ -307,7 +307,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   decoration: _inputDecoration(tr('Name')),
                   onChanged: (_) => setState(() {}),
                   validator: (v) => v?.trim().isEmpty ?? true
-                      ? tr('Please enter your name')
+                      ? tr('Please_enter_your_name')
                       : null,
                 ),
                 const SizedBox(height: 12),
@@ -326,10 +326,10 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                     }
                   },
                   child: InputDecorator(
-                    decoration: _inputDecoration(tr('Date of Birth')),
+                    decoration: _inputDecoration(tr('Date_of_Birth')),
                     child: Text(
                       _selectedDateOfBirth == null
-                          ? tr('Select Date')
+                          ? tr('Select_Date')
                           : DateFormat('dd-MM-yyyy')
                               .format(_selectedDateOfBirth!),
                       style: const TextStyle(color: Colors.black87),
@@ -342,25 +342,25 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                 DropdownButtonFormField<String>(
                   value: _selectedGender,
                   decoration: _inputDecoration(tr('Gender')),
-                  hint: Text(tr('Select Gender'),
+                  hint: Text(tr('Select_Gender'),
                       style: TextStyle(color: Colors.grey[600])),
                   isExpanded: true,
-                  items: ['Male', 'Female'].map((g) {
+                  items: ['Male'.tr(), 'Female'.tr()].map((g) {
                     return DropdownMenuItem(value: g, child: Text(g));
                   }).toList(),
                   onChanged: (v) => setState(() => _selectedGender = v),
                   validator: (v) =>
-                      v == null ? tr('Please select a gender') : null,
+                      v == null ? tr('Please_select_a_gender') : null,
                 ),
                 const SizedBox(height: 12),
 
                 // ---------- State ----------
                 TextFormField(
                   controller: _stateController,
-                  decoration: _inputDecoration(tr('State')),
+                  decoration: _inputDecoration(tr('state')),
                   onChanged: (_) => setState(() {}),
                   validator: (v) => v?.trim().isEmpty ?? true
-                      ? tr('Please enter a state')
+                      ? tr('Please_enter_a_state')
                       : null,
                 ),
                 const SizedBox(height: 12),
@@ -368,8 +368,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                 // ---------- District ----------
                 DropdownButtonFormField<String>(
                   value: _selectedDistrict,
-                  decoration: _inputDecoration(tr('District')),
-                  hint: Text(tr('Select District'),
+                  decoration: _inputDecoration(tr('district')),
+                  hint: Text(tr('Select_District'),
                       style: TextStyle(color: Colors.grey[600])),
                   isExpanded: true,
                   items: _districts.map((d) {
@@ -385,18 +385,18 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                     });
                   },
                   validator: (v) =>
-                      v == null ? tr('Please select a district') : null,
+                      v == null ? tr('Please_select_a_district') : null,
                 ),
                 const SizedBox(height: 12),
 
                 // ---------- Taluka ----------
                 DropdownButtonFormField<String>(
                   value: _selectedTaluk,
-                  decoration: _inputDecoration(tr('Taluka')),
+                  decoration: _inputDecoration(tr('taluka')),
                   hint: Text(
                     _selectedDistrict == null
-                        ? tr('Select District first')
-                        : tr('Select Taluka'),
+                        ? tr('Select_District_first')
+                        : tr('Select_Taluka'),
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   isExpanded: true,
@@ -415,7 +415,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                           });
                         },
                   validator: (v) => _selectedDistrict != null && v == null
-                      ? tr('Please select a taluka')
+                      ? tr('Please_select_a_taluka')
                       : null,
                 ),
                 const SizedBox(height: 12),
@@ -423,11 +423,11 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                 // ---------- Village ----------
                 DropdownButtonFormField<String>(
                   value: _selectedVillage,
-                  decoration: _inputDecoration(tr('Village')),
+                  decoration: _inputDecoration(tr('village')),
                   hint: Text(
                     _selectedTaluk == null
-                        ? tr('Select Taluka first')
-                        : tr('Select Village'),
+                        ? tr('Select_Taluka_first')
+                        : tr('Select_Village'),
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   isExpanded: true,
@@ -439,7 +439,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                       ? null
                       : (v) => setState(() => _selectedVillage = v),
                   validator: (v) => _selectedTaluk != null && v == null
-                      ? tr('Please select a village')
+                      ? tr('Please_select_a_village')
                       : null,
                 ),
                 const SizedBox(height: 12),
@@ -450,7 +450,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   decoration: _inputDecoration(tr('Address')),
                   onChanged: (_) => setState(() {}),
                   validator: (v) => v?.trim().isEmpty ?? true
-                      ? tr('Please enter an address')
+                      ? tr('Please_enter_an_address')
                       : null,
                 ),
                 const SizedBox(height: 12),
@@ -458,15 +458,15 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                 // ---------- Pincode ----------
                 TextFormField(
                   controller: _pincodeController,
-                  decoration: _inputDecoration(tr('Pincode')),
+                  decoration: _inputDecoration(tr('pincode')),
                   keyboardType: TextInputType.number,
                   maxLength: 6,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   onChanged: (_) => setState(() {}),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty)
-                      return tr('Please enter a pincode');
-                    if (v.length != 6) return tr('Pincode must be 6 digits');
+                      return tr('Please_enter_a_pincode');
+                    if (v.length != 6) return tr('pincode_must_be_6_digits');
                     return null;
                   },
                 ),
@@ -484,14 +484,14 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   ),
                   child: CheckboxListTile(
                     title: Text(
-                      tr('Register me as Labour'),
+                      tr('Register_me_as_Labour'),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     subtitle: Text(
-                      tr('Check if you want to be listed as available labour'),
+                      tr('Check_if_you_want_to_be_listed_as_available_labour'),
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey[600],
@@ -538,7 +538,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                             ),
                           )
                         : Text(
-                            tr('Update Details'),
+                            tr('Update_Details'),
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,

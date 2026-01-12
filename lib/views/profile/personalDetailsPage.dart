@@ -284,7 +284,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
                           const SizedBox(height: 15),
                           _buildInfoItem("DOB".tr(), UserSession.user?['dob']),
                           const SizedBox(height: 15),
-                          _buildInfoItem("Registered as labour", UserSession.user?['isLabour'] == true ? "Yes".tr() : "No".tr()),
+                          _buildInfoItem("Registered_as_labour".tr(), UserSession.user?['isLabour'] == true ? "Yes".tr() : "No".tr()),
                           const SizedBox(height: 15),
                           _buildInfoItem(
                               "Gender".tr(), UserSession.user?['gender']),
