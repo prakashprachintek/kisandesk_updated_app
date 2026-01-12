@@ -23,6 +23,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
   List<Map<String, dynamic>> workTypePool = [];
 
   bool isLoading = true;
+  bool isSubmitting = false;
 
   final ImagePicker _picker = ImagePicker();
   File? image;
@@ -109,135 +110,152 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     );
   }
 
-  /// 🔹 WORK TYPE SELECTOR WITH DONE BUTTON
+  ///  SUBMIT API
+  Future<void> _submit() async {
+    if (selectedMachine == null ||
+        selectedWorkTypes.isEmpty ||
+        vehicleCtrl.text.isEmpty ||
+        image == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please_fill_all_fields".tr())),
+      );
+      return;
+    }
+
+    setState(() => isSubmitting = true);
+
+    try {
+      final uri = Uri.parse("${KD.api}/app/add_my_machine");
+      final request = http.MultipartRequest("POST", uri);
+
+      request.fields["userId"] = UserSession.userId ?? "";
+      request.fields["vehicleNumber"] = vehicleCtrl.text;
+
+      request.fields["machine"] = jsonEncode([
+        selectedMachine!["name_in_english"] ?? selectedMachine!["name"]
+      ]);
+
+
+      request.fields["workType"] = jsonEncode(
+        selectedWorkTypes
+            .map((w) => w["type_in_english"] ?? w["type"])
+            .toList(),
+      );
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "file",
+          image!.path,
+        ),
+      );
+
+      final response = await request.send();
+      final respStr = await response.stream.bytesToString();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Machine_added_successfully".tr())),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed_to_submit".tr())),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    } finally {
+      setState(() => isSubmitting = false);
+    }
+  }
+
+  ///  WORK TYPE SELECTOR 
   void _openWorkTypeSelector(bool isKannada) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => StatefulBuilder(
         builder: (context, setSheet) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.85,
-              child: Column(
-                children: [
-                  // drag handle
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  Text(
-                    "Select_Work_Type".tr(),
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.85,
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Text("Select_Work_Type".tr(),
                     style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                        fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: workTypePool.length,
+                    itemBuilder: (_, i) {
+                      final w = workTypePool[i];
+                      final name = isKannada
+                          ? (w["type_in_kannada"] ??
+                              w["type_in_english"])
+                          : (w["type_in_english"] ?? w["type"]);
+                      final selected =
+                          selectedWorkTypes.contains(w);
 
-                  // list
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: workTypePool.length,
-                      itemBuilder: (_, i) {
-                        final w = workTypePool[i];
-                        final name = isKannada
-                            ? (w["type_in_kannada"] ??
-                                w["type_in_english"])
-                            : (w["type_in_english"] ?? w["type"]);
-
-                        final selected =
-                            selectedWorkTypes.contains(w);
-
-                        return GestureDetector(
-                          onTap: () {
-                            setSheet(() {
-                              selected
-                                  ? selectedWorkTypes.remove(w)
-                                  : selectedWorkTypes.add(w);
-                            });
-                            setState(() {});
-                          },
-                          child: AnimatedContainer(
-                            duration:
-                                const Duration(milliseconds: 200),
-                            margin:
-                                const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(16),
-                              border: Border.all(
-                                color: selected
-                                    ? const Color.fromARGB(
-                                        255, 29, 108, 92)
-                                    : Colors.grey.shade300,
-                                width: selected ? 3 : 1.5,
-                              ),
+                      return GestureDetector(
+                        onTap: () {
+                          setSheet(() {
+                            selected
+                                ? selectedWorkTypes.remove(w)
+                                : selectedWorkTypes.add(w);
+                          });
+                          setState(() {});
+                        },
+                        child: Container(
+                          margin:
+                              const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.circular(16),
+                            border: Border.all(
                               color: selected
                                   ? const Color.fromARGB(
-                                          255, 29, 108, 92)
-                                      .withOpacity(0.08)
-                                  : Colors.white,
+                                      255, 29, 108, 92)
+                                  : Colors.grey.shade300,
+                              width: selected ? 3 : 1.5,
                             ),
-                            child: Row(
-                              children: [
-                                _networkImage(w["image"]),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: Text(
-                                    name,
+                          ),
+                          child: Row(
+                            children: [
+                              _networkImage(w["image"]),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(name,
                                     style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // DONE BUTTON
-                  SafeArea(
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 29, 108, 92),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(30),
+                                        fontSize: 20,
+                                        fontWeight:
+                                            FontWeight.w600)),
+                              ),
+                            ],
                           ),
                         ),
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          "Done".tr(),
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text("Done".tr()),
                     ),
                   ),
-                ],
-              ),
+                )
+              ],
             ),
           );
         },
@@ -253,10 +271,8 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEEF3F9),
       appBar: AppBar(
-        title: Text(
-          "List_My_Machinery".tr(),
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: Text("List_My_Machinery".tr(),
+            style: const TextStyle(color: Colors.white)),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -269,9 +285,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // MACHINERY DROPDOWN
                     DropdownMenu<Map<String, dynamic>>(
                       width:
                           MediaQuery.of(context).size.width - 64,
@@ -283,7 +297,6 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                             ? (m["name_in_kannada"] ??
                                 m["name_in_english"])
                             : (m["name_in_english"] ?? m["name"]);
-
                         return DropdownMenuEntry(
                           value: m,
                           label: name,
@@ -292,13 +305,11 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                               _networkImage(m["image"]),
                               const SizedBox(width: 16),
                               Expanded(
-                                child: Text(
-                                  name,
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight:
-                                          FontWeight.w600),
-                                ),
+                                child: Text(name,
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight:
+                                            FontWeight.w600)),
                               ),
                             ],
                           ),
@@ -317,7 +328,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
 
                     const SizedBox(height: 24),
 
-                    // WORK TYPE FIELD
+                    /// WORK TYPE
                     GestureDetector(
                       onTap: workTypePool.isEmpty
                           ? null
@@ -332,51 +343,24 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                           border: Border.all(
                               color: Colors.grey, width: 2),
                         ),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text("Work_Type".tr(),
-                                style: TextStyle(
-                                    color:
-                                        Colors.grey.shade600)),
-                            const SizedBox(height: 8),
-                            selectedWorkTypes.isEmpty
-                                ? Text(
-                                    "Select_Work_Type".tr(),
-                                    style: TextStyle(
-                                        color: Colors
-                                            .grey.shade500),
-                                  )
-                                : Wrap(
-                                    spacing: 10,
-                                    runSpacing: 10,
-                                    children:
-                                        selectedWorkTypes.map((w) {
-                                      final name = isKannada
-                                          ? (w["type_in_kannada"] ??
-                                              w["type_in_english"])
-                                          : (w["type_in_english"] ??
-                                              w["type"]);
-                                      return Chip(
-                                        label: Text(
-                                          name,
-                                          style:
-                                              const TextStyle(
-                                                  fontSize:
-                                                      16),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                          ],
-                        ),
+                        child: selectedWorkTypes.isEmpty
+                            ? Text("Select_Work_Type".tr())
+                            : Wrap(
+                                spacing: 10,
+                                children: selectedWorkTypes
+                                    .map((w) => Chip(
+                                          label: Text(
+                                              w["type_in_english"] ??
+                                                  w["type"]),
+                                        ))
+                                    .toList(),
+                              ),
                       ),
                     ),
 
                     const SizedBox(height: 24),
 
-                    // VEHICLE NUMBER
+                    /// VEHICLE NUMBER
                     TextFormField(
                       controller: vehicleCtrl,
                       decoration: InputDecoration(
@@ -404,7 +388,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
 
                     const SizedBox(height: 24),
 
-                    // IMAGE
+                    /// IMAGE
                     GestureDetector(
                       onTap: _showImagePicker,
                       child: Container(
@@ -442,6 +426,26 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                                       double.infinity,
                                 ),
                               ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    /// SUBMIT BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed:
+                            isSubmitting ? null : _submit,
+                        child: isSubmitting
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : Text("Submit".tr(),
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight:
+                                        FontWeight.bold)),
                       ),
                     ),
                   ],
