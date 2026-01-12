@@ -526,5 +526,7 @@
   "Vehicle_Number":"Vehicle Number",
   "Please_upload_the_image":"Please upload the image",
   "Work_Type":"Work Type",
-  "Machine_added_successfully":"Machine added successfully"
+  "Machine_added_successfully":"Machine added successfully",
+  "Please_select_at_least_one_work_type":"Please select at least one work type",
+  "Please_select_the_machinery_first":"Please select the machinery first"
 }

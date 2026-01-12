@@ -17,16 +17,19 @@ class ListMyMachineryPage extends StatefulWidget {
 class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
   Map<String, dynamic>? selectedMachine;
   List<Map<String, dynamic>> selectedWorkTypes = [];
-  final TextEditingController vehicleCtrl = TextEditingController();
-
   List<Map<String, dynamic>> machineryData = [];
   List<Map<String, dynamic>> workTypePool = [];
 
-  bool isLoading = true;
-  bool isSubmitting = false;
-
+  final TextEditingController vehicleCtrl = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? image;
+
+  bool isLoading = true;
+
+  bool machineError = false;
+  bool workTypeError = false;
+  bool vehicleError = false;
+  bool imageError = false;
 
   @override
   void initState() {
@@ -56,9 +59,12 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     final picked =
         await _picker.pickImage(source: source, imageQuality: 70);
     if (picked != null) {
-      setState(() => image = File(picked.path));
+      setState(_resetImageError);
+      image = File(picked.path);
     }
   }
+
+  void _resetImageError() => imageError = false;
 
   void _showImagePicker() {
     showModalBottomSheet(
@@ -89,7 +95,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
   }
 
   Widget _networkImage(String? url,
-      {double h = 120, double w = 160}) {
+      {double h = 90, double w = 130}) {
     if (url == null || url.isEmpty) {
       return Container(
         height: h,
@@ -98,7 +104,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
       );
     }
     return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       child: Image.network(
         url,
         height: h,
@@ -110,157 +116,122 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     );
   }
 
-  ///  SUBMIT API
-  Future<void> _submit() async {
-    if (selectedMachine == null ||
-        selectedWorkTypes.isEmpty ||
-        vehicleCtrl.text.isEmpty ||
-        image == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please_fill_all_fields".tr())),
-      );
-      return;
-    }
-
-    setState(() => isSubmitting = true);
-
-    try {
-      final uri = Uri.parse("${KD.api}/app/add_my_machine");
-      final request = http.MultipartRequest("POST", uri);
-
-      request.fields["userId"] = UserSession.userId ?? "";
-      request.fields["vehicleNumber"] = vehicleCtrl.text;
-
-      request.fields["machine"] = jsonEncode([
-        selectedMachine!["name_in_english"] ?? selectedMachine!["name"]
-      ]);
-
-
-      request.fields["workType"] = jsonEncode(
-        selectedWorkTypes
-            .map((w) => w["type_in_english"] ?? w["type"])
-            .toList(),
-      );
-
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          "file",
-          image!.path,
-        ),
-      );
-
-      final response = await request.send();
-      final respStr = await response.stream.bytesToString();
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Machine_added_successfully".tr())),
-        );
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed_to_submit".tr())),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    } finally {
-      setState(() => isSubmitting = false);
-    }
-  }
-
-  ///  WORK TYPE SELECTOR 
+  ///  WORK TYPE SELECTOR
   void _openWorkTypeSelector(bool isKannada) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => StatefulBuilder(
         builder: (context, setSheet) {
-          return SizedBox(
-            height: MediaQuery.of(context).size.height * 0.85,
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                Text("Select_Work_Type".tr(),
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.85,
+              child: Column(
+                children: [
+                  Text(
+                    "Select_Work_Type".tr(),
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: workTypePool.length,
-                    itemBuilder: (_, i) {
-                      final w = workTypePool[i];
-                      final name = isKannada
-                          ? (w["type_in_kannada"] ??
-                              w["type_in_english"])
-                          : (w["type_in_english"] ?? w["type"]);
-                      final selected =
-                          selectedWorkTypes.contains(w);
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
 
-                      return GestureDetector(
-                        onTap: () {
-                          setSheet(() {
-                            selected
-                                ? selectedWorkTypes.remove(w)
-                                : selectedWorkTypes.add(w);
-                          });
-                          setState(() {});
-                        },
-                        child: Container(
-                          margin:
-                              const EdgeInsets.symmetric(vertical: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(16),
-                            border: Border.all(
-                              color: selected
-                                  ? const Color.fromARGB(
-                                      255, 29, 108, 92)
-                                  : Colors.grey.shade300,
-                              width: selected ? 3 : 1.5,
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: workTypePool.length,
+                      itemBuilder: (_, i) {
+                        final w = workTypePool[i];
+                        final name = isKannada
+                            ? (w["type_in_kannada"] ??
+                                w["type_in_english"])
+                            : (w["type_in_english"] ?? w["type"]);
+
+                        final selected =
+                            selectedWorkTypes.contains(w);
+
+                        return GestureDetector(
+                          onTap: () {
+                            setSheet(() {
+                              selected
+                                  ? selectedWorkTypes.remove(w)
+                                  : selectedWorkTypes.add(w);
+                            });
+                            setState(() => workTypeError = false);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 14),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: selected
+                                    ? const Color.fromARGB(
+                                        255, 29, 108, 92)
+                                    : Colors.grey.shade300,
+                                width: selected ? 3 : 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                _networkImage(w["image"]),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    name,
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              _networkImage(w["image"]),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Text(name,
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight:
-                                            FontWeight.w600)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text("Done".tr()),
+                        );
+                      },
                     ),
                   ),
-                )
-              ],
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 29, 108, 92),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30)),
+                      ),
+                      child: Text("Done".tr(),
+                          style: const TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
       ),
     );
+  }
+
+  void _submit() {
+    setState(() {
+      machineError = selectedMachine == null;
+      workTypeError = selectedWorkTypes.isEmpty;
+      vehicleError = vehicleCtrl.text.trim().isEmpty;
+      imageError = image == null;
+    });
+
+    if (machineError ||
+        workTypeError ||
+        vehicleError ||
+        imageError) return;
+
   }
 
   @override
@@ -271,8 +242,8 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEEF3F9),
       appBar: AppBar(
-        title: Text("List_My_Machinery".tr(),
-            style: const TextStyle(color: Colors.white)),
+        title:
+            Text("List_My_Machinery".tr(), style: const TextStyle(color: Colors.white)),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -281,22 +252,23 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16)),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    /// MACHINERY
                     DropdownMenu<Map<String, dynamic>>(
-                      width:
-                          MediaQuery.of(context).size.width - 64,
+                      width: MediaQuery.of(context).size.width - 64,
                       hintText: "Select_Machinery".tr(),
-                      inputDecorationTheme: _outlineTheme(),
-                      dropdownMenuEntries:
-                          machineryData.map((m) {
+                      inputDecorationTheme:
+                          _outlineTheme(error: machineError),
+                      dropdownMenuEntries: machineryData.map((m) {
                         final name = isKannada
                             ? (m["name_in_kannada"] ??
                                 m["name_in_english"])
                             : (m["name_in_english"] ?? m["name"]);
+
                         return DropdownMenuEntry(
                           value: m,
                           label: name,
@@ -307,9 +279,8 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                               Expanded(
                                 child: Text(name,
                                     style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight:
-                                            FontWeight.w600)),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600)),
                               ),
                             ],
                           ),
@@ -318,6 +289,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                       onSelected: (v) {
                         setState(() {
                           selectedMachine = v;
+                          machineError = false;
                           workTypePool =
                               List<Map<String, dynamic>>.from(
                                   v?["work_types"] ?? []);
@@ -326,65 +298,57 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                       },
                     ),
 
+                    if (machineError)
+                      _errorText("Please_select_the_machinery_first".tr()),
+
                     const SizedBox(height: 24),
 
                     /// WORK TYPE
                     GestureDetector(
-                      onTap: workTypePool.isEmpty
-                          ? null
-                          : () =>
-                              _openWorkTypeSelector(isKannada),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              BorderRadius.circular(12),
-                          border: Border.all(
-                              color: Colors.grey, width: 2),
-                        ),
+                      onTap: () {
+                        if (selectedMachine == null) {
+                          setState(() => machineError = true);
+                          return;
+                        }
+                        _openWorkTypeSelector(isKannada);
+                      },
+                      child: _outlinedBox(
+                        error: workTypeError,
                         child: selectedWorkTypes.isEmpty
-                            ? Text("Select_Work_Type".tr())
+                            ? Text("Select_Work_Type".tr(),
+                                style: TextStyle(
+                                    color: Colors.grey.shade500))
                             : Wrap(
-                                spacing: 10,
-                                children: selectedWorkTypes
-                                    .map((w) => Chip(
-                                          label: Text(
-                                              w["type_in_english"] ??
-                                                  w["type"]),
-                                        ))
-                                    .toList(),
+                                spacing: 8,
+                                children: selectedWorkTypes.map((w) {
+                                  final name = isKannada
+                                      ? (w["type_in_kannada"] ??
+                                          w["type_in_english"])
+                                      : (w["type_in_english"] ??
+                                          w["type"]);
+                                  return Chip(label: Text(name));
+                                }).toList(),
                               ),
                       ),
                     ),
 
+                    if (workTypeError)
+                      _errorText(
+                          "Please_select_at_least_one_work_type".tr()),
+
                     const SizedBox(height: 24),
 
-                    /// VEHICLE NUMBER
+                    /// VEHICLE
                     TextFormField(
                       controller: vehicleCtrl,
-                      decoration: InputDecoration(
-                        labelText:
-                            "Vehicle_Number".tr(),
-                        enabledBorder:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(width: 2),
-                        ),
-                        focusedBorder:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            width: 2.5,
-                            color: Color.fromARGB(
-                                255, 29, 108, 92),
-                          ),
-                        ),
-                      ),
+                      maxLength: 10,
+                      onChanged: (_) =>
+                          setState(() => vehicleError = false),
+                      decoration: _vehicleDecoration(vehicleError),
                     ),
+
+                    if (vehicleError)
+                      _errorText("This_field_is_required"),
 
                     const SizedBox(height: 24),
 
@@ -393,59 +357,41 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                       onTap: _showImagePicker,
                       child: Container(
                         height: 120,
-                        width: double.infinity,
                         decoration: BoxDecoration(
                           color: Colors.grey.shade200,
-                          borderRadius:
-                              BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         alignment: Alignment.center,
                         child: image == null
                             ? Column(
-                                mainAxisSize:
-                                    MainAxisSize.min,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
-                                      Icons.camera_alt,
-                                      size: 30),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    "Please_upload_the_image"
-                                        .tr(),
-                                  ),
+                                  const Icon(Icons.camera_alt),
+                                  const SizedBox(height: 6),
+                                  Text("Please_upload_the_image".tr()),
                                 ],
                               )
                             : ClipRRect(
                                 borderRadius:
-                                    BorderRadius.circular(
-                                        12),
-                                child: Image.file(
-                                  image!,
-                                  fit: BoxFit.cover,
-                                  width:
-                                      double.infinity,
-                                ),
+                                    BorderRadius.circular(12),
+                                child: Image.file(image!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity),
                               ),
                       ),
                     ),
 
+                    if (imageError)
+                      _errorText("Please_upload_the_image"),
+
                     const SizedBox(height: 32),
 
-                    /// SUBMIT BUTTON
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 48,
                       child: ElevatedButton(
-                        onPressed:
-                            isSubmitting ? null : _submit,
-                        child: isSubmitting
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
-                            : Text("Submit".tr(),
-                                style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight:
-                                        FontWeight.bold)),
+                        onPressed: _submit,
+                        child: Text("Submit".tr()),
                       ),
                     ),
                   ],
@@ -455,19 +401,58 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     );
   }
 
-  InputDecorationTheme _outlineTheme() => InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
+  Widget _errorText(String key) => Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Text(
+          key.tr(),
+          style: const TextStyle(color: Colors.red, fontSize: 12),
+        ),
+      );
+
+  Widget _outlinedBox(
+          {required Widget child, bool error = false}) =>
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: error ? Colors.red : Colors.grey, width: 2),
+        ),
+        child: child,
+      );
+
+  InputDecoration _vehicleDecoration(bool error) => InputDecoration(
+        labelText: "Vehicle_Number".tr(),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(width: 2),
+          borderSide:
+              BorderSide(color: error ? Colors.red : Colors.grey, width: 2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            width: 2.5,
-            color: Color.fromARGB(255, 29, 108, 92),
-          ),
+          borderSide: BorderSide(
+              color: error
+                  ? Colors.red
+                  : const Color.fromARGB(255, 29, 108, 92),
+              width: 2.5),
+        ),
+      );
+
+  InputDecorationTheme _outlineTheme({bool error = false}) =>
+      InputDecorationTheme(
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:
+              BorderSide(color: error ? Colors.red : Colors.grey, width: 2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+              color: error
+                  ? Colors.red
+                  : const Color.fromARGB(255, 29, 108, 92),
+              width: 2.5),
         ),
       );
 }
