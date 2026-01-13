@@ -56,15 +56,14 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final picked =
-        await _picker.pickImage(source: source, imageQuality: 70);
+    final picked = await _picker.pickImage(source: source, imageQuality: 70);
     if (picked != null) {
-      setState(_resetImageError);
-      image = File(picked.path);
+      setState(() {
+        image = File(picked.path);
+        imageError = false;
+      });
     }
   }
-
-  void _resetImageError() => imageError = false;
 
   void _showImagePicker() {
     showModalBottomSheet(
@@ -94,14 +93,9 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     );
   }
 
-  Widget _networkImage(String? url,
-      {double h = 90, double w = 130}) {
+  Widget _networkImage(String? url, {double h = 90, double w = 130}) {
     if (url == null || url.isEmpty) {
-      return Container(
-        height: h,
-        width: w,
-        color: Colors.grey.shade200,
-      );
+      return Container(height: h, width: w, color: Colors.grey.shade200);
     }
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
@@ -110,18 +104,16 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
         height: h,
         width: w,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
-            Container(color: Colors.grey.shade200),
+        errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade200),
       ),
     );
   }
 
-  ///  WORK TYPE SELECTOR
+  /// WORK TYPE SELECTOR
   void _openWorkTypeSelector(bool isKannada) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -133,25 +125,20 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
               height: MediaQuery.of(context).size.height * 0.85,
               child: Column(
                 children: [
-                  Text(
-                    "Select_Work_Type".tr(),
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
+                  Text("Select_Work_Type".tr(),
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
-
                   Expanded(
                     child: ListView.builder(
                       itemCount: workTypePool.length,
                       itemBuilder: (_, i) {
                         final w = workTypePool[i];
                         final name = isKannada
-                            ? (w["type_in_kannada"] ??
-                                w["type_in_english"])
+                            ? (w["type_in_kannada"] ?? w["type_in_english"])
                             : (w["type_in_english"] ?? w["type"]);
 
-                        final selected =
-                            selectedWorkTypes.contains(w);
+                        final selected = selectedWorkTypes.contains(w);
 
                         return GestureDetector(
                           onTap: () {
@@ -169,8 +156,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: selected
-                                    ? const Color.fromARGB(
-                                        255, 29, 108, 92)
+                                    ? const Color.fromARGB(255, 29, 108, 92)
                                     : Colors.grey.shade300,
                                 width: selected ? 3 : 1.5,
                               ),
@@ -194,7 +180,6 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                       },
                     ),
                   ),
-
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -219,7 +204,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     setState(() {
       machineError = selectedMachine == null;
       workTypeError = selectedWorkTypes.isEmpty;
@@ -227,23 +212,72 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
       imageError = image == null;
     });
 
-    if (machineError ||
-        workTypeError ||
-        vehicleError ||
-        imageError) return;
+    if (machineError || workTypeError || vehicleError || imageError) return;
 
+    try {
+      final uri = Uri.parse("${KD.api}/app/add_my_machine");
+      final request = http.MultipartRequest("POST", uri);
+
+      final machineName =
+          selectedMachine!["name_in_english"] ?? selectedMachine!["name"];
+
+      final workTypes = selectedWorkTypes
+          .map((w) => w["type_in_english"] ?? w["type"])
+          .toList();
+
+      request.fields["userId"] = UserSession.userId ?? "";
+      request.fields["vehicleNumber"] = vehicleCtrl.text.trim();
+      request.fields["machine[0]"] = machineName;
+
+      for (int i = 0; i < workTypes.length; i++) {
+        request.fields["workType[$i]"] = workTypes[i];
+      }
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "file",
+          image!.path,
+        ),
+      );
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            title: Text("Success".tr()),
+            content: Text("Machinery_added_successfully".tr()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                child: Text("OK".tr()),
+              ),
+            ],
+          ),
+        );
+      } else {
+        debugPrint("Submit failed: $responseBody");
+      }
+    } catch (e) {
+      debugPrint("Submit error: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isKannada =
-        Localizations.localeOf(context).languageCode == 'kn';
+    final isKannada = Localizations.localeOf(context).languageCode == 'kn';
 
     return Scaffold(
       backgroundColor: const Color(0xFFEEF3F9),
       appBar: AppBar(
-        title:
-            Text("List_My_Machinery".tr(), style: const TextStyle(color: Colors.white)),
+        title: Text("List_My_Machinery".tr(),
+            style: const TextStyle(color: Colors.white)),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -257,18 +291,14 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// MACHINERY
                     DropdownMenu<Map<String, dynamic>>(
                       width: MediaQuery.of(context).size.width - 64,
                       hintText: "Select_Machinery".tr(),
-                      inputDecorationTheme:
-                          _outlineTheme(error: machineError),
+                      inputDecorationTheme: _outlineTheme(machineError),
                       dropdownMenuEntries: machineryData.map((m) {
                         final name = isKannada
-                            ? (m["name_in_kannada"] ??
-                                m["name_in_english"])
+                            ? (m["name_in_kannada"] ?? m["name_in_english"])
                             : (m["name_in_english"] ?? m["name"]);
-
                         return DropdownMenuEntry(
                           value: m,
                           label: name,
@@ -290,20 +320,18 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                         setState(() {
                           selectedMachine = v;
                           machineError = false;
-                          workTypePool =
-                              List<Map<String, dynamic>>.from(
-                                  v?["work_types"] ?? []);
+                          workTypePool = List<Map<String, dynamic>>.from(
+                              v?["work_types"] ?? []);
                           selectedWorkTypes.clear();
                         });
                       },
                     ),
 
                     if (machineError)
-                      _errorText("Please_select_the_machinery_first".tr()),
+                      _error("Please_select_the_machinery_first"),
 
                     const SizedBox(height: 24),
 
-                    /// WORK TYPE
                     GestureDetector(
                       onTap: () {
                         if (selectedMachine == null) {
@@ -312,20 +340,18 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                         }
                         _openWorkTypeSelector(isKannada);
                       },
-                      child: _outlinedBox(
+                      child: _box(
                         error: workTypeError,
                         child: selectedWorkTypes.isEmpty
                             ? Text("Select_Work_Type".tr(),
-                                style: TextStyle(
-                                    color: Colors.grey.shade500))
+                                style: TextStyle(color: Colors.grey.shade500))
                             : Wrap(
                                 spacing: 8,
                                 children: selectedWorkTypes.map((w) {
                                   final name = isKannada
                                       ? (w["type_in_kannada"] ??
                                           w["type_in_english"])
-                                      : (w["type_in_english"] ??
-                                          w["type"]);
+                                      : (w["type_in_english"] ?? w["type"]);
                                   return Chip(label: Text(name));
                                 }).toList(),
                               ),
@@ -333,26 +359,27 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                     ),
 
                     if (workTypeError)
-                      _errorText(
-                          "Please_select_at_least_one_work_type".tr()),
+                      _error("Please_select_at_least_one_work_type"),
 
                     const SizedBox(height: 24),
 
-                    /// VEHICLE
                     TextFormField(
                       controller: vehicleCtrl,
                       maxLength: 10,
-                      onChanged: (_) =>
-                          setState(() => vehicleError = false),
+                      textInputAction: TextInputAction.done,
+                      onChanged: (v) {
+                        setState(() => vehicleError = false);
+                        if (v.length == 10) {
+                          FocusScope.of(context).unfocus();
+                        }
+                      },
                       decoration: _vehicleDecoration(vehicleError),
                     ),
 
-                    if (vehicleError)
-                      _errorText("This_field_is_required"),
+                    if (vehicleError) _error("This_field_is_required"),
 
                     const SizedBox(height: 24),
 
-                    /// IMAGE
                     GestureDetector(
                       onTap: _showImagePicker,
                       child: Container(
@@ -372,8 +399,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                                 ],
                               )
                             : ClipRRect(
-                                borderRadius:
-                                    BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12),
                                 child: Image.file(image!,
                                     fit: BoxFit.cover,
                                     width: double.infinity),
@@ -381,8 +407,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                       ),
                     ),
 
-                    if (imageError)
-                      _errorText("Please_upload_the_image"),
+                    if (imageError) _error("Please_upload_the_image"),
 
                     const SizedBox(height: 32),
 
@@ -401,29 +426,25 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     );
   }
 
-  Widget _errorText(String key) => Padding(
+  Widget _error(String key) => Padding(
         padding: const EdgeInsets.only(top: 6),
-        child: Text(
-          key.tr(),
-          style: const TextStyle(color: Colors.red, fontSize: 12),
-        ),
+        child: Text(key.tr(),
+            style: const TextStyle(color: Colors.red, fontSize: 12)),
       );
 
-  Widget _outlinedBox(
-          {required Widget child, bool error = false}) =>
-      Container(
+  Widget _box({required Widget child, bool error = false}) => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: error ? Colors.red : Colors.grey, width: 2),
+          border: Border.all(color: error ? Colors.red : Colors.grey, width: 2),
         ),
         child: child,
       );
 
   InputDecoration _vehicleDecoration(bool error) => InputDecoration(
         labelText: "Vehicle_Number".tr(),
+        counterText: "",
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
@@ -432,15 +453,13 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-              color: error
-                  ? Colors.red
-                  : const Color.fromARGB(255, 29, 108, 92),
+              color:
+                  error ? Colors.red : const Color.fromARGB(255, 29, 108, 92),
               width: 2.5),
         ),
       );
 
-  InputDecorationTheme _outlineTheme({bool error = false}) =>
-      InputDecorationTheme(
+  InputDecorationTheme _outlineTheme(bool error) => InputDecorationTheme(
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
@@ -449,9 +468,8 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-              color: error
-                  ? Colors.red
-                  : const Color.fromARGB(255, 29, 108, 92),
+              color:
+                  error ? Colors.red : const Color.fromARGB(255, 29, 108, 92),
               width: 2.5),
         ),
       );
