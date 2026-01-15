@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import '../services/api_config.dart';
+import '../services/image_compression.dart';
 import '../services/user_session.dart';
 
 class ListMyMachineryPage extends StatefulWidget {
@@ -25,6 +26,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
   File? image;
 
   bool isLoading = true;
+  bool isSubmitting = false;
 
   bool machineError = false;
   bool workTypeError = false;
@@ -45,23 +47,52 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
         body: jsonEncode({"type": "machine"}),
       );
 
-      final data = jsonDecode(res.body);
-      if (data["status"] == "success") {
-        machineryData = List<Map<String, dynamic>>.from(
-          data["results"][0]["machinery_type"],
-        );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data["status"] == "success") {
+          machineryData = List<Map<String, dynamic>>.from(
+            data["results"][0]["machinery_type"],
+          );
+        }
       }
-    } catch (_) {}
-    setState(() => isLoading = false);
+    } catch (e) {
+      debugPrint("Fetch machinery error: $e");
+    }
+    if (mounted) {
+      setState(() => isLoading = false);
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final picked = await _picker.pickImage(source: source, imageQuality: 70);
-    if (picked != null) {
+    final picked = await _picker.pickImage(
+      source: source,
+      imageQuality: 70, // keep as fallback
+      maxWidth: 1200,
+      maxHeight: 1200,
+    );
+
+    if (picked == null) return;
+
+    try {
+      // ← This is the important part
+      final originalFile = File(picked.path);
+      final compressedFile =
+          await optimizeImage(originalFile); // ← reuse your existing function!
+
+      if (!mounted) return;
       setState(() {
-        image = File(picked.path);
+        image = compressedFile;
         imageError = false;
       });
+    } catch (e) {
+      debugPrint("Compression failed: $e");
+      // fallback to original if compression fails (or show error)
+      if (mounted) {
+        setState(() {
+          image = File(picked.path);
+          imageError = false;
+        });
+      }
     }
   }
 
@@ -109,7 +140,6 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     );
   }
 
-  /// WORK TYPE SELECTOR
   void _openWorkTypeSelector(bool isKannada) {
     showModalBottomSheet(
       context: context,
@@ -186,8 +216,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 29, 108, 92),
+                        backgroundColor: const Color.fromARGB(255, 29, 108, 92),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30)),
                       ),
@@ -214,36 +243,78 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
 
     if (machineError || workTypeError || vehicleError || imageError) return;
 
+    if (!mounted) return;
+    setState(() => isSubmitting = true);
+
     try {
-      final uri = Uri.parse("${KD.api}/app/add_my_machine");
-      final request = http.MultipartRequest("POST", uri);
+      // 1. Get original filename
+      final String fileName = image!.path.split(Platform.pathSeparator).last;
 
-      final machineName =
-          selectedMachine!["name_in_english"] ?? selectedMachine!["name"];
+      // 2. Upload image first
+      final uploadUri = Uri.parse("${KD.api}/upload_document");
+      final uploadRequest = http.MultipartRequest('POST', uploadUri);
 
-      final workTypes = selectedWorkTypes
-          .map((w) => w["type_in_english"] ?? w["type"])
-          .toList();
+      print("═══════════════════════════════════════════════");
+      print("→ UPLOADING IMAGE TO: $uploadUri");
+      print("→ File path: ${image!.path}");
+      print("→ File name: ${image!.path.split(Platform.pathSeparator).last}");
+      print("═══════════════════════════════════════════════");
 
-      request.fields["userId"] = UserSession.userId ?? "";
-      request.fields["vehicleNumber"] = vehicleCtrl.text.trim();
-      request.fields["machine[0]"] = machineName;
+      uploadRequest.files
+          .add(await http.MultipartFile.fromPath('file', image!.path));
 
-      for (int i = 0; i < workTypes.length; i++) {
-        request.fields["workType[$i]"] = workTypes[i];
+      final uploadResponse = await uploadRequest.send();
+      final uploadBody = await uploadResponse.stream.bytesToString();
+
+      print("═══════════════════════════════════════════════");
+      print("← IMAGE UPLOAD RESPONSE");
+      print("Status: ${uploadResponse.statusCode}");
+      print("Headers: ${uploadResponse.headers}");
+      print("Body: $uploadBody");
+      print("═══════════════════════════════════════════════");
+
+      if (uploadResponse.statusCode >= 400) {
+        throw Exception(
+            "Image upload failed: ${uploadResponse.statusCode} - $uploadBody");
       }
 
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          "file",
-          image!.path,
-        ),
+      // 3. Send metadata as JSON
+      final addUri = Uri.parse("${KD.api}/app/add_my_machine");
+
+      final payload = {
+        "userId": UserSession.userId ?? "",
+        "machine": [
+          selectedMachine!["name_in_english"] ?? selectedMachine!["name"] ?? ""
+        ],
+        "workTypes": selectedWorkTypes
+            .map((w) => w["type_in_english"] ?? w["type"] ?? "")
+            .where((t) => t.isNotEmpty)
+            .toList(),
+        "vehicleNumber": vehicleCtrl.text.trim().toUpperCase(),
+        "fileName": fileName,
+      };
+
+      print("═══════════════════════════════════════════════");
+      print("→ SENDING TO: $addUri");
+      print("→ PAYLOAD (JSON):");
+      print(jsonEncode(payload)); // ← most important line!
+      print("═══════════════════════════════════════════════");
+
+      final addResponse = await http.post(
+        addUri,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(payload),
       );
 
-      final response = await request.send();
-      final responseBody = await response.stream.bytesToString();
+      print("═══════════════════════════════════════════════");
+      print("← ADD MACHINE RESPONSE");
+      print("Status: ${addResponse.statusCode}");
+      print("Headers: ${addResponse.headers}");
+      print("Body: ${addResponse.body}");
+      print("═══════════════════════════════════════════════");
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (addResponse.statusCode == 200 || addResponse.statusCode == 201) {
+        if (!mounted) return;
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -262,10 +333,22 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
           ),
         );
       } else {
-        debugPrint("Submit failed: $responseBody");
+        throw Exception(
+            "Add machine failed: ${addResponse.statusCode} - ${addResponse.body}");
       }
     } catch (e) {
       debugPrint("Submit error: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to add machinery. Please try again.".tr()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isSubmitting = false);
+      }
     }
   }
 
@@ -281,147 +364,171 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DropdownMenu<Map<String, dynamic>>(
-                      width: MediaQuery.of(context).size.width - 64,
-                      hintText: "Select_Machinery".tr(),
-                      inputDecorationTheme: _outlineTheme(machineError),
-                      dropdownMenuEntries: machineryData.map((m) {
-                        final name = isKannada
-                            ? (m["name_in_kannada"] ?? m["name_in_english"])
-                            : (m["name_in_english"] ?? m["name"]);
-                        return DropdownMenuEntry(
-                          value: m,
-                          label: name,
-                          labelWidget: Row(
-                            children: [
-                              _networkImage(m["image"]),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Text(name,
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600)),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      onSelected: (v) {
-                        setState(() {
-                          selectedMachine = v;
-                          machineError = false;
-                          workTypePool = List<Map<String, dynamic>>.from(
-                              v?["work_types"] ?? []);
-                          selectedWorkTypes.clear();
-                        });
-                      },
+          : Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-
-                    if (machineError)
-                      _error("Please_select_the_machinery_first"),
-
-                    const SizedBox(height: 24),
-
-                    GestureDetector(
-                      onTap: () {
-                        if (selectedMachine == null) {
-                          setState(() => machineError = true);
-                          return;
-                        }
-                        _openWorkTypeSelector(isKannada);
-                      },
-                      child: _box(
-                        error: workTypeError,
-                        child: selectedWorkTypes.isEmpty
-                            ? Text("Select_Work_Type".tr(),
-                                style: TextStyle(color: Colors.grey.shade500))
-                            : Wrap(
-                                spacing: 8,
-                                children: selectedWorkTypes.map((w) {
-                                  final name = isKannada
-                                      ? (w["type_in_kannada"] ??
-                                          w["type_in_english"])
-                                      : (w["type_in_english"] ?? w["type"]);
-                                  return Chip(label: Text(name));
-                                }).toList(),
-                              ),
-                      ),
-                    ),
-
-                    if (workTypeError)
-                      _error("Please_select_at_least_one_work_type"),
-
-                    const SizedBox(height: 24),
-
-                    TextFormField(
-                      controller: vehicleCtrl,
-                      maxLength: 10,
-                      textInputAction: TextInputAction.done,
-                      onChanged: (v) {
-                        setState(() => vehicleError = false);
-                        if (v.length == 10) {
-                          FocusScope.of(context).unfocus();
-                        }
-                      },
-                      decoration: _vehicleDecoration(vehicleError),
-                    ),
-
-                    if (vehicleError) _error("This_field_is_required"),
-
-                    const SizedBox(height: 24),
-
-                    GestureDetector(
-                      onTap: _showImagePicker,
-                      child: Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        alignment: Alignment.center,
-                        child: image == null
-                            ? Column(
-                                mainAxisSize: MainAxisSize.min,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ... (rest of your UI remains the same)
+                        DropdownMenu<Map<String, dynamic>>(
+                          width: MediaQuery.of(context).size.width - 64,
+                          hintText: "Select_Machinery".tr(),
+                          inputDecorationTheme: _outlineTheme(machineError),
+                          dropdownMenuEntries: machineryData.map((m) {
+                            final name = isKannada
+                                ? (m["name_in_kannada"] ?? m["name_in_english"])
+                                : (m["name_in_english"] ?? m["name"]);
+                            return DropdownMenuEntry(
+                              value: m,
+                              label: name,
+                              labelWidget: Row(
                                 children: [
-                                  const Icon(Icons.camera_alt),
-                                  const SizedBox(height: 6),
-                                  Text("Please_upload_the_image".tr()),
+                                  _networkImage(m["image"]),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      name,
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
                                 ],
-                              )
-                            : ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.file(image!,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity),
                               ),
-                      ),
+                            );
+                          }).toList(),
+                          onSelected: (v) {
+                            setState(() {
+                              selectedMachine = v;
+                              machineError = false;
+                              workTypePool = List<Map<String, dynamic>>.from(
+                                  v?["work_types"] ?? []);
+                              selectedWorkTypes.clear();
+                            });
+                          },
+                        ),
+
+                        if (machineError)
+                          _error("Please_select_the_machinery_first"),
+
+                        const SizedBox(height: 24),
+
+                        GestureDetector(
+                          onTap: () {
+                            if (selectedMachine == null) {
+                              setState(() => machineError = true);
+                              return;
+                            }
+                            _openWorkTypeSelector(isKannada);
+                          },
+                          child: _box(
+                            error: workTypeError,
+                            child: selectedWorkTypes.isEmpty
+                                ? Text("Select_Work_Type".tr(),
+                                    style:
+                                        TextStyle(color: Colors.grey.shade500))
+                                : Wrap(
+                                    spacing: 8,
+                                    children: selectedWorkTypes.map((w) {
+                                      final name = isKannada
+                                          ? (w["type_in_kannada"] ??
+                                              w["type_in_english"])
+                                          : (w["type_in_english"] ?? w["type"]);
+                                      return Chip(label: Text(name));
+                                    }).toList(),
+                                  ),
+                          ),
+                        ),
+
+                        if (workTypeError)
+                          _error("Please_select_at_least_one_work_type"),
+
+                        const SizedBox(height: 24),
+
+                        TextFormField(
+                          controller: vehicleCtrl,
+                          maxLength: 10,
+                          textInputAction: TextInputAction.done,
+                          onChanged: (v) {
+                            setState(() => vehicleError = false);
+                            if (v.length == 10)
+                              FocusScope.of(context).unfocus();
+                          },
+                          decoration: _vehicleDecoration(vehicleError),
+                        ),
+
+                        if (vehicleError) _error("This_field_is_required"),
+
+                        const SizedBox(height: 24),
+
+                        GestureDetector(
+                          onTap: isSubmitting ? null : _showImagePicker,
+                          child: Container(
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            alignment: Alignment.center,
+                            child: image == null
+                                ? Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.camera_alt),
+                                      const SizedBox(height: 6),
+                                      Text("Please_upload_the_image".tr()),
+                                    ],
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.file(image!,
+                                        fit: BoxFit.cover,
+                                        width: double.infinity),
+                                  ),
+                          ),
+                        ),
+
+                        if (imageError) _error("Please_upload_the_image"),
+
+                        const SizedBox(height: 32),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: isSubmitting ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 29, 108, 92),
+                            ),
+                            child: isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white, strokeWidth: 2),
+                                  )
+                                : Text("Submit".tr()),
+                          ),
+                        ),
+                      ],
                     ),
-
-                    if (imageError) _error("Please_upload_the_image"),
-
-                    const SizedBox(height: 32),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: _submit,
-                        child: Text("Submit".tr()),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                if (isSubmitting)
+                  Container(
+                    color: Colors.black26,
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+              ],
             ),
     );
   }
@@ -453,9 +560,9 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-              color:
-                  error ? Colors.red : const Color.fromARGB(255, 29, 108, 92),
-              width: 2.5),
+            color: error ? Colors.red : const Color.fromARGB(255, 29, 108, 92),
+            width: 2.5,
+          ),
         ),
       );
 
@@ -468,9 +575,15 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-              color:
-                  error ? Colors.red : const Color.fromARGB(255, 29, 108, 92),
-              width: 2.5),
+            color: error ? Colors.red : const Color.fromARGB(255, 29, 108, 92),
+            width: 2.5,
+          ),
         ),
       );
+
+  @override
+  void dispose() {
+    vehicleCtrl.dispose();
+    super.dispose();
+  }
 }
