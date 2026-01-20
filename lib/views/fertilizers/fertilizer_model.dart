@@ -5,8 +5,8 @@ class Fertilizer {
   final String productName;
   final String mrpPrice;
   final String sellPrice;
-  final String productQuantity;   // e.g., "1", "500"
-  final String productUnit;       // e.g., "Ltr", "Gm"
+  final String productQuantity; // e.g., "1", "500"
+  final String productUnit; // e.g., "Ltr", "Gm"
   final String productId;
   final String soldQuantity;
   final int availableQuantity;
@@ -26,7 +26,8 @@ class Fertilizer {
   double get mrp => double.tryParse(mrpPrice) ?? 0.0;
   double get sell => double.tryParse(sellPrice) ?? 0.0;
   double get discountPercent => mrp > 0 ? ((mrp - sell) / mrp) * 100 : 0.0;
-  String get specialDiscount => discountPercent > 0 ? '${discountPercent.toStringAsFixed(0)}%' : '0%';
+  String get specialDiscount =>
+      discountPercent > 0 ? '${discountPercent.toStringAsFixed(0)}%' : '0%';
   double get discountedPrice => sell;
   int get availableStock => availableQuantity;
 
@@ -56,44 +57,60 @@ class Fertilizer {
     // Parse images
     final List<FertilizerImage> images = [];
     final imgData = json['images'];
+
     if (imgData is List) {
-      images.addAll(imgData.map((i) => FertilizerImage.fromJson(i as Map<String, dynamic>)));
+      for (final img in imgData) {
+        if (img is Map<String, dynamic>) {
+          images.add(FertilizerImage.fromJson(img));
+        } else if (img is String) {
+          images.add(FertilizerImage(url: img));
+        }
+      }
     }
 
     // Parse activity log
     final List<ActivityLog> logs = [];
     final logData = json['activity_log'];
     if (logData is List) {
-      logs.addAll(logData.map((l) => ActivityLog.fromJson(l as Map<String, dynamic>)));
+      logs.addAll(
+          logData.map((l) => ActivityLog.fromJson(l as Map<String, dynamic>)));
     }
 
     // Parse reviews
     final List<Review> reviews = [];
     final reviewData = json['reviews'];
     if (reviewData is List) {
-      reviews.addAll(reviewData.map((r) => Review.fromJson(r as Map<String, dynamic>)));
+      reviews.addAll(
+          reviewData.map((r) => Review.fromJson(r as Map<String, dynamic>)));
     }
 
+    final int totalQty = _parseIntSafe(json['total_quantity']);
+    final int soldQty = _parseIntSafe(json['sold_quantity']);
+
     return Fertilizer(
-      id: json['_id'] as String? ?? '',
-      productName: json['product_name'] as String? ?? 'Unknown Product',
+      id: json['_id']?.toString() ?? '',
+      productName: json['product_name']?.toString() ?? 'Unknown Product',
       mrpPrice: json['mrp_price']?.toString() ?? '0',
       sellPrice: json['sell_price']?.toString() ?? '0',
       productQuantity: json['product_quantity']?.toString() ?? '1',
       productUnit: json['product_unit']?.toString() ?? 'Unit',
-      productId: json['product_id'] as String? ?? '',
-      soldQuantity: json['sold_quantity']?.toString() ?? '0',
-      availableQuantity: _parseIntSafe(json['available_quantity']),
-      status: json['product_status'] as String? ?? 'Unknown',
+      productId: json['product_id']?.toString() ?? '',
+      soldQuantity: soldQty.toString(),
+
+      //stock logic: available = total - sold
+      availableQuantity: (totalQty - soldQty).clamp(0, totalQty),
+
+      status: json['product_status']?.toString() ?? 'Unknown',
       images: images,
       isDeleted: (json['is_deleted'] as bool?) ?? false,
       createdAt: (json['created_at'] as String?) ?? '',
       createdBy: (json['created_by'] as String?) ?? '',
       activityLog: logs.isNotEmpty ? logs : null,
-      category: json['product_category'] as String? ?? 'Unknown',
+      category: json['product_category']?.toString() ?? 'Unknown',
       description: json['product_descriptions'] as String?,
       productDetails: json['product_details'] != null
-          ? ProductDetails.fromJson(json['product_details'] as Map<String, dynamic>)
+          ? ProductDetails.fromJson(
+              json['product_details'] as Map<String, dynamic>)
           : null,
       reviews: reviews.isNotEmpty ? reviews : null,
     );
@@ -365,17 +382,28 @@ class FertilizerResponse {
   });
 
   factory FertilizerResponse.fromJson(Map<String, dynamic> json) {
+    final rawResults = json['results'];
+
+    final List<Fertilizer> fertilizers = [];
+
+    if (rawResults is List) {
+      for (final item in rawResults) {
+        if (item is Map<String, dynamic>) {
+          fertilizers.add(Fertilizer.fromJson(item));
+        }
+      }
+    }
+
     return FertilizerResponse(
-      status: json['status'] as String? ?? '',
-      message: json['message'] as String? ?? '',
-      results: (json['results'] as List<dynamic>? ?? [])
-          .map((item) => Fertilizer.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      status: json['status']?.toString() ?? '',
+      message: json['message']?.toString() ?? '',
+      results: fertilizers,
     );
   }
 
   static FertilizerResponse fromJsonString(String jsonString) {
-    return FertilizerResponse.fromJson(jsonDecode(jsonString));
+    final decoded = jsonDecode(jsonString);
+    return FertilizerResponse.fromJson(decoded);
   }
 }
 
@@ -397,7 +425,8 @@ class RichFertilizerOrderResponse {
       status: json['status'] as String? ?? '',
       message: json['message'] as String? ?? '',
       results: resultsList
-          .map((item) => RichFertilizerOrder.fromJson(item as Map<String, dynamic>))
+          .map((item) =>
+              RichFertilizerOrder.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
