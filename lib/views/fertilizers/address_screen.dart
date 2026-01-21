@@ -130,6 +130,49 @@ class _AddressScreenState extends State<AddressScreen> {
         );
         return;
       }
+// ────────────────────────────────────────────────
+    //          Add these print statements here
+    // ────────────────────────────────────────────────
+
+    print('╔═══════════════════════════════════════════════');
+    print('║          PLACE ORDER BUTTON PRESSED           ');
+    print('╠═══════════════════════════════════════════════');
+    print('║ User ID       : $userId');
+    print('║ Payment       : ${_paymentMethod == PaymentMethod.cod ? "COD" : "Online"}');
+    print('║ Total Amount  : ₹${cart.totalCartValue.toStringAsFixed(0)}');
+    print('║ Items count   : ${cart.items.length}');
+
+    // Print each product being sent
+    print('║ Products sending:');
+    for (var item in cart.items) {
+      print('║   • ${item.productId.padRight(12)}  qty: ${item.quantity}');
+    }
+
+    // The exact address string that will be sent
+    final addressString =
+        "$_fullDeliveryAddress\n${_selectedAddress!.fullName} | ${_selectedAddress!.phone}";
+    print('║ Address sending:');
+    print('║   $addressString');
+
+    // The exact payload that goes to the API
+    final payload = {
+      'userId': userId,
+      'products': cart.items
+          .map((item) => {
+                'id': item.productId,
+                'quantity': item.quantity.toString(),
+              })
+          .toList(),
+      'amount': cart.totalCartValue.toStringAsFixed(0),
+      'address': addressString,
+    };
+
+    print('║ ──────────────────────────────────────────────');
+    print('║ Payload that will be sent to bookFertilizerOrder:');
+    print(payload);  // ← this is the most important one
+    print('╚═══════════════════════════════════════════════');
+
+    // ────────────────────────────────────────────────
 
       final response = await FertilizerApiService().bookFertilizerOrder(
         userId: userId,
@@ -140,8 +183,7 @@ class _AddressScreenState extends State<AddressScreen> {
                 })
             .toList(),
         amount: cart.totalCartValue.toStringAsFixed(0),
-        address:
-            "$_fullDeliveryAddress\n${_selectedAddress!.fullName} | ${_selectedAddress!.phone}",
+        address: addressString,
       );
 
       if (!mounted) return;
@@ -176,6 +218,7 @@ class _AddressScreenState extends State<AddressScreen> {
         );
       }
     } catch (e) {
+      print('Place Order Exception: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
