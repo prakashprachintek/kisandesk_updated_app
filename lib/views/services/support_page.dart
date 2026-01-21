@@ -86,7 +86,7 @@ class _SupportPageState extends State<SupportPage>
   @override
   Widget build(BuildContext context) {
     final String? name = UserSession.user?['full_name'];
-    final String greeting = name != null ? "Hey $name" : "Hey there";
+    final String greeting = name != null ? "Hey $name" : "Hey there".tr();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -116,7 +116,7 @@ class _SupportPageState extends State<SupportPage>
                   const Text(
                     "We're here to help you anytime!",
                     style: TextStyle(fontSize: 16),
-                  ),
+                  ).tr(),
                   const SizedBox(height: 40),
 
                   // Call Card
@@ -130,7 +130,7 @@ class _SupportPageState extends State<SupportPage>
                         backgroundColor: Colors.greenAccent,
                         child: Icon(Icons.phone, color: Colors.green),
                       ),
-                      title: const Text('Call Support',
+                      title:  Text('Call Support'.tr(),
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text(_formatDisplayNumber(_callNumber)),
                       trailing:
@@ -152,7 +152,7 @@ class _SupportPageState extends State<SupportPage>
                         child: FaIcon(FontAwesomeIcons.whatsapp,
                             color: Colors.green, size: 28),
                       ),
-                      title: const Text('Chat on WhatsApp',
+                      title:  Text('Chat on WhatsApp'.tr(),
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text(_formatDisplayNumber(_whatsappNumber)),
                       trailing:

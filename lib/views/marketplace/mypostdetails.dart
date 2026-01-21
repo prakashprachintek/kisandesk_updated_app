@@ -281,7 +281,7 @@ class _MyPostsPageState extends State<MyPostsPage> {
                 ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(true),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text('Delete',
+                  child: const Text('delete',
                       style: TextStyle(color: Colors.white)).tr(),
                 ),
               ],
