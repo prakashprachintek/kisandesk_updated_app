@@ -27,7 +27,6 @@ import '../other/termsNconditionsPage.dart';
 import 'package:http/http.dart' as http;
 import '../other/welcome.dart';
 import '../profile/personalDetailsPage.dart';
-import '../redundant files/profile_page.dart';
 
 import '../mandi/mandiRates.dart';
 import '../services/api_config.dart';
@@ -504,19 +503,6 @@ class _HomePageState extends State<HomePage> {
       });
       print(tr("Error fetching location: $e"));
     }
-  }
-
-  // Tapping avatar => to profile
-  void _handleProfileTap() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProfilePage(
-          userData: widget.userData ?? {},
-          phoneNumber: widget.phoneNumber ?? '',
-        ),
-      ),
-    );
   }
 
   // Bottom nav
