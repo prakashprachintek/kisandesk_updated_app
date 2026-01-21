@@ -750,7 +750,7 @@ class _HomePageState extends State<HomePage> {
             ),
             accountEmail: Text(
               UserSession.user != null
-                  ? '${tr('Wallet Balance')}: ₹${UserSession.user!['wallet_balance']}'
+                  ? '${tr('Wallet_Balance')}: ₹${UserSession.user!['wallet_balance']}'
                   : tr(''),
             ),
             currentAccountPicture: Stack(
