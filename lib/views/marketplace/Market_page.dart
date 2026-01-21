@@ -420,7 +420,7 @@ class _MarketPageState extends State<MarketPage>
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Filter',
+                'filter',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
