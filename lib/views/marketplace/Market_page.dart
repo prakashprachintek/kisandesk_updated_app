@@ -70,11 +70,17 @@ class _MarketPageState extends State<MarketPage>
     },
     'crop': {
       'oil_seed': {'name': 'Oil_Seed'.tr(), 'image': 'assets/oil_seedsm.png'},
-      'vegetables': {'name': 'Vegetables'.tr(), 'image': 'assets/vegetablesm.png'},
+      'vegetables': {
+        'name': 'Vegetables'.tr(),
+        'image': 'assets/vegetablesm.png'
+      },
       'fruits': {'name': 'Fruits'.tr(), 'image': 'assets/fruitsm.png'},
       'pulses': {'name': 'Pulses'.tr(), 'image': 'assets/pulses.png'},
       'cerals': {'name': 'Cerals'.tr(), 'image': 'assets/cerealsm.png'},
-      'dry_fruits': {'name': 'Dry_Fruits'.tr(), 'image': 'assets/dryfruitsm.png'}
+      'dry_fruits': {
+        'name': 'Dry_Fruits'.tr(),
+        'image': 'assets/dryfruitsm.png'
+      }
     },
     'land': {
       'home': {'name': 'Home'.tr(), 'image': 'assets/homen.webp'},
@@ -241,7 +247,8 @@ class _MarketPageState extends State<MarketPage>
               'location': item['village'] ?? 'unknown_location'.tr(),
               'fileName': item['post_url'] ?? 'assets/market1.webp',
               'quantity': item['quantity'] ?? 'N/A',
-              'FarmerName': farmerDetails?['full_name'] ?? 'unknown_farmer'.tr(),
+              'FarmerName':
+                  farmerDetails?['full_name'] ?? 'unknown_farmer'.tr(),
               'Phone': farmerDetails?['phone'] ?? 'N/A',
               'taluka': farmerDetails?['taluka'] ?? 'N/A',
               'postType': _normalizePostName(item['post_name']),
@@ -380,6 +387,28 @@ class _MarketPageState extends State<MarketPage>
     }
   }
 
+  void _addNewPostInstantly(Map<String, dynamic> newPost) async {
+    setState(() {
+      originalMarketItems.insert(0, newPost);
+    });
+
+    final cacheKey =
+        'data_${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+    final timestampKey =
+        'last_updated${selectedCategory.isEmpty ? 'all' : selectedCategory}';
+
+    final cachedData = cacheBox.get(cacheKey, defaultValue: []);
+
+    if (cachedData is List) {
+      cachedData.insert(0, newPost);
+      await cacheBox.put(cacheKey, cachedData);
+      await cacheBox.put(timestampKey, DateTime.now().toString());
+    }
+    _performSearchAndFilter();
+
+    print('✅ New post added instantly + cached');
+  }
+
   void showFilterDialog(BuildContext context) async {
     final newFilter = await showModalBottomSheet<String>(
       context: context,
@@ -391,7 +420,7 @@ class _MarketPageState extends State<MarketPage>
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Filter',
+                'filter',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
@@ -472,13 +501,17 @@ class _MarketPageState extends State<MarketPage>
 
       // ---Button for My Posts ---
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final newPost = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const MyPostsPage(),
             ),
           );
+
+          if (newPost != null && newPost is Map<String, dynamic>) {
+            _addNewPostInstantly(newPost);
+          }
         },
         label: const Text(
           'myPost',
@@ -492,7 +525,6 @@ class _MarketPageState extends State<MarketPage>
         ),
       ),
 
-      
       body: Stack(
         children: [
           Positioned.fill(
@@ -629,7 +661,8 @@ class _MarketPageState extends State<MarketPage>
                                     },
                                     child: MarketCard(
                                       name: marketItem['name'],
-                                      taluka: marketItem['taluka'] ?? 'not_available'.tr(),
+                                      taluka: marketItem['taluka'] ??
+                                          'not_available'.tr(),
                                       price: '₹${marketItem['price']}',
                                       imagePath: marketItem['fileName'],
                                     ),
@@ -801,6 +834,7 @@ class CategoryImageCard extends StatelessWidget {
     );
   }
 }
+
 class MarketCard extends StatelessWidget {
   final String name;
   final String price;
@@ -835,7 +869,7 @@ class MarketCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 topRight: Radius.circular(10),
               ),
-              child: CachedImageWidget( 
+              child: CachedImageWidget(
                 imageUrl: imagePath,
                 fit: BoxFit.cover,
               ),
@@ -844,7 +878,6 @@ class MarketCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-              
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -862,13 +895,13 @@ class MarketCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    
                     if (onDelete != null)
                       SizedBox(
-                        width: 30, 
+                        width: 30,
                         height: 30,
                         child: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red, size: 22),
+                          icon: const Icon(Icons.delete,
+                              color: Colors.red, size: 22),
                           onPressed: onDelete,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -887,7 +920,7 @@ class MarketCard extends StatelessWidget {
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),        
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [

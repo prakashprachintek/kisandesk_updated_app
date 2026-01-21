@@ -67,10 +67,10 @@ class _AddMarketPostPageState extends State<AddMarketPostPage> {
       'quantity': 'Number_of_Cattle'.tr(),
     },
     'crop': {
-      'cropName': 'Crop_Name'.tr(),
+      'cropName': 'crop_Name'.tr(),
       'description': 'Crop_Description'.tr(),
       'price': 'Price'.tr(),
-      'quantity': 'Quantity_(kg)'.tr(),
+      'quantity': 'Quantity_(Kg)'.tr(),
     },
     'land': {
       'cropName': 'Land_Name'.tr(),

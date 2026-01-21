@@ -845,7 +845,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.agriculture_outlined),
-            title: Text(tr("List My Machinery")),
+            title: Text("List_My_Machinery").tr(),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
