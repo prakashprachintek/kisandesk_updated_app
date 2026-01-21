@@ -203,7 +203,7 @@ class _BookPageState extends State<BookPage> {
           context: context,
           builder: (_) => AlertDialog(
             title: Text("Booking_Successful".tr()),
-            content: Text(responseData["message"]),
+            //content: Text(responseData["message"]),
             actions: [
               TextButton(
                 onPressed: () {

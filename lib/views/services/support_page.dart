@@ -86,12 +86,12 @@ class _SupportPageState extends State<SupportPage>
   @override
   Widget build(BuildContext context) {
     final String? name = UserSession.user?['full_name'];
-    final String greeting = name != null ? "Hey $name" : "Hey there".tr();
+    final String greeting = name != null ? "Hey $name" : "Hey_there".tr();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('Customer Support'.tr(),
+        title: Text('Customer_Support'.tr(),
             style: const TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
       ),
@@ -114,7 +114,7 @@ class _SupportPageState extends State<SupportPage>
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "We're here to help you anytime!",
+                    "We're_here_to_help_you_anytime!",
                     style: TextStyle(fontSize: 16),
                   ).tr(),
                   const SizedBox(height: 40),
@@ -130,7 +130,7 @@ class _SupportPageState extends State<SupportPage>
                         backgroundColor: Colors.greenAccent,
                         child: Icon(Icons.phone, color: Colors.green),
                       ),
-                      title:  Text('Call Support'.tr(),
+                      title:  Text('Call_Support'.tr(),
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text(_formatDisplayNumber(_callNumber)),
                       trailing:
@@ -152,7 +152,7 @@ class _SupportPageState extends State<SupportPage>
                         child: FaIcon(FontAwesomeIcons.whatsapp,
                             color: Colors.green, size: 28),
                       ),
-                      title:  Text('Chat on WhatsApp'.tr(),
+                      title:  Text('Chat_on_WhatsApp'.tr(),
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text(_formatDisplayNumber(_whatsappNumber)),
                       trailing:

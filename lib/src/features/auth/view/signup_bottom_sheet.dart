@@ -109,7 +109,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
             if (mounted) {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(tr("Sign Up Initiated Successfully"))),
+                SnackBar(content: Text(tr("Sign_Up_Initiated_Successfully"))),
               );
               Navigator.push(
                 context,
@@ -123,14 +123,14 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content:
-                Text(otpData["message"] ?? tr("Failed to generate OTP")),
+                Text(otpData["message"] ?? tr("Failed_to_generate_OTP")),
               ),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(data["message"] ?? tr("Registration failed")),
+              content: Text(data["message"] ?? tr("Registration_failed")),
             ),
           );
         }
@@ -183,7 +183,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              tr("Sign Up"),
+                              tr("Sign_Up"),
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -197,7 +197,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                         ),
                         const SizedBox(height: 12),
                         CustomTextField(
-                          label: tr("Mobile Number"),
+                          label: tr("Mobile_Number"),
                           readOnly: true,
                           controller: TextEditingController(text: widget.phone),
                           keyboardType: TextInputType.phone,
@@ -206,12 +206,12 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                         // Full Name
                         CustomTextField(
                           controller: _nameController,
-                          label: tr("Full Name"),
+                          label: tr("full_name"),
                           keyboardType: TextInputType.name,
                           hint: "Eg: Ram Kumar",
                           validator: (value) => value == null ||
                               value.trim().isEmpty
-                              ? tr("Please enter your full name")
+                              ? tr("please_enter_full_name")
                               : null,
                           onChanged: (value) {
                             if (hasSubmitted) {
@@ -225,8 +225,8 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                         // District
                         DropdownButtonFormField<String>(
                           value: selectedDistrict,
-                          decoration: _dropdownDecoration(tr("District")),
-                          hint: Text(tr("Select District"),style: TextStyle(color: Colors.black26),),
+                          decoration: _dropdownDecoration(tr("district")),
+                          hint: Text(tr("Select_District"),style: TextStyle(color: Colors.black26),),
                           items: districts.map((district) {
                             return DropdownMenuItem(
                               value: district,
@@ -245,7 +245,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                             });
                           },
                           validator: (value) =>
-                          value == null ? tr("Please select a district") : null,
+                          value == null ? tr("Please_select_a_district") : null,
                         ),
                         const SizedBox(height: 12),
 
@@ -254,8 +254,8 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                           DropdownButtonFormField<String>(
                             value: selectedTaluk,
                             isExpanded: true,
-                            decoration: _dropdownDecoration(tr("Taluk")),
-                            hint: Text(tr("Select Taluk",),style: TextStyle(color: Colors.black26),),
+                            decoration: _dropdownDecoration(tr("taluka")),
+                            hint: Text(tr("Select_Taluka",),style: TextStyle(color: Colors.black26),),
                             items: taluks.map((taluk) {
                               return DropdownMenuItem<String>(
                                 value: taluk,
@@ -275,7 +275,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                               });
                             },
                             validator: (value) =>
-                            value == null ? tr("Please select a taluk") : null,
+                            value == null ? tr("Please_select_a_taluka") : null,
                           ),
                           const SizedBox(height: 12),
                         ],
@@ -286,8 +286,8 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                           DropdownButtonFormField<String>(
                             value: selectedVillage,
                             isExpanded: true,
-                            decoration: _dropdownDecoration(tr("Village")),
-                            hint: Text(tr("Select Village"),style: TextStyle(color: Colors.black26),),
+                            decoration: _dropdownDecoration(tr("village")),
+                            hint: Text(tr("Select_Village"),style: TextStyle(color: Colors.black26),),
 
                             items: villagesList.map((village) {
                               return DropdownMenuItem<String>(
@@ -304,7 +304,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                               });
                             },
                             validator: (value) =>
-                            value == null ? tr("Please select a village") : null,
+                            value == null ? tr("Please_select_a_village") : null,
                           ),
                           const SizedBox(height: 12),
                         ],
@@ -316,14 +316,14 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                           controller: _pincodeController,
                           fieldType: TextFieldType.pinCode,
                           keyboardType: TextInputType.number,
-                          label: tr("Pincode"),
+                          label: tr("pincode"),
                           hint: "Eg: 568038",
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return tr("Please enter a pincode");
+                              return tr("please_enter_pincode");
                             }
                             if (value.length != 6) {
-                              return tr("Pincode must be 6 digits");
+                              return tr("pincode_must_be_6_digits");
                             }
                             return null;
                           },
@@ -359,19 +359,19 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                             width: 22,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                              : Text(tr("Submit")),
+                              : Text(tr("submit")),
                         ),
                         //  Terms
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text.rich(
                             TextSpan(
-                              text: "By continuing, you agree to our ",
+                              text: tr("By_continuing,_you_agree_to_our_"),
                               style:
                               const TextStyle(fontSize: 13, color: Colors.black54),
                               children: [
                                 TextSpan(
-                                  text: "Terms & Conditions",
+                                  text: tr("Terms_&_Conditions"),
                                   style: const TextStyle(
                                     color: AppColors.buttonPrimary,
                                     fontWeight: FontWeight.w600,
@@ -382,7 +382,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                                 ),
                                 const TextSpan(text: " and "),
                                 TextSpan(
-                                  text: "Privacy Policy",
+                                  text: tr("Privacy_Policy"),
                                   style: const TextStyle(
                                     color: AppColors.buttonPrimary,
                                     fontWeight: FontWeight.w600,
