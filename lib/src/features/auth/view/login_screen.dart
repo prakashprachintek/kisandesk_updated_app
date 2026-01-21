@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(tr("Mobile Verification"),
+        title: Text(tr("Mobile_Verification"),
             style: TextStyle(color: Colors.grey[700])),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 180, height: 180),
               const SizedBox(height: 20),
                Text(
-                tr("Enter Your Phone Number"),
+                tr("phone_number_hint"),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 22,
@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                tr("We'll send an OTP to verify your number (+91)"),
+                tr("We'll_send_an_OTP_to_verify_your_number_(+91)"),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               ),
@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                     },
                     decoration: InputDecoration(
-                      labelText: tr("10-digit number"),
+                      labelText: tr("10-digit_number"),
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                       prefixIcon: Icon(Icons.phone, color: Colors.grey[700]),
                       enabledBorder: OutlineInputBorder(
@@ -122,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
               //  Button
               Obx(() => GradientAuthButton(
                     text:
-                        controller.isLoading.value ? tr("Checking...") : tr("Send OTP"),
+                        controller.isLoading.value ? tr("Checking...") : tr("Send_OTP"),
                     onTap: controller.isLoading.value ||
                             !controller.isPhoneValid.value
                         ? null
@@ -142,11 +142,11 @@ class _LoginScreenState extends State<LoginScreen> {
               //  Terms
               Text.rich(
                 TextSpan(
-                  text: "By continuing, you agree to our ",
+                  text: tr("By_continuing,_you_agree_to_our_"),
                   style: const TextStyle(fontSize: 13, color: Colors.black54),
                   children: [
                     TextSpan(
-                      text: "Terms & Conditions",
+                      text: tr("Terms_&_Conditions"),
                       style: const TextStyle(
                         color: AppColors.buttonPrimary,
                         fontWeight: FontWeight.w600,
@@ -157,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const TextSpan(text: " and "),
                     TextSpan(
-                      text: "Privacy Policy",
+                      text: tr("Privacy_Policy"),
                       style: const TextStyle(
                         color: AppColors.buttonPrimary,
                         fontWeight: FontWeight.w600,
