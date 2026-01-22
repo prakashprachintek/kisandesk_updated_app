@@ -233,6 +233,16 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     );
   }
 
+  void _showGenericError() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Failed to add machinery. Please try again.".tr()),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     setState(() {
       machineError = selectedMachine == null;
@@ -250,7 +260,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
       // 1. Get original filename
       final String fileName = image!.path.split(Platform.pathSeparator).last;
 
-      // 2. Upload image first
+     // 2. Upload image first
       final uploadUri = Uri.parse("${KD.api}/upload_document");
       final uploadRequest = http.MultipartRequest('POST', uploadUri);
 
@@ -277,7 +287,9 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
         throw Exception(
             "Image upload failed: ${uploadResponse.statusCode} - $uploadBody");
       }
+      
 
+      
       // 3. Send metadata as JSON
       final addUri = Uri.parse("${KD.api}/app/add_my_machine");
 
@@ -291,7 +303,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
             .where((t) => t.isNotEmpty)
             .toList(),
         "vehicleNumber": vehicleCtrl.text.trim().toUpperCase(),
-        "fileName": fileName,
+        "fileName": "",
       };
 
       print("═══════════════════════════════════════════════");
@@ -309,32 +321,53 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
       print("═══════════════════════════════════════════════");
       print("← ADD MACHINE RESPONSE");
       print("Status: ${addResponse.statusCode}");
-      print("Headers: ${addResponse.headers}");
       print("Body: ${addResponse.body}");
       print("═══════════════════════════════════════════════");
 
       if (addResponse.statusCode == 200 || addResponse.statusCode == 201) {
-        if (!mounted) return;
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => AlertDialog(
-            title: Text("Success".tr()),
-            content: Text("Machinery_added_successfully".tr()),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                },
-                child: Text("OK".tr()),
+        try {
+          final responseData = jsonDecode(addResponse.body);
+
+          if (responseData["status"] == "success") {
+            // ── Real success ──
+            if (!mounted) return;
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => AlertDialog(
+                title: Text("Success".tr()),
+                content: Text("Machinery_added_successfully".tr()),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context); // or .pushReplacement() etc.
+                    },
+                    child: Text("OK".tr()),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
+            );
+          } else {
+            // ── HTTP 200 but logical failure ──
+            final message = responseData["message"] ?? "Operation failed";
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message.tr(args: [message])), // or just message
+                backgroundColor: Colors.orange.shade800,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+        } catch (parseError) {
+          // JSON parsing failed → very unexpected response
+          debugPrint("Response parse error: $parseError");
+          _showGenericError();
+        }
       } else {
-        throw Exception(
-            "Add machine failed: ${addResponse.statusCode} - ${addResponse.body}");
+        // ── Real server error (400, 500, timeout, etc.) ──
+        _showGenericError();
       }
     } catch (e) {
       debugPrint("Submit error: $e");

@@ -12,6 +12,8 @@ import 'package:mainproject1/src/core/constant/api_constants.dart';
 import 'package:mainproject1/src/shared/presentation/widgets/flutter_inappwebview.dart';
 import 'package:mainproject1/views/home/app_settings.dart';
 import 'package:mainproject1/views/home/list_my_machinery_page.dart';
+import 'package:mainproject1/views/home/upload_test_page.dart';
+import 'package:mainproject1/views/home/user_test_page.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
 import 'package:mainproject1/views/marketplace/Postdetailspage.dart';
 import 'package:mainproject1/views/notification%20module/allNotification.dart';
@@ -842,6 +844,32 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
+          /*
+          ListTile(
+            leading: Icon(Icons.anchor_sharp),
+            title: Text("Test Upload"),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UploadTestPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.portable_wifi_off),
+            title: Text("User Test Details"),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => UserTestPage()),
+              );
+            },
+          ),
+          */
           ListTile(
             leading: Icon(Icons.settings),
             title: Text(tr("Privacy_Policy")),

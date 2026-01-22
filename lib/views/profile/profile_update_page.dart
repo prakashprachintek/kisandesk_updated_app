@@ -215,6 +215,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     final Map<String, dynamic> payload = {
       "_id": UserSession.user?["_id"],
       "isLabour": _isLabour,
+      "is_labour": _isLabour,
     };
     if (_nameController.text.isNotEmpty)
       payload["fullName"] = _nameController.text.trim();
