@@ -29,7 +29,7 @@ class AuthSelectionScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 16),
                       Text(
-                        tr("Welcome to Kisan Desk!"),
+                        tr("Welcome_To_Kisan_Desk"),
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -39,7 +39,7 @@ class AuthSelectionScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        tr("Choose your preferred sign-in method below"),
+                        tr("Choose_your_preferred_sign-in_method below"),
                         style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                         textAlign: TextAlign.center,
                       ),
@@ -47,7 +47,7 @@ class AuthSelectionScreen extends StatelessWidget {
                       AuthOptionCard(
                         lottieFile: 'assets/animations/phone.json',
                         title: tr("Mobile OTP"),
-                        subtitle: tr("Login with your phone number"),
+                        subtitle: tr("Login_with_your_phone_number"),
                         onTap: () {
                           Navigator.push(
                             context,
