@@ -142,7 +142,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
               child: orders.isEmpty
                   ? Center(
                       child: Text(
-                        "No orders found",
+                        "No_orders_found",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ).tr(),
                     )

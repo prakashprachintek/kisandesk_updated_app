@@ -372,7 +372,7 @@
 
   "User_not_logged_in._Cannot_fetch_requests.":"User not logged in. Cannot fetch requests.",
   "Please_update_your_information_to_book_labour":"Please update your information to book labour",
-  "No_recent_orders_found.":"No recent orders found.",
+  "No_recent_orders_found.":"No recent orders found",
   "orderId_unavailable":"orderId unavailable",
   "No_description_provided.":"No description provided.",
   "No_Labour_Requests_Available":"No Labour Requests Available",
@@ -485,6 +485,7 @@
   "No_orders_yet":"No orders yet",
   "Quantity_(Kg)": "Quantity (Kg)",
 
+  "No_orders_found":"No orders found",
 
   "Upload_failed":"Upload failed",
   "Edit Profile":"Edit Profile",

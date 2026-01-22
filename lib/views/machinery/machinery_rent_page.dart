@@ -83,24 +83,24 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           setState(() {
             recentOrders = recent;
             isLoading = false;
-            errorMessage = recent.isEmpty ? tr("No_recent_orders_found") : null;
+            errorMessage = recent.isEmpty ? "No_recent_orders_found.".tr() : null;
           });
         } else {
           setState(() {
             isLoading = false;
-            errorMessage = json['message'] ?? tr("Failed_to_fetch_orders");
+            errorMessage = json['message'] ?? "Failed_to_fetch_orders".tr();
           });
         }
       } else {
         setState(() {
           isLoading = false;
-          errorMessage = tr("Server error: ${response.statusCode}");
+          errorMessage = "Server error: ${response.statusCode}".tr();
         });
       }
     } catch (e) {
       setState(() {
         isLoading = false;
-        errorMessage = tr("Error fetching orders: $e");
+        errorMessage = "Error fetching orders: $e".tr();
       });
     }
   }
@@ -140,14 +140,14 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
           content: Text(
-            tr("Please_update_your_information_to_book_machinery"),
+            "Please_update_your_information_to_book_machinery".tr(),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                tr("Cancel"),
+                "Cancel".tr(),
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 16,
@@ -164,7 +164,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                 );
               },
               child: Text(
-                tr("Update_Profile"),
+                "Update_Profile".tr(),
                 style: TextStyle(
                   color: Color.fromARGB(255, 29, 108, 92),
                   fontSize: 16,
@@ -188,7 +188,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          tr("Machinery_Rent"),
+          "Machinery_Rent".tr(),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),

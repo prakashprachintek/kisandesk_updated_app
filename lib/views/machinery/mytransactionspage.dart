@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -120,11 +121,11 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
               color: const Color.fromARGB(255, 29, 108, 92), 
               backgroundColor: Colors.white,
               child: orders.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
-                        "No transactions found",
+                        "noTransactionsTitle",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
+                      ).tr(),
                     )
                   : ListView.builder(
                       itemCount: orders.length,
