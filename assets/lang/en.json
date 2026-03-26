@@ -560,5 +560,21 @@
   "Chat_on_WhatsApp":"Chat on WhatsApp",
   "Call_Support":"Call Support",
   "Customer_Support":"Customer Support",
-  "Hey_there":"Hey there"
+  "Hey_there":"Hey there",
+
+
+  "Machinery_added_successfully":"Machinery added successfully",
+  "Machine_deleted_successfully":"Machine deleted successfully",
+  "Failed_to_delete_machine":"Failed to delete machine",
+  "Something_went_wrong_while_deleting.":"Something went wrong while deleting.",
+  "Delete_Machine":"Delete Machine",
+  "Are_you_sure_you_want_to_delete_this_machine":"Are you sure you want to delete this machine",
+  "User_not_logged_in":"User not logged in",
+  "Something_went_wrong._Please_try_again.":"Something went wrong. Please try again.",
+  "Machine_updated_successfully":"Machine updated successfully",
+  "Edit_Work_Types":"Edit Work Types",
+  "Works":"Works",
+  "List_My_Machines":"List My Machines",
+  "No_Machines_Added_Yet":"No Machines Added Yet",
+  "Add_Machine":"Add Machine"
 }

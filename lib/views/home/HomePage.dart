@@ -12,6 +12,9 @@ import 'package:mainproject1/src/core/constant/api_constants.dart';
 import 'package:mainproject1/src/shared/presentation/widgets/flutter_inappwebview.dart';
 import 'package:mainproject1/views/home/app_settings.dart';
 import 'package:mainproject1/views/home/list_my_machinery_page.dart';
+import 'package:mainproject1/views/laborers/List_of_labours.dart';
+import '../marketing/showroom_machines_page.dart';
+import '../home/listmymachines.dart';
 import 'package:mainproject1/views/home/upload_test_page.dart';
 import 'package:mainproject1/views/home/user_test_page.dart';
 import 'package:mainproject1/views/laborers/Labour_Booking.dart';
@@ -839,7 +842,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ListMyMachineryPage(),
+                  builder: (context) => ListMyMachinesPage(),
                 ),
               );
             },
@@ -1491,25 +1494,14 @@ class _HomePageState extends State<HomePage> {
           return Builder(
             builder: (BuildContext context) {
               return GestureDetector(
-                /*onTap: () {
-                  if (index == 0) {
+
+                onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => MandiRatesPage()),
+                      MaterialPageRoute(builder: (context) => ShowroomMachinesPage()),
                     );
-                  } /*else if (index == 1) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => WeatherPage(
-                          userData: widget.userData ?? {},
-                          phoneNumber: widget.phoneNumber ?? '',
-                        ),
-                      ),
-                    );
-                  }*/
-                },
-                */
+                  },
+                  
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 5),
                   decoration: BoxDecoration(
@@ -1537,17 +1529,19 @@ class _HomePageState extends State<HomePage> {
   /// 6 Categories Grid
   Widget _buildCategoriesGrid() {
     final List<String> imagePaths = [
+      'assets/fertilizersnew.png',
       'assets/Laboursnew.png',
       'assets/machinerynew.png',
-      'assets/fertilizersnew.png',
+      //'assets/fertilizersnew.png',
       'assets/doctorsnew.png',
       //'assets/loan.webp',
       //'assets/govtschemes.png',
     ];
     final List<String> labels = [
+      tr('Fertilizers'),
       tr('Labours'),
       tr('Machinery'),
-      tr('Fertilizers'),
+      //tr('Fertilizers'),
       tr('Doctors'),
       //tr('Loan/Insurance'),
       //tr('Govt Schemes'),
@@ -1651,9 +1645,10 @@ class _HomePageState extends State<HomePage> {
 
   /// Category Tapped
   final Map<int, Map<String, dynamic>> _categoryMap = {
-    0: {'page': LabourBookingPage(), 'key': 'labours'},
-    1: {'page': MachineryRentPage(), 'key': 'machinery'},
-    2: {'page': FertilizerListScreen(), 'key': ''},
+    0: {'page': FertilizerListScreen(), 'key': ''},
+    1: {'page': ListOfLaboursPage(), 'key': 'labours'},
+    2: {'page': MachineryRentPage(), 'key': 'machinery'},
+    //2: {'page': FertilizerListScreen(), 'key': ''},
     3: {'page': DoctorPage(), 'key': 'doctors'},
     //4: {'page': ComingSoonPage(), 'key': ''},
     //5: {'page': ComingSoonPage(), 'key': ''},

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'dart:async';
 import 'dart:convert';
 import '../services/user_session.dart';
 import '../services/api_config.dart';
@@ -30,6 +31,7 @@ class _BookPageState extends State<BookPage> {
   String? bookingDate;
   String selectedUnit = 'Acres'; //default
   String selectedQuantity = "1"; // default
+  bool get isMachinerySelected => selectedMachinery != null;
 
   // Controllers
   // final TextEditingController areaController = TextEditingController();
@@ -77,54 +79,56 @@ class _BookPageState extends State<BookPage> {
     setState(() => isLoading = false);
   }
 
-  Widget _buildImage(String? imageUrl, {double width = 60, double height = 60}) {
-  if (imageUrl == null || imageUrl.isEmpty || !imageUrl.startsWith('http')) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
+  Widget _buildImage(String? imageUrl,
+      {double width = 60, double height = 60}) {
+    if (imageUrl == null || imageUrl.isEmpty || !imageUrl.startsWith('http')) {
+      return Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(Icons.image_not_supported,
+            size: width * 0.6, color: Colors.grey),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.network(
+        imageUrl,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: width,
+            height: height,
+            color: Colors.grey[200],
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation(Color(0xFF00AD83)),
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: width,
+            height: height,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.broken_image, color: Colors.red[300]),
+          );
+        },
       ),
-      child: Icon(Icons.image_not_supported, size: width * 0.6, color: Colors.grey),
     );
   }
-
-  return ClipRRect(
-    borderRadius: BorderRadius.circular(12),
-    child: Image.network(
-      imageUrl,
-      width: width,
-      height: height,
-      fit: BoxFit.cover,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Container(
-          width: width,
-          height: height,
-          color: Colors.grey[200],
-          child: Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(Color(0xFF00AD83)),
-            ),
-          ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(Icons.broken_image, color: Colors.red[300]),
-        );
-      },
-    ),
-  );
-}
 
   // Open date picker dialog
   void _pickDate() async {
@@ -145,107 +149,144 @@ class _BookPageState extends State<BookPage> {
   }
 
   // Validate and submit booking
-  void _submitBooking() async {
-    //validate fields
-    setState(() {
-      fieldErrors['machinery'] = selectedMachinery == null;
-      fieldErrors['workType'] = selectedWorkType == null;
-      fieldErrors['area'] =
-          selectedQuantity == null || selectedQuantity.isEmpty;
-      fieldErrors['date'] = bookingDate == null;
-      fieldErrors['description'] = descriptionController.text.isEmpty;
-    });
+  bool isSubmitting = false;
 
-    // Show error if any field is invalid
-    if (fieldErrors.values.any((e) => e)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please_fill_all_fields").tr()),
-      );
-      return;
+void _submitBooking() async {
+  if (isSubmitting) return;
+
+  setState(() {
+    fieldErrors['machinery'] = selectedMachinery == null;
+    fieldErrors['workType'] = selectedWorkType == null;
+    fieldErrors['area'] = selectedQuantity.isEmpty;
+    fieldErrors['date'] = bookingDate == null;
+    fieldErrors['description'] = false;
+  });
+
+  if (fieldErrors.values.any((e) => e)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Please_fill_all_fields").tr()),
+    );
+    return;
+  }
+
+  setState(() => isSubmitting = true);
+
+  final uri = Uri.parse("${KD.api}/app/book_machinary");
+  
+
+  print("API URL: $uri");
+
+  final languageCode = Localizations.localeOf(context).languageCode;
+
+  final selectedMachine = machineryData.firstWhere(
+    (m) =>
+        (languageCode == 'kn'
+            ? (m["name_in_kannada"] ?? m["name_in_english"] ?? m["name"])
+            : (m["name_in_english"] ?? m["name"])) ==
+        selectedMachinery,
+    orElse: () => {},
+  );
+
+  final selectedWork = workTypeList.firstWhere(
+    (w) =>
+        (languageCode == 'kn'
+            ? (w["type_in_kannada"] ?? w["type_in_english"] ?? w["type"])
+            : (w["type_in_english"] ?? w["type"])) ==
+        selectedWorkType,
+    orElse: () => {},
+  );
+
+  final payload = {
+    "userId": UserSession.userId,
+    "machineryType":selectedMachine["name_in_english"] ?? selectedMachinery!,
+    "workDate": bookingDate!,
+    "workType":selectedWork["type_in_english"] ?? selectedWorkType!,
+    "workInQuantity":"$selectedQuantity ${selectedUnit == "Acres" ? "acre" : "hour"}",
+    
+    "description": descriptionController.text,
+  };
+
+  print("Sending payload: ${jsonEncode(payload)}");
+
+  try {
+    final res = await http
+        .post(
+          uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(payload),
+        )
+        .timeout(const Duration(seconds: 10));
+
+    print("Status Code: ${res.statusCode}");
+    print("Response: ${res.body}");
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception("Server error ${res.statusCode}");
     }
 
-    // API Payload
-    final uri = Uri.parse("${KD.api}/app/book_machinary");
-    final payload = {
-      "userId": UserSession.userId,
-      "full_name": UserSession.user?['full_name'] ?? '',
-      "phone": UserSession.user?['phone'] ?? '',
-      "machineryType": machineryData.firstWhere((m) =>
-              (Localizations.localeOf(context).languageCode == 'kn'
-                  ? (m["name_in_kannada"] ?? m["name_in_english"])
-                  : (m["name_in_english"] ?? m["name"])) ==
-              selectedMachinery)["name_in_english"] ??
-          selectedMachinery!,
-      "workDate": bookingDate!,
-      "workType": workTypeList.firstWhere((w) =>
-              (Localizations.localeOf(context).languageCode == 'kn'
-                  ? (w["type_in_kannada"] ?? w["type_in_english"])
-                  : (w["type_in_english"] ?? w["type"])) ==
-              selectedWorkType)["type_in_english"] ??
-          selectedWorkType!,
-      "workInQuantity": selectedQuantity,
-      "workInUnit": selectedUnit,
-      "description": descriptionController.text,
-      "village": UserSession.user?['village']
-    };
-
+    dynamic responseData;
     try {
-      final res = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(payload),
-      );
-      final responseData = jsonDecode(res.body);
-
-      //Handle API response
-      if (responseData["status"] == "success") {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text("Booking_Successful".tr()),
-            //content: Text(responseData["message"]),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MachineryRentPage()),
-                  );
-                },
-                child: Text("OK".tr()),
-              ),
-            ],
-          ),
-        );
-
-        //Reset form
-        setState(() {
-          selectedMachinery = null;
-          selectedWorkType = null;
-          workTypeList = [];
-          selectedQuantity = "1";
-          selectedUnit = "Acres";
-          bookingDate = null;
-          descriptionController.clear();
-          fieldErrors.updateAll((key, value) => false);
-        });
-      }
-
-      //Error Message
-      else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed: ${responseData["message"]}")));
-      }
+      responseData = jsonDecode(res.body);
+    } catch (e) {
+      throw Exception("Invalid JSON response");
     }
 
-    //Exceptional Errors
-    catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+    if (responseData["status"] == "success") {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text("Booking_Successful".tr()),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MachineryRentPage()),
+                );
+              },
+              child: Text("OK".tr()),
+            ),
+          ],
+        ),
+      );
+
+      setState(() {
+        selectedMachinery = null;
+        selectedWorkType = null;
+        workTypeList = [];
+        selectedQuantity = "1";
+        selectedUnit = "Acres";
+        bookingDate = null;
+        descriptionController.clear();
+        fieldErrors.updateAll((key, value) => false);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed: ${responseData["message"]}")),
+      );
+    }
+  } on TimeoutException {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Request timed out"),
+        action: SnackBarAction(
+          label: "Retry",
+          onPressed: _submitBooking,
+        ),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e")),
+    );
+  } finally {
+    if (mounted) {
+      setState(() => isSubmitting = false);
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -565,13 +606,16 @@ class _BookPageState extends State<BookPage> {
                                 ),
                               );
                             }).toList(),
-                      onSelected: (value) => setState(() {
+                      onSelected: isMachinerySelected
+                      ? (value) => setState(() {
                         if (value != '') {
                           // Only update if not the placeholder
                           selectedWorkType = value;
                           fieldErrors['workType'] = false;
                         }
-                      }),
+                      })
+                      : null,
+
                     ),
                   ),
                   // Custom error message for validation
@@ -588,9 +632,15 @@ class _BookPageState extends State<BookPage> {
                   // ----------------------------
                   // Area/Quantity Selection (Bordered)
                   // ----------------------------
-                  SizedBox(
-                    width: double.infinity,
-                    child: Container(
+                  Opacity(
+                    opacity: isMachinerySelected ? 1:0.5,
+                    child: IgnorePointer(
+                      ignoring: !isMachinerySelected,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Container(
                       padding:
                           EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
@@ -609,7 +659,7 @@ class _BookPageState extends State<BookPage> {
                             child: Row(
                               children: [
                                 Radio<String>(
-                                  value: "Acres".tr(),
+                                  value: "Acres",
                                   groupValue: selectedUnit,
                                   onChanged: (value) {
                                     setState(() {
@@ -621,7 +671,7 @@ class _BookPageState extends State<BookPage> {
                                 Text("Acres".tr()),
                                 SizedBox(width: 12),
                                 Radio<String>(
-                                  value: "Hours".tr(),
+                                  value: "Hours",
                                   groupValue: selectedUnit,
                                   onChanged: (value) {
                                     setState(() {
@@ -668,6 +718,9 @@ class _BookPageState extends State<BookPage> {
                       ),
                     ),
                   ),
+                      ),
+                    ),
+                  ),
 
                   // Error message below
                   if (fieldErrors['area']!)
@@ -686,7 +739,11 @@ class _BookPageState extends State<BookPage> {
                   // ----------------------------
                   // Date Picker
                   // ----------------------------
-                  InkWell(
+                  Opacity(
+                    opacity: isMachinerySelected ? 1 : 0.5,
+                    child: IgnorePointer(
+                      ignoring: !isMachinerySelected,
+                      child: InkWell(     
                     onTap: _pickDate,
                     child: InputDecorator(
                       decoration: InputDecoration(
@@ -733,6 +790,8 @@ class _BookPageState extends State<BookPage> {
                       ),
                     ),
                   ),
+                    ),
+                  ),
                   if (fieldErrors['date']!)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, left: 4),
@@ -746,7 +805,11 @@ class _BookPageState extends State<BookPage> {
                   // ----------------------------
                   // Description TextField
                   // ----------------------------
-                  TextField(
+                  Opacity(
+                  opacity: isMachinerySelected ? 1: 0.5,
+                  child: IgnorePointer(
+                    ignoring: !isMachinerySelected,
+                  child:TextField(
                     controller: descriptionController,
                     decoration: InputDecoration(
                       labelText: "Description/Notes".tr(),
@@ -784,18 +847,10 @@ class _BookPageState extends State<BookPage> {
                           EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                     ),
                     maxLines: 3,
-                    onChanged: (value) => setState(() {
-                      fieldErrors['description'] = value.isEmpty;
-                    }),
+                    onChanged: (value) {},
                   ),
-                  if (fieldErrors['description']!)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 4),
-                      child: Text(
-                        "This_field_is_required".tr(),
-                        style: TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
+                  ),
+                  ),
                   SizedBox(height: 30),
 
                   // ----------------------------
@@ -803,7 +858,7 @@ class _BookPageState extends State<BookPage> {
                   // ----------------------------
                   Center(
                     child: ElevatedButton(
-                      onPressed: _submitBooking,
+                      onPressed: (!isMachinerySelected || isSubmitting) ? null : _submitBooking,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color.fromARGB(255, 29, 108, 92),
                         padding: const EdgeInsets.symmetric(
@@ -812,13 +867,22 @@ class _BookPageState extends State<BookPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: Text(
-                        "submit_booking".tr(),
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                      ),
+                      child: isSubmitting
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              "submit_booking".tr(),
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
                     ),
                   )
                 ],
