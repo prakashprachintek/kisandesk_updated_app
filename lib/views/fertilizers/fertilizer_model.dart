@@ -286,7 +286,7 @@ class OrderProductItem {
     return OrderProductItem(
       id: json['id'] as String? ?? '',
       quantity: json['quantity'] as String? ?? '1',
-      product: NestedProduct.fromJson(json['product'] as Map<String, dynamic>),
+      product: NestedProduct.fromJson(json['product'] as Map<String, dynamic>)
     );
   }
 }

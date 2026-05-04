@@ -120,12 +120,19 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
                       _loadOrders();
                     }
                   },
-                  child: Card(
-                    elevation: 5,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+                  child: Container(
+  margin: const EdgeInsets.symmetric(vertical: 8),
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(15),
+    gradient: const LinearGradient(
+      colors: [
+        Colors.white,
+        Color.fromARGB(215, 223, 241, 223),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -191,7 +198,7 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
                             ],
                           ),
 
-                          const Divider(height: 24),
+                          const Divider(height: 16),
 
                           // NEW: Just show number of items instead of full product list
                           Row(
@@ -209,7 +216,7 @@ class _MyFertilizerOrdersScreenState extends State<MyFertilizerOrdersScreen> {
                             ],
                           ),
 
-                          const Divider(height: 24),
+                          const Divider(height: 14),
 
                           // Total & Status
                           Row(

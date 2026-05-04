@@ -23,7 +23,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
   @override
   void initState() {
     super.initState();
-    // Trigger animation when the page loads for Completed status
     if (widget.transaction['status'] == 'Completed') {
       Future.delayed(Duration.zero, () {
         setState(() {
@@ -33,34 +32,21 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     }
   }
 
-  // Phone call
   Future<void> _makePhoneCall(String phoneNumber) async {
-    setState(() {
-      _isCalling = true;
-    });
+    setState(() => _isCalling = true);
 
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Cannot make call to $phoneNumber")),
-        );
-      }
     }
 
     if (mounted) {
-      setState(() {
-        _isCalling = false; // Reset state after call attempt
-      });
+      setState(() => _isCalling = false);
     }
   }
 
   Future<void> _transactionComplete() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final response = await http.post(
@@ -72,33 +58,17 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         },
       );
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        // Success
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(responseData['message']),
-          ),
-        );
-      } else {
-        final responseData = json.decode(response.body);
-        // Error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(responseData['message']),
-          ),
-        );
-      }
+      final responseData = json.decode(response.body);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(responseData['message'])),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Request failed: $e'),
-        ),
+        SnackBar(content: Text('Request failed: $e')),
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -114,10 +84,21 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 4,
+
+        // ✅ ONLY CHANGE HERE (Card → Gradient Container)
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(
+              colors: [
+                Colors.white,
+                                  Color.fromARGB(215, 223, 241, 223),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -125,7 +106,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
               children: [
                 _buildRow("Order ID", widget.transaction['orderId'] ?? '',
                     Icons.insert_drive_file),
-                _buildRow("Owner", widget.transaction['full_name'] ?? 'Unknown',
+                _buildRow("Farmer", widget.transaction['full_name'] ?? 'Unknown',
                     Icons.person),
                 GestureDetector(
                   onTap: widget.transaction['phone'] != 'Not Available' &&
@@ -161,65 +142,96 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                   style: const TextStyle(fontSize: 15, color: Colors.black87),
                 ),
                 const SizedBox(height: 24),
-                // Conditional rendering based on status
+
                 Center(
-                  child: widget.transaction['status'] == 'Completed'
-                      ? AnimatedContainer(
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                          transform: _animate
-                              ? Matrix4.identity()
-                              : Matrix4.diagonal3Values(0.8, 0.8, 1.0),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 29, 108, 92),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Completed',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
+                  child: () {
+                    final status = widget.transaction['status'];
+
+                    if (status == 'Completed') {
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                        transform: _animate
+                            ? Matrix4.identity()
+                            : Matrix4.diagonal3Values(0.8, 0.8, 1.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1D6C5C),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        )
-                      : _isLoading
-                          ? const CircularProgressIndicator()
-                          : ElevatedButton(
-                              onPressed: _transactionComplete,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color.fromARGB(255, 29, 108, 92),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 32, vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Mark as Completed',
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.check_circle,
+                                  color: Colors.white, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Completed',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (status == 'rejected') {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.cancel,
+                                color: Colors.white, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Rejected',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (_isLoading) {
+                      return const CircularProgressIndicator();
+                    }
+
+                    return ElevatedButton(
+                      onPressed: _transactionComplete,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1D6C5C),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Mark as Completed',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }(),
                 ),
               ],
             ),

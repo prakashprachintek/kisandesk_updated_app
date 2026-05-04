@@ -10,6 +10,7 @@ import 'bookpage.dart';
 import 'orderTransactionTab.dart';
 import 'package:mainproject1/views/profile/personalDetailsPage.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'machine_selection_page.dart';
 
 class MachineryRentPage extends StatefulWidget {
   const MachineryRentPage({super.key});
@@ -25,6 +26,8 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
     'assets/machinery/machine_type/rotavator.jpg',
     'assets/machinery/machine_type/tractor.jpg',
   ];
+  Map<String, String> machineImages = {};
+  bool isMachineLoading = true;
 
   List<Map<String, String>> recentOrders = [];
   bool isLoading = true;
@@ -34,6 +37,48 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
   void initState() {
     super.initState();
     _fetchRecentOrders();
+    fetchMachineImages();
+  }
+
+  Future<void> fetchMachineImages() async {
+    try {
+      final res = await http.post(
+        Uri.parse("${KD.api}/app/get_master_data"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"type": "machine"}),
+      );
+
+      final data = jsonDecode(res.body);
+
+      if (data["status"] == "success") {
+        final list = List<Map<String, dynamic>>.from(
+          data["results"][0]["machinery_type"],
+        );
+
+        Map<String, String> temp = {};
+
+        for (var m in list) {
+          final name = (m["name_in_english"] ?? m["name"] ?? "")
+              .toString()
+              .toLowerCase()
+              .trim();
+          final image = (m["image"] ?? "").toString();
+
+          if (name.isNotEmpty) {
+            temp[name.toLowerCase()] = image;
+          }
+        }
+
+        setState(() {
+          machineImages = temp;
+          isMachineLoading = false;
+        });
+      } else {
+        setState(() => isMachineLoading = false);
+      }
+    } catch (e) {
+      setState(() => isMachineLoading = false);
+    }
   }
 
   Future<void> _fetchRecentOrders() async {
@@ -67,7 +112,7 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           final recent = results.take(2).map<Map<String, String>>((item) {
             return {
               "orderId": item['order_id']?.toString() ?? '',
-              "machine": item['machinery_type']?.toString() ?? 'Unknown',
+              "machinery": item['machinery_type']?.toString() ?? 'Unknown',
               "workType": item['work_type']?.toString() ?? 'Unknown',
               "status": item['status']?.toString() ?? '',
               "date": item['created_at']?.toString().split('T')[0] ?? '',
@@ -83,7 +128,8 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
           setState(() {
             recentOrders = recent;
             isLoading = false;
-            errorMessage = recent.isEmpty ? "No_recent_orders_found.".tr() : null;
+            errorMessage =
+                recent.isEmpty ? "No_recent_orders_found.".tr() : null;
           });
         } else {
           setState(() {
@@ -112,75 +158,6 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
       recentOrders = [];
     });
     await _fetchRecentOrders();
-  }
-
-  void _checkProfileAndNavigate() {
-    final user = UserSession.user ?? {};
-    final requiredFields = {
-      'phone': (user['phone'] ?? '').length == 10 ? user['phone'] : null,
-      'state': user['state'],
-      'district': user['district'],
-      'taluka': user['taluka'],
-      'village': user['village'],
-      'pincode': user['pincode'],
-      'address': user['address'],
-    };
-
-    final missingFields = requiredFields.entries
-        .where((entry) => entry.value == null || entry.value.toString().isEmpty)
-        .map((entry) => entry.key)
-        .toList();
-
-    if (missingFields.isNotEmpty) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(
-            tr("Incomplete_Profile"),
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-          ),
-          content: Text(
-            "Please_update_your_information_to_book_machinery".tr(),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                "Cancel".tr(),
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => PersonalDetailsScreen()),
-                );
-              },
-              child: Text(
-                "Update_Profile".tr(),
-                style: TextStyle(
-                  color: Color.fromARGB(255, 29, 108, 92),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const BookPage()),
-      );
-    }
   }
 
   @override
@@ -247,14 +224,18 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                   physics: const NeverScrollableScrollPhysics(),
                   childAspectRatio: 1.2,
                   children: [
-                    _buildTile(
-                      context,
-                      icon: Icons.shopping_cart,
-                      label: tr("Book"),
-                      color: Colors.green,
-                      onTap:
-                          _checkProfileAndNavigate, // Updated to check profile
-                    ),
+                    _buildTile(context,
+                        icon: Icons.shopping_cart,
+                        label: tr("Book"),
+                        color: Colors.green, onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MachineSelectionPage(),
+                        ),
+                      );
+                    } // Updated to check profile
+                        ),
                     _buildTile(
                       context,
                       icon: Icons.list_alt,
@@ -289,51 +270,173 @@ class _MachineryRentPageState extends State<MachineryRentPage> {
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   final order = recentOrders[index];
+
                                   return InkWell(
-                                    onTap: () {
-                                      Navigator.push(
+                                    onTap: () async {
+                                      final result = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               OrderDetailPage(order: order),
                                         ),
                                       );
+                                      if (result == true) {
+                                        _fetchRecentOrders();
+                                      }
                                     },
                                     child: Container(
-                                      margin: const EdgeInsets.only(bottom: 12),
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 8),
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: Colors.grey.shade100,
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.05),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 3),
-                                          )
-                                        ],
+                                        borderRadius: BorderRadius.circular(16),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Colors.white,
+                                            Color.fromARGB(215, 223, 241, 223),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
                                       ),
-                                      child: Column(
+                                      child: Row(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            "${order['orderId']}",
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
+                                          /// LEFT SIDE
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                /// ORDER ID
+                                                Text(
+                                                  "${order['orderId']}",
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+
+                                                const SizedBox(height: 4),
+
+                                                /// DATE
+                                                Text(
+                                                  "${order['date']}",
+                                                  style: const TextStyle(
+                                                      color: Colors.black54),
+                                                ),
+
+                                                /// OWNER ONLY IF ACCEPTED
+                                                if (order['status']
+                                                        .toString()
+                                                        .toLowerCase() ==
+                                                    'accepted') ...[
+                                                  const SizedBox(height: 10),
+                                                  Text(
+                                                    "${order['name']}",
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    "${order['phone']}",
+                                                    style: const TextStyle(
+                                                      color: Colors.black54,
+                                                    ),
+                                                  ),
+                                                ],
+
+                                                const SizedBox(height: 10),
+
+                                                /// MACHINE
+                                                Text(
+                                                  "${order['machinery']}",
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+
+                                                const SizedBox(height: 4),
+
+                                                /// WORK TYPE
+                                                Text(
+                                                  "${order['workType']}",
+                                                  style: const TextStyle(
+                                                    color: Colors.black54,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                              "${tr('Machine_Booked')}: ${order['machine']}"),
-                                          Text(
-                                              "${tr('Date')}: ${order['date']}"),
-                                          Text(
-                                              "${tr('Machine_Owner')}: ${order['name']}"),
-                                          Text(
-                                              "${tr('Contact')}: ${order['phone']}"),
-                                          Text(
-                                              "${tr('Status')}: ${order['status']}"),
+
+                                          const SizedBox(width: 10),
+
+                                          /// RIGHT SIDE
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              /// STATUS
+                                              Text(
+                                                "${order['status']}",
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF1D6C5C),
+                                                ),
+                                              ),
+
+                                              const SizedBox(height: 10),
+
+                                              /// IMAGE (STATIC FOR NOW — same as your current)
+                                              Container(
+                                                height: 60,
+                                                width: 60,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  color: Colors.transparent,
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child: Builder(
+                                                    builder: (_) {
+                                                      final key =
+                                                          order['machinery']
+                                                              .toString()
+                                                              .toLowerCase()
+                                                              .trim();
+
+                                                      final imageUrl =
+                                                          machineImages[key];
+
+                                                      return (imageUrl !=
+                                                                  null &&
+                                                              imageUrl
+                                                                  .isNotEmpty)
+                                                          ? Image.network(
+                                                              imageUrl,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder: (_,
+                                                                      __,
+                                                                      ___) =>
+                                                                  const Icon(Icons
+                                                                      .agriculture),
+                                                            )
+                                                          : const Icon(Icons
+                                                              .agriculture);
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),

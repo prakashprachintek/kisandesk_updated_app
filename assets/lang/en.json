@@ -387,7 +387,7 @@
   "Request_Details":"Request Details",
   "Failed_to_load_machinery_data":"Failed to load machinery data",
   "Please_fill_all_fields":"Please fill all fields",
-  "Booking_Successful":"Booking Successful",
+  "Booking_Successful!":"Booking Successful",
   "Book_Machinery":"Book Machinery",
   "Select_Machinery":"Select Machinery",
   "Select_machinery_first":"Select machinery first",
@@ -576,5 +576,14 @@
   "Works":"Works",
   "List_My_Machines":"List My Machines",
   "No_Machines_Added_Yet":"No Machines Added Yet",
-  "Add_Machine":"Add Machine"
+  "Add_Machine":"Add Machine",
+
+
+  "Select_Hours": "Select Hours",
+  "Select_Quantity":"Select Quantity",
+  "Select_Days":"Select Days",
+  "Booking Successful!":"Booking Successful!",
+  "Your_machinery_booking_is_confirmed.\nWe_will_contact_you_soon.":"Your machinery booking is confirmed.\nWe will contact you soon.",
+  "FPO":"FPO",
+  "Credit":"Credit"
 }

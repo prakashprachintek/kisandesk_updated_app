@@ -217,7 +217,7 @@ class FertilizerOrderDetailsScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            if (order.status == 'Pending' || order.status == 'Out for Delivery' || order.status == 'Delivered') ...[
+                            if (order.status == 'Delivered') ...[
                               GestureDetector(
                                 onTap: () =>
                                     generateAndSaveInvoice(context, order),

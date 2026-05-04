@@ -1,3 +1,4 @@
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/fertilizers/fertilizer_delivery_requests_screen.dart';
@@ -8,6 +9,8 @@ import 'fertilizer_details_screen.dart';
 import 'my_fertilizer_orders_screen.dart';
 import 'cart_screen.dart';
 import 'cart_service.dart';
+
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class FertilizerListScreen extends StatefulWidget {
   const FertilizerListScreen({Key? key}) : super(key: key);
@@ -22,13 +25,17 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
   List<Fertilizer> _fertilizers = [];
   List<Fertilizer> _filteredFertilizers = [];
   String _searchQuery = '';
+  String _voiceText = "";
+  Function(void Function())? _popupSetState;
   String _sortOrder = 'none';
   late String _farmerId;
   late String _deliveryPartnerId;
 
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
-
 
   String _selectedCategory = "";
 
@@ -41,11 +48,85 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
     _deliveryPartnerId = UserSession.userId!;
     _fertilizerFuture = FertilizerApiService().fetchFertilizers();
     _cartFuture = CartService().getCart()..then((_) => _loadCartQuantities());
+
+    _speech = stt.SpeechToText();
+  }
+
+  void _showVoicePopup() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            _popupSetState = setStateDialog;
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 🔥 TOP BAR WITH BACK BUTTON
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () {
+                          _stopListening();
+
+                          // APPLY TEXT TO SEARCH
+                          _searchController.text = _voiceText;
+                          _filterFertilizers(_voiceText);
+                        },
+                      ),
+                      const Expanded(
+                        child: Text(
+                          "Listening...",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  const Icon(Icons.mic, size: 60, color: Colors.red),
+
+                  const SizedBox(height: 20),
+
+                  // 🔥 LIVE TEXT DISPLAY
+                  Text(
+                    _voiceText.isEmpty ? "Speak now..." : _voiceText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _voiceText.isEmpty ? Colors.grey : Colors.black,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _applyCategoryFilter() {
     if (_selectedCategory.isEmpty) {
       _filteredFertilizers = List.from(_fertilizers);
+    } else if (_selectedCategory == "popular") {
+      _filteredFertilizers = List.from(_fertilizers)
+        ..sort((a, b) {
+          final soldA = int.tryParse(a.soldQuantity) ?? 0;
+          final soldB = int.tryParse(b.soldQuantity) ?? 0;
+          return soldB.compareTo(soldA);
+        });
     } else {
       _filteredFertilizers = _fertilizers.where((f) {
         return f.category.toLowerCase() == _selectedCategory.toLowerCase();
@@ -109,6 +190,43 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
 
       _filteredFertilizers = temp;
     });
+  }
+
+  Future<void> _startListening() async {
+    bool available = await _speech.initialize();
+
+    if (available) {
+      _showVoicePopup();
+
+      setState(() => _isListening = true);
+
+      _speech.listen(
+        onResult: (result) {
+          final text = result.recognizedWords;
+
+          _voiceText = text;
+
+          _popupSetState?.call(() {});
+
+          _searchController.text = text;
+          _filterFertilizers(text);
+
+          if (result.finalResult) {
+            Navigator.pop(context);
+            setState(() => _isListening = false);
+          }
+        },
+      );
+    }
+  }
+
+  void _stopListening() {
+    _speech.stop();
+
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+    setState(() => _isListening = false);
   }
 
   void _applySort() {
@@ -206,7 +324,8 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fertilizers',
-            style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+                style: TextStyle(fontWeight: FontWeight.bold))
+            .tr(),
         elevation: 0,
         actions: [
           FutureBuilder<Cart>(
@@ -266,10 +385,9 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) =>
-                      DeliveryRequestsScreen(deliveryPartnerId: _deliveryPartnerId)),
+                  builder: (_) => DeliveryRequestsScreen(
+                      deliveryPartnerId: _deliveryPartnerId)),
             ),
-
           )
         ],
       ),
@@ -283,51 +401,60 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      focusNode: _searchFocus,
-                      onChanged: _filterFertilizers,
-                      decoration: InputDecoration(
-                        hintText: 'Search_fertilizers...'.tr(),
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon:
-                                    const Icon(Icons.clear, color: Colors.grey),
-                                onPressed: () {
-                                  setState(() {
-                                    _searchQuery = '';
-                                    _searchController.clear();
-                                  });
-                                  _filterFertilizers(''); // Clear search
-                                  _searchFocus.unfocus();
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: Color.fromARGB(255, 29, 108, 92),
-                              width: 1.5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: Color.fromARGB(255, 20, 80, 70),
-                              width: 2.5),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 16, horizontal: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
+  child: TextField(
+    controller: _searchController,
+    focusNode: _searchFocus,
+
+    onChanged: (value) {
+      _filterFertilizers(value);
+      setState(() {}); // refresh clear icon
+    },
+
+    decoration: InputDecoration(
+      hintText: 'Search_fertilizers...'.tr(),
+      prefixIcon: const Icon(Icons.search),
+
+      suffixIcon: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ✅ CLEAR BUTTON
+          if (_searchController.text.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.black),
+              onPressed: () {
+                _searchController.clear();
+
+                setState(() {
+                  _searchQuery = "";
+                  _filteredFertilizers = List.from(_fertilizers);
+                });
+              },
+            ),
+
+          // 🎤 MIC BUTTON
+          IconButton(
+            icon: Icon(
+              _isListening ? Icons.mic : Icons.mic_none,
+              color: _isListening ? Colors.red : null,
+            ),
+            onPressed: () {
+              if (_isListening) {
+                _stopListening();
+              } else {
+                _startListening();
+              }
+            },
+          ),
+        ],
+      ),
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  ),
+),
+                  //const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.filter_list),
                     tooltip: 'Sort'.tr(),
@@ -345,6 +472,8 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                   scrollDirection: Axis.horizontal,
                   children: [
                     _buildCategoryChip("All".tr(), ""),
+                    const SizedBox(width: 10),
+                    _buildCategoryChip("Popular", "popular"),
                     const SizedBox(width: 10),
                     _buildCategoryChip("Herbicides".tr(), "herbicide"),
                     const SizedBox(width: 10),
@@ -379,7 +508,8 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
 //     : _filteredFertilizers;
 
 // REPLACE WITH THIS:
-                  if (_searchQuery.isEmpty &&
+                  if (_filteredFertilizers.isEmpty &&
+                      _searchQuery.isEmpty &&
                       _selectedCategory.isEmpty &&
                       _sortOrder == 'none') {
                     _filteredFertilizers = List.from(_fertilizers);

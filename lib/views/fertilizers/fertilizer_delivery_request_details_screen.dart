@@ -39,7 +39,9 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
   // Extract location (first line)
   String _extractLocation() {
     final lines = order.deliveryAddress.split('\n');
-    return lines.isNotEmpty ? lines.first.trim() : 'Location_not_available'.tr();
+    return lines.isNotEmpty
+        ? lines.first.trim()
+        : 'Location_not_available'.tr();
   }
 
   // Launch phone dialer
@@ -354,8 +356,20 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
             // === Products List (unchanged — already perfect!) ===
             ...order.products.map((orderItem) {
               final product = orderItem.product;
+
+              final safeProduct = product ??
+                  NestedProduct(
+                    productName: "Product",
+                    mrpPrice: "0",
+                    sellPrice: "0",
+                    productUnit: "",
+                    productQuantity: "",
+                    productCategory: "",
+                    productDetails: ProductDetail(content: "", usage: ""),
+                    images: [],
+                  );
               final qty = int.tryParse(orderItem.quantity) ?? 1;
-              final subtotal = qty * product.sell;
+              final subtotal = qty * safeProduct.sell;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -373,7 +387,7 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
                           SizedBox(
                             width: 110,
                             height: 110,
-                            child: product.images.isEmpty
+                            child: safeProduct.images.isEmpty
                                 ? Container(
                                     decoration: BoxDecoration(
                                       color: Colors.grey.shade200,
@@ -384,11 +398,11 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
                                   )
                                 : PageView.builder(
                                     scrollDirection: Axis.horizontal,
-                                    itemCount: product.images.length,
+                                    itemCount: safeProduct.images.length,
                                     itemBuilder: (context, i) => ClipRRect(
                                       borderRadius: BorderRadius.circular(12),
                                       child: Image.network(
-                                        product.images[i].url,
+                                        safeProduct.images[i].url,
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, __, ___) =>
                                             const Icon(Icons.error,
@@ -402,21 +416,21 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(product.productName,
+                                Text(safeProduct.productName,
                                     style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 4),
-                                Text(product.productCategory,
+                                Text(safeProduct.productCategory,
                                     style: TextStyle(
                                         color: Colors.grey[700],
                                         fontStyle: FontStyle.italic)),
                                 const SizedBox(height: 6),
-                                Text(product.unit,
+                                Text(safeProduct.unit,
                                     style: const TextStyle(fontSize: 14)),
                                 const SizedBox(height: 10),
                                 Text(
-                                  '$qty × ₹${product.sellPrice} = ₹${subtotal.toStringAsFixed(0)}',
+                                  '$qty × ₹${safeProduct.sellPrice} = ₹${subtotal.toStringAsFixed(0)}',
                                   style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -427,39 +441,39 @@ class DeliveryRequestDetailsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      if (product.productDetails.content.isNotEmpty ||
-                          product.productDetails.usage.isNotEmpty) ...[
+                      if (safeProduct.productDetails.content.isNotEmpty ||
+                          safeProduct.productDetails.usage.isNotEmpty) ...[
                         const Divider(height: 30),
-                        if (product.productDetails.usage.isNotEmpty) ...[
+                        if (safeProduct.productDetails.usage.isNotEmpty) ...[
                           Text('Usage_Instructions:'.tr(),
                               style: const TextStyle(
                                   fontWeight: FontWeight.w600, fontSize: 15)),
                           const SizedBox(height: 6),
-                          Text(product.productDetails.usage,
+                          Text(safeProduct.productDetails.usage,
                               style: const TextStyle(
                                   color: Colors.blueGrey, fontSize: 14)),
                           const SizedBox(height: 12),
                         ],
-                        if (product.productDetails.content.isNotEmpty) ...[
+                        if (safeProduct.productDetails.content.isNotEmpty) ...[
                           const Text('description',
                                   style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 15))
                               .tr(),
                           const SizedBox(height: 6),
-                          Text(product.productDetails.content,
+                          Text(safeProduct.productDetails.content,
                               style: const TextStyle(
                                   color: Colors.blueGrey, fontSize: 14)),
                         ],
                       ],
-                      if (product.productDescriptions != null &&
-                          product.productDescriptions!.isNotEmpty) ...[
+                      if (safeProduct.productDescriptions != null &&
+                          safeProduct.productDescriptions!.isNotEmpty) ...[
                         const SizedBox(height: 12),
                         Text('Full_Description'.tr(),
                             style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 15)),
                         const SizedBox(height: 6),
-                        Text(product.productDescriptions!,
+                        Text(safeProduct.productDescriptions!,
                             style: const TextStyle(
                                 color: Colors.black87, fontSize: 14)),
                       ],

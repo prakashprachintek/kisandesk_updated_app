@@ -7,7 +7,7 @@ class NotificationData {
   final String workDate;
   final String description;
   final String workInQuantity;
-  final String farmerName; 
+  final String farmerName;
   final String phone;
   bool read;
   final DateTime createdAt;
@@ -40,7 +40,7 @@ class NotificationData {
       farmerName: map['farmerName'] ?? '',
       phone: map['phone'] ?? '',
       read: map['read'] ?? false,
-      createdAt: DateTime.parse(map['created_at'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
     );
   }
 

@@ -157,10 +157,8 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
                     style: TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-
                   const SizedBox(height: 20),
 
-                  /// Nearby Filter
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -245,7 +243,6 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
 
   Widget _buildLabourList() {
     List filteredLabours = labours.where((labour) {
-
       if (selectedCategory != "All" &&
           labour["work_category"] != selectedCategory) {
         return false;
@@ -266,7 +263,6 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
       }
 
       return true;
-
     }).toList();
 
     if (filteredLabours.isEmpty) {
@@ -280,10 +276,26 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
         final gender = (labour["gender"] ?? "").toString().toLowerCase();
         final age = _calculateAge(labour["dob"]);
 
-        return Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.only(bottom: 12),
+        // ✅ MASKING LOGIC HERE
+        final phone = (labour["phone"] ?? "").toString();
+        final maskedPhone = phone.length >= 10
+            ? "${phone.substring(0, 2)}******${phone.substring(phone.length - 2)}"
+            : phone;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: const LinearGradient(
+                colors: [
+                Colors.white,
+                Color.fromARGB(215, 223, 241, 223),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight, 
+                ),
+            ),
+          
           child: ListTile(
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -310,16 +322,15 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (age > 0)
-                  Text(
-                    "$age years",
-                    style: const TextStyle(fontSize: 13),
-                  ),
+                  Text("$age years",
+                      style: const TextStyle(fontSize: 13)),
 
                 const SizedBox(height: 4),
 
                 Row(
                   children: [
-                    const Icon(Icons.work, size: 16, color: Colors.grey),
+                    const Icon(Icons.work,
+                        size: 16, color: Colors.grey),
                     const SizedBox(width: 5),
                     Expanded(
                       child: Text(
@@ -332,8 +343,9 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
 
                 const SizedBox(height: 4),
 
+                // ✅ MASKED PHONE DISPLAY
                 Text(
-                  labour["phone"] ?? "",
+                  maskedPhone,
                   style: const TextStyle(fontSize: 13),
                 ),
               ],
@@ -345,7 +357,8 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => LabourDetailsPage(labour: labour),
+                  builder: (_) =>
+                      LabourDetailsPage(labour: labour),
                 ),
               );
             },
@@ -368,15 +381,19 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
           });
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF2E7D67) : Colors.grey.shade300,
+            color: isSelected
+                ? const Color(0xFF2E7D67)
+                : Colors.grey.shade300,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             category,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black87,
+              color:
+                  isSelected ? Colors.white : Colors.black87,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -397,15 +414,19 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
           });
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.black87 : Colors.grey.shade200,
+            color: isSelected
+                ? Colors.black87
+                : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(18),
           ),
           child: Text(
             subCategory,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black87,
+              color:
+                  isSelected ? Colors.white : Colors.black87,
               fontSize: 13,
             ),
           ),
@@ -423,14 +444,13 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
         elevation: 0,
         title: const Text(
           "List of labours",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          style:
+              TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              _openFilterSheet();
-            },
+            onPressed: _openFilterSheet,
           ),
         ],
       ),
@@ -444,25 +464,23 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: subCategories.keys
-                          .map((category) => _buildCategoryChip(category))
+                          .map((category) =>
+                              _buildCategoryChip(category))
                           .toList(),
                     ),
                   ),
-
                   const SizedBox(height: 14),
-
                   if (subCategories[selectedCategory]!.isNotEmpty)
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: subCategories[selectedCategory]!
-                            .map((sub) => _buildSubCategoryChip(sub))
+                            .map((sub) =>
+                                _buildSubCategoryChip(sub))
                             .toList(),
                       ),
                     ),
-
                   const SizedBox(height: 20),
-
                   Expanded(child: _buildLabourList()),
                 ],
               ),

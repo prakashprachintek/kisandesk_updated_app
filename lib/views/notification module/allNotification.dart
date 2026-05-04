@@ -25,150 +25,213 @@ class _AllNotificationPageState extends State<AllNotificationPage> {
   }
 
   Future<void> _fetchNotifications() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
     try {
-      final url = Uri.parse('${KD.api}/app/get_notification_data');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'userId': UserSession.userId,
-        }),
-      );
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        if (jsonData['status'] == 'success') {
-          // Handle null or empty push_notifications
-          final pushNotifications = jsonData['results'] != null &&
-                  jsonData['results'].isNotEmpty &&
-                  jsonData['results'][0]['push_notifications'] != null
-              ? jsonData['results'][0]['push_notifications'] as List
-              : [];
-          final notifications = pushNotifications
-              .map((item) => NotificationData.fromMap(item))
-              .toList();
-          // Sort by createdAt (newest first)
-          notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-          setState(() {
-            _notifications = notifications;
-          });
-        } else {
-          setState(() {
-            _error = jsonData['message'] ?? 'Failed to fetch notifications';
-          });
-        }
+      final response = await http
+          .post(
+            Uri.parse('${KD.api}/app/get_notification_data'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'userId': UserSession.userId}),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        final list = data['results']?[0]?['push_notifications'] ?? [];
+
+        final notifications = (list as List)
+            .map((e) => NotificationData.fromMap(e))
+            .toList();
+
+        notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        setState(() => _notifications = notifications);
       } else {
-        setState(() {
-          _error = 'Server error: ${response.statusCode}';
-        });
+        setState(() => _error = data['message'] ?? 'Error');
       }
     } catch (e) {
-      setState(() {
-        _error = 'Error fetching notifications: $e';
-      });
+      setState(() => _error = e.toString());
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
   Future<void> _markAsRead(String reqId) async {
     try {
-      final url = Uri.parse('${KD.api}/app/update_notification_data');
-      final response = await http.post(
-        url,
+      await http.post(
+        Uri.parse('${KD.api}/app/update_notification_data'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
+        body: jsonEncode({
           'userId': UserSession.userId,
           'requestId': reqId,
           'read': true,
         }),
       );
 
-      if (response.statusCode == 200) {
-        setState(() {
-          final notification = _notifications.firstWhere((n) => n.reqId == reqId);
-          notification.read = true;
-        });
-      } else {
-        print('Failed to mark as read: ${response.statusCode}');
+      final index = _notifications.indexWhere((n) => n.reqId == reqId);
+      if (index != -1) {
+        setState(() => _notifications[index].read = true);
       }
     } catch (e) {
-      print('Error marking as read: $e');
+      debugPrint(e.toString());
     }
   }
 
-  Widget _buildNotificationTile(NotificationData notification) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        title: Text(
-          notification.title,
-          style: TextStyle(
-            fontWeight: notification.read ? FontWeight.normal : FontWeight.bold,
+  // 🔥 MODERN CARD UI
+  Widget _tile(NotificationData n) {
+    return GestureDetector(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => NotificationPage(notificationData: n),
           ),
+        );
+
+        if (!n.read) _markAsRead(n.reqId);
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: n.read ? Colors.white : const Color(0xFFE8F5E9),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            )
+          ],
         ),
-        subtitle: Text(
-          'From: ${notification.farmerName}\n${notification.body}',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Text(
-          notification.workDate,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => NotificationPage(
-                notificationData: notification,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// 🔔 ICON
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E7D67).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.notifications,
+                color: Color(0xFF2E7D67),
+                size: 22,
               ),
             ),
-          ).then((_) {
-            if (!notification.read) {
-              _markAsRead(notification.reqId);
-            }
-          });
-        },
+
+            const SizedBox(width: 12),
+
+            /// 📄 CONTENT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// TITLE
+                  Text(
+                    n.title,
+                    style: TextStyle(
+                      fontWeight:
+                          n.read ? FontWeight.w500 : FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  /// FARMER NAME
+                  Text(
+                    n.farmerName,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.black87,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  /// BODY
+                  Text(
+                    n.body,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  /// DATE + DOT
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        n.workDate,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+
+                      if (!n.read)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF2E7D67),
+                            shape: BoxShape.circle,
+                          ),
+                        )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Notifications")),
+        body: Center(child: Text(_error!)),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
-        centerTitle: true,
+        title: const Text("Notifications"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
             onPressed: _fetchNotifications,
-          ),
+            icon: const Icon(Icons.refresh),
+          )
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text('Error: $_error'))
-              : _notifications.isEmpty
-                  ? const Center(child: Text('No notifications available'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: _notifications.length,
-                      itemBuilder: (context, index) {
-                        return _buildNotificationTile(_notifications[index]);
-                      },
-                    ),
+      body: _notifications.isEmpty
+          ? const Center(child: Text("No Notifications"))
+          : ListView.builder(
+              itemCount: _notifications.length,
+              itemBuilder: (_, i) => _tile(_notifications[i]),
+            ),
     );
   }
 }

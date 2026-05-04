@@ -2,137 +2,195 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-import 'dart:async';
+import 'package:mainproject1/views/services/image_caching.dart';
 import 'dart:convert';
-import '../services/user_session.dart';
+
 import '../services/api_config.dart';
+import '../services/user_session.dart';
 import 'machinery_rent_page.dart';
 
+class _SuccessPopupContent extends StatefulWidget {
+  const _SuccessPopupContent();
+
+  @override
+  State<_SuccessPopupContent> createState() => _SuccessPopupContentState();
+}
+
+class _SuccessPopupContentState extends State<_SuccessPopupContent>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _iconScale;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _iconScale = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.elasticOut,
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black54,
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// ✅ ANIMATED ICON
+              ScaleTransition(
+                scale: _iconScale,
+                child: Container(
+                  height: 90,
+                  width: 90,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF00AD83).withOpacity(0.1),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF00AD83),
+                    size: 60,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                "Booking_Successful!",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ).tr(),
+
+              const SizedBox(height: 10),
+
+              const Text(
+                "Your_machinery_booking_is_confirmed.\nWe_will_contact_you_soon.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 20),
+
+              /// ✅ BUTTON
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MachineryRentPage(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00AD83),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    "Go To Home",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class BookPage extends StatefulWidget {
-  const BookPage({super.key});
+  final String selectedMachine;
+  final Map<String, dynamic> machineData;
+
+  const BookPage({
+    super.key,
+    required this.selectedMachine,
+    required this.machineData,
+  });
 
   @override
   State<BookPage> createState() => _BookPageState();
 }
 
-// Field validation errors
-Map<String, bool> fieldErrors = {
-  'machinery': false,
-  'workType': false,
-  'area': false,
-  'date': false,
-  'description': false,
-};
-
 class _BookPageState extends State<BookPage> {
-  // Dropdown selections
   String? selectedMachinery;
   String? selectedWorkType;
   String? bookingDate;
-  String selectedUnit = 'Acres'; //default
-  String selectedQuantity = "1"; // default
-  bool get isMachinerySelected => selectedMachinery != null;
 
-  // Controllers
-  // final TextEditingController areaController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
+  bool isVehicle = false;
+  bool isHarvest = false;
 
-  // Data lists
-  List<Map<String, dynamic>> machineryData = [];
+  int quantity = 1;
+
   List<Map<String, dynamic>> workTypeList = [];
 
-  // Loading state
-  bool isLoading = false;
+  bool isSubmitting = false;
+
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController sourceController = TextEditingController();
+final TextEditingController destinationController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    fetchMachineryData(); // Fetch machinery data on init
-  }
 
-  // Fetch machinery data from API
-  Future<void> fetchMachineryData() async {
-    setState(() => isLoading = true);
-    try {
-      final uri = Uri.parse("${KD.api}/app/get_master_data");
-      final res = await http.post(uri,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({"type": "machine"}));
+    selectedMachinery = widget.selectedMachine;
 
-      final data = jsonDecode(res.body);
-      if (data["status"] == "success") {
-        final types = data["results"][0]["machinery_type"] as List;
-        setState(() {
-          machineryData =
-              types.map((e) => Map<String, dynamic>.from(e)).toList();
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed_to_load_machinery_data".tr())),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+    final name = selectedMachinery!.toLowerCase();
+
+    isVehicle = name.contains("car") || name.contains("cruiser");
+    isHarvest = name.contains("harwest") || name.contains("harvest");
+
+    if (!isVehicle) {
+      workTypeList = List<Map<String, dynamic>>.from(
+        (widget.machineData["work_types"] as List)
+            .map((e) => Map<String, dynamic>.from(e)),
       );
     }
-    setState(() => isLoading = false);
   }
 
-  Widget _buildImage(String? imageUrl,
-      {double width = 60, double height = 60}) {
-    if (imageUrl == null || imageUrl.isEmpty || !imageUrl.startsWith('http')) {
-      return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.image_not_supported,
-            size: width * 0.6, color: Colors.grey),
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        imageUrl,
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            width: width,
-            height: height,
-            color: Colors.grey[200],
-            child: Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Color(0xFF00AD83)),
-              ),
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(Icons.broken_image, color: Colors.red[300]),
-          );
-        },
-      ),
-    );
-  }
-
-  // Open date picker dialog
-  void _pickDate() async {
+  /// DATE
+  void pickDate() async {
     DateTime today = DateTime.now();
+
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: today,
@@ -143,751 +201,606 @@ class _BookPageState extends State<BookPage> {
     if (picked != null) {
       setState(() {
         bookingDate = DateFormat('yyyy-MM-dd').format(picked);
-        fieldErrors['date'] = false;
       });
     }
   }
+void showSuccessPopup() {
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: false,
+    barrierLabel: "Success",
+    transitionDuration: const Duration(milliseconds: 400),
+    pageBuilder: (_, __, ___) {
+      return const SizedBox(); // required
+    },
+    transitionBuilder: (context, animation, secondaryAnimation, child) {
+      return Transform.scale(
+        scale: Curves.easeOutBack.transform(animation.value),
+        child: Opacity(
+          opacity: animation.value,
+          child: const Center(
+            child: _SuccessPopupContent(),
+          ),
+        ),
+      );
+    },
+  );
+}
+  /// SUBMIT
+void submitBooking() async {
+  if (bookingDate == null) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text("Select date")));
+    return;
+  }
 
-  // Validate and submit booking
-  bool isSubmitting = false;
-
-void _submitBooking() async {
-  if (isSubmitting) return;
-
-  setState(() {
-    fieldErrors['machinery'] = selectedMachinery == null;
-    fieldErrors['workType'] = selectedWorkType == null;
-    fieldErrors['area'] = selectedQuantity.isEmpty;
-    fieldErrors['date'] = bookingDate == null;
-    fieldErrors['description'] = false;
-  });
-
-  if (fieldErrors.values.any((e) => e)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Please_fill_all_fields").tr()),
-    );
+  if (!isVehicle && selectedWorkType == null) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(tr("Select_Work_Type"))));
     return;
   }
 
   setState(() => isSubmitting = true);
 
   final uri = Uri.parse("${KD.api}/app/book_machinary");
-  
-
-  print("API URL: $uri");
-
-  final languageCode = Localizations.localeOf(context).languageCode;
-
-  final selectedMachine = machineryData.firstWhere(
-    (m) =>
-        (languageCode == 'kn'
-            ? (m["name_in_kannada"] ?? m["name_in_english"] ?? m["name"])
-            : (m["name_in_english"] ?? m["name"])) ==
-        selectedMachinery,
-    orElse: () => {},
-  );
-
-  final selectedWork = workTypeList.firstWhere(
-    (w) =>
-        (languageCode == 'kn'
-            ? (w["type_in_kannada"] ?? w["type_in_english"] ?? w["type"])
-            : (w["type_in_english"] ?? w["type"])) ==
-        selectedWorkType,
-    orElse: () => {},
-  );
 
   final payload = {
     "userId": UserSession.userId,
-    "machineryType":selectedMachine["name_in_english"] ?? selectedMachinery!,
+    "machineryType": selectedMachinery!,
     "workDate": bookingDate!,
-    "workType":selectedWork["type_in_english"] ?? selectedWorkType!,
-    "workInQuantity":"$selectedQuantity ${selectedUnit == "Acres" ? "acre" : "hour"}",
-    
     "description": descriptionController.text,
   };
 
-  print("Sending payload: ${jsonEncode(payload)}");
+  /// 🚗 VEHICLE (CAR / CRUISER)
+  if (isVehicle) {
+    payload.addAll({
+      "workInQuantity": "$quantity day",
+      "sourcepoint": sourceController.text,
+      "destinationpoint": destinationController.text,
+      "workType": "",
+    });
+  }
+
+  /// 🌾 HARVEST
+  else if (isHarvest) {
+    payload.addAll({
+      "workInQuantity": "$quantity", // acres/packets
+      "workType": selectedWorkType!,
+    });
+  }
+
+  /// 🚜 NORMAL MACHINES
+  else {
+    payload.addAll({
+      "workInQuantity": "$quantity hour",
+      "workType": selectedWorkType!,
+    });
+  }
 
   try {
-    final res = await http
-        .post(
-          uri,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(payload),
-        )
-        .timeout(const Duration(seconds: 10));
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(payload),
+    );
 
-    print("Status Code: ${res.statusCode}");
-    print("Response: ${res.body}");
-
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception("Server error ${res.statusCode}");
-    }
-
-    dynamic responseData;
-    try {
-      responseData = jsonDecode(res.body);
-    } catch (e) {
-      throw Exception("Invalid JSON response");
-    }
+    final responseData = jsonDecode(res.body);
 
     if (responseData["status"] == "success") {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Booking_Successful".tr()),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => MachineryRentPage()),
-                );
-              },
-              child: Text("OK".tr()),
-            ),
-          ],
-        ),
-      );
+      showSuccessPopup();
 
-      setState(() {
-        selectedMachinery = null;
-        selectedWorkType = null;
-        workTypeList = [];
-        selectedQuantity = "1";
-        selectedUnit = "Acres";
-        bookingDate = null;
-        descriptionController.clear();
-        fieldErrors.updateAll((key, value) => false);
-      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed: ${responseData["message"]}")),
+        SnackBar(content: Text(responseData["message"])),
       );
     }
-  } on TimeoutException {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Request timed out"),
-        action: SnackBarAction(
-          label: "Retry",
-          onPressed: _submitBooking,
-        ),
-      ),
-    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Error: $e")),
     );
-  } finally {
-    if (mounted) {
-      setState(() => isSubmitting = false);
-    }
   }
+
+  setState(() => isSubmitting = false);
 }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Book_Machinery".tr(),
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: ListView(
-                children: [
-                  // ----------------------------
-                  // Machinery Dropdown
-                  // ----------------------------
-                  DropdownMenu<String>(
-                    menuHeight: 400, // Replaces menuMaxHeight
-                    inputDecorationTheme: InputDecorationTheme(
-                      labelStyle: TextStyle(color: Colors.grey[600]),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: fieldErrors['machinery']!
-                              ? Colors.red
-                              : Colors.grey,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: fieldErrors['machinery']!
-                              ? Colors.red
-                              : Colors.grey,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: fieldErrors['machinery']!
-                              ? Colors.red
-                              : Color(0xFF00AD83),
-                          width: 2,
-                        ),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  /// IMAGE
+  Widget networkImage(String? url) {
+    if (url == null || !url.startsWith("http")) {
+      return Container(
+        color: Colors.grey[200],
+        child: const Icon(Icons.image),
+      );
+    }
+
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      cacheWidth: 400,
+      loadingBuilder: (c, child, progress) {
+        if (progress == null) return child;
+        return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+      },
+      errorBuilder: (_, __, ___) {
+        return Container(
+          color: Colors.grey[200],
+          child: const Icon(Icons.broken_image),
+        );
+      },
+    );
+  }
+
+  /// HEADER
+  Widget buildHeader() {
+    return Stack(
+      children: [
+        SizedBox(
+          height: 230,
+          width: double.infinity,
+          //child: networkImage(widget.machineData["image"]),
+          child: CachedImageWidget(
+            imageUrl: widget.machineData["image"] ?? "",
+            width: double.infinity,
+            height: 230,
+            fit: BoxFit.cover,
+            ),
+        ),
+        Container(
+          height: 230,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
+          ),
+        ),
+        Positioned(
+          top: 40,
+          left: 12,
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 20,
+          left: 16,
+          right: 16,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                selectedMachinery ?? "",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (selectedWorkType != null)
+                Container(
+                  margin: const EdgeInsets.only(top: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 29, 108, 92),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    selectedWorkType!,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                )
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  /// 🔥 PREMIUM WORK TYPES
+  Widget buildWorkTypes() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Select_Work_Type",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1D6C5C),
+          ),
+        ).tr(),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 150,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: workTypeList.length,
+            itemBuilder: (_, i) {
+              final w = workTypeList[i];
+              final isKannada =
+    Localizations.localeOf(context).languageCode == 'kn';
+
+final name = isKannada
+    ? (w["type_in_kannada"] ?? w["type_in_english"])
+    : (w["type_in_english"] ?? w["type"]);
+              final selected = selectedWorkType == name;
+
+              return GestureDetector(
+                onTap: () => setState(() => selectedWorkType = name),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 140,
+                  margin: const EdgeInsets.only(right: 14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: selected
+                          ? const Color(0xFF00AD83)
+                          : Colors.transparent,
+                      width: 2,
                     ),
-                    hintText: "Select_Machinery".tr(),
-                    initialSelection: selectedMachinery,
-                    dropdownMenuEntries: machineryData
-                        .asMap()
-                        .entries
-                        .map<DropdownMenuEntry<String>>((entry) {
-                      final index = entry.key;
-                      final machine = entry.value;
-                      final machineName =
-                          Localizations.localeOf(context).languageCode == 'kn'
-                              ? (machine["name_in_kannada"] ??
-                                  machine["name_in_english"] ??
-                                  machine["name"])
-                              : (machine["name_in_english"] ?? machine["name"]);
-                      return DropdownMenuEntry<String>(
-                        value: machineName,
-                        label: machineName, // For accessibility
-                        labelWidget: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(vertical: 8),
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.8,
-                                child: Row(
-                                  children: [
-                                    _buildImage(machine["image"],
-                                        width: 150, height: 120),
-                                    SizedBox(width: 20),
-                                    Expanded(
-                                      child: Text(
-                                        machineName,
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: selected
+                            ? const Color(0xFF00AD83).withOpacity(0.4)
+                            : Colors.black.withOpacity(0.08),
+                        blurRadius: selected ? 12 : 6,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CachedImageWidget(
+                            imageUrl: w["image"] ?? "",
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
                             ),
-                            // Add divider except for the last item
-                            if (index < machineryData.length - 1)
-                              Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Colors.grey.shade400,
-                              ),
-                          ],
+                          //child: networkImage(w["image"]),
                         ),
-                      );
-                    }).toList(),
-                    onSelected: (value) {
-                      setState(() {
-                        selectedMachinery =
-                            value; // This is the displayed text (Kannada or English)
-
-                        // Find the actual machine object using localized name
-                        final selectedMachine = machineryData.firstWhere((m) {
-                          final displayName =
-                              Localizations.localeOf(context).languageCode ==
-                                      'kn'
-                                  ? (m["name_in_kannada"] ??
-                                      m["name_in_english"] ??
-                                      m["name"])
-                                  : (m["name_in_english"] ?? m["name"]);
-                          return displayName == value;
-                        });
-
-                        // Now safely extract work types
-                        workTypeList = List<Map<String, dynamic>>.from(
-                            selectedMachine["work_types"]);
-                        selectedWorkType = null;
-                        fieldErrors['machinery'] = false;
-                      });
-                    },
-                  ),
-                  // Subtitle for selected machinery
-                  if (selectedMachinery != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 12),
-                      child: Text(
-                        '${workTypeList.length} work types available',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ),
-                  SizedBox(height: 16),
-
-                  // ----------------------------
-                  // Work Type Dropdown
-                  // ----------------------------
-                  SizedBox(
-                    width: double
-                        .infinity, // Force full width to match other form fields
-                    child: DropdownMenu<String>(
-                      menuHeight: 400,
-                      inputDecorationTheme: InputDecorationTheme(
-                        labelStyle: TextStyle(color: Colors.grey[600]),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: fieldErrors['workType']!
-                                ? Colors.red
-                                : Colors.grey,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: fieldErrors['workType']!
-                                ? Colors.red
-                                : Colors.grey,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: fieldErrors['workType']!
-                                ? Colors.red
-                                : Color(0xFF00AD83),
-                            width: 2,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.red, width: 2),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.red, width: 2),
-                        ),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      hintText: workTypeList.isEmpty
-                          ? "Select_machinery_first".tr()
-                          : "Select_Work_Type".tr(),
-                      initialSelection: selectedWorkType,
-                      dropdownMenuEntries: workTypeList.isEmpty
-                          ? [
-                              DropdownMenuEntry<String>(
-                                value: '',
-                                label: 'Select_machinery_first'.tr(),
-                                enabled: false, // Non-selectable placeholder
-                                labelWidget: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 2),
-                                      child: SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.8,
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 60,
-                                              height: 60,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black
-                                                        .withOpacity(0.2),
-                                                    blurRadius: 6,
-                                                    offset: Offset(0, 3),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: Icon(
-                                                  Icons.construction,
-                                                  size: 36,
-                                                  color: Colors.grey[600],
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(width: 16),
-                                            Expanded(
-                                              child: Text(
-                                                'Select_machinery_first'.tr(),
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey[600],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ]
-                          : workTypeList
-                              .asMap()
-                              .entries
-                              .map<DropdownMenuEntry<String>>((entry) {
-                              final index = entry.key;
-                              final workType = entry.value;
-                              final workName = Localizations.localeOf(context)
-                                          .languageCode ==
-                                      'kn'
-                                  ? (workType["type_in_kannada"] ??
-                                      workType["type_in_english"] ??
-                                      workType["type"])
-                                  : (workType["type_in_english"] ??
-                                      workType["type"]);
-                              return DropdownMenuEntry<String>(
-                                value: workName,
-                                label: workName,
-                                labelWidget: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 8),
-                                      child: SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.8,
-                                        child: Row(
-                                          children: [
-                                            _buildImage(workType["image"],
-                                                width: 150, height: 120),
-                                            SizedBox(width: 20),
-                                            Expanded(
-                                              child: Text(
-                                                workName,
-                                                style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                        FontWeight.w500),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    if (index < workTypeList.length - 1)
-                                      Divider(
-                                          height: 1,
-                                          thickness: 1,
-                                          color: Colors.grey.shade400),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                      onSelected: isMachinerySelected
-                      ? (value) => setState(() {
-                        if (value != '') {
-                          // Only update if not the placeholder
-                          selectedWorkType = value;
-                          fieldErrors['workType'] = false;
-                        }
-                      })
-                      : null,
-
-                    ),
-                  ),
-                  // Custom error message for validation
-                  if (fieldErrors['workType']!)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 4),
-                      child: Text(
-                        "This_field_is_required".tr(),
-                        style: TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
-                  SizedBox(height: 16),
-
-                  // ----------------------------
-                  // Area/Quantity Selection (Bordered)
-                  // ----------------------------
-                  Opacity(
-                    opacity: isMachinerySelected ? 1:0.5,
-                    child: IgnorePointer(
-                      ignoring: !isMachinerySelected,
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: SizedBox(
-                          width: double.infinity,
+                        Positioned.fill(
                           child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color:
-                              fieldErrors['area']! ? Colors.red : Colors.grey,
-                          width: fieldErrors['area']! ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          // Radio Buttons
-                          Flexible(
-                            flex: 2,
-                            child: Row(
-                              children: [
-                                Radio<String>(
-                                  value: "Acres",
-                                  groupValue: selectedUnit,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedUnit = value!;
-                                    });
-                                  },
-                                  activeColor: Color(0xFF00AD83),
-                                ),
-                                Text("Acres".tr()),
-                                SizedBox(width: 12),
-                                Radio<String>(
-                                  value: "Hours",
-                                  groupValue: selectedUnit,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedUnit = value!;
-                                    });
-                                  },
-                                  activeColor: Color(0xFF00AD83),
-                                ),
-                                Text("Hours".tr()),
-                              ],
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.black.withOpacity(0.6),
+                                  Colors.transparent
+                                ],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
                             ),
                           ),
-
-                          SizedBox(width: 12),
-
-                          // Dropdown for quantity
-                          Flexible(
-                            flex: 1,
-                            child: DropdownButtonFormField<String>(
-                              value: selectedQuantity,
-                              decoration: InputDecoration(
-                                border: InputBorder
-                                    .none, // we already added outer border
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                              ),
-                              items: [
-                                ...List.generate(20, (i) => (i + 1).toString()),
-                                "20+"
-                              ].map((qty) {
-                                return DropdownMenuItem(
-                                  value: qty,
-                                  child: Text(qty),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedQuantity = value!;
-                                });
-                              },
+                        ),
+                        Positioned(
+                          bottom: 12,
+                          left: 10,
+                          right: 10,
+                          child: Text(
+                            name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                      ),
-                    ),
-                  ),
-
-                  // Error message below
-                  if (fieldErrors['area']!)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 4),
-                      child: Text(
-                        "This_field_is_required".tr(),
-                        style: TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
-
-                  SizedBox(
-                    height: 16,
-                  ),
-
-                  // ----------------------------
-                  // Date Picker
-                  // ----------------------------
-                  Opacity(
-                    opacity: isMachinerySelected ? 1 : 0.5,
-                    child: IgnorePointer(
-                      ignoring: !isMachinerySelected,
-                      child: InkWell(     
-                    onTap: _pickDate,
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        labelText: "Booking_Date".tr(),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide(
-                              color: fieldErrors['date']!
-                                  ? Colors.red
-                                  : Colors.grey),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide(
-                              color: fieldErrors['date']!
-                                  ? Colors.red
-                                  : Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide(
-                              color: fieldErrors['date']!
-                                  ? Colors.red
-                                  : Color(0xFF00AD83),
-                              width: 1.5),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide(color: Colors.red, width: 2),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide(color: Colors.red, width: 2),
-                        ),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                      ),
-                      child: Text(
-                        bookingDate ?? "Select_a_date".tr(),
-                        style: TextStyle(
-                            color: fieldErrors['date']!
-                                ? Colors.red
-                                : Colors.black),
-                      ),
-                    ),
-                  ),
-                    ),
-                  ),
-                  if (fieldErrors['date']!)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 4),
-                      child: Text(
-                        "This_field_is_required".tr(),
-                        style: TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
-                  SizedBox(height: 16),
-
-                  // ----------------------------
-                  // Description TextField
-                  // ----------------------------
-                  Opacity(
-                  opacity: isMachinerySelected ? 1: 0.5,
-                  child: IgnorePointer(
-                    ignoring: !isMachinerySelected,
-                  child:TextField(
-                    controller: descriptionController,
-                    decoration: InputDecoration(
-                      labelText: "Description/Notes".tr(),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(
-                            color: fieldErrors['description']!
-                                ? Colors.red
-                                : Colors.grey),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(
-                            color: fieldErrors['description']!
-                                ? Colors.red
-                                : Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(
-                            color: fieldErrors['description']!
-                                ? Colors.red
-                                : Color(0xFF00AD83),
-                            width: 1.5),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                    ),
-                    maxLines: 3,
-                    onChanged: (value) {},
-                  ),
-                  ),
-                  ),
-                  SizedBox(height: 30),
-
-                  // ----------------------------
-                  // Submit Button
-                  // ----------------------------
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: (!isMachinerySelected || isSubmitting) ? null : _submitBooking,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 29, 108, 92),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: isSubmitting
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              "submit_booking".tr(),
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold),
+                        if (selected)
+                          const Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Icon(
+                              Icons.check_circle,
+                              color: Colors.white,
                             ),
+                          ),
+                      ],
                     ),
-                  )
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// DETAILS
+  Widget buildWorkDetails() {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Work_Details",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ).tr(),
+
+          const SizedBox(height: 16),
+
+          /// ================= DATE =================
+          const Text(
+            "Select_Work_Date",
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ).tr(),
+
+          const SizedBox(height: 10),
+
+          GestureDetector(
+            onTap: pickDate,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today, color: Color(0xFF00AD83)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      bookingDate ?? "Booking_Date",
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: bookingDate == null ? Colors.grey : Colors.black,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ).tr(),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, size: 16),
                 ],
               ),
             ),
+          ),
+
+          const SizedBox(height: 20),
+
+          /// ================= HOURS =================
+          Text(
+            isVehicle
+            ? "Select_Days".tr()
+            : isHarvest
+              ? "Select_Quantity".tr()
+              : "Select_Hours".tr(),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                /// MINUS BUTTON
+                GestureDetector(
+                  onTap: () {
+                    if (quantity > 1) {
+                      setState(() => quantity--);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 6,
+                        )
+                      ],
+                    ),
+                    child: const Icon(Icons.remove),
+                  ),
+                ),
+
+                /// VALUE
+                Column(
+                  children: [
+                    Text(
+                      "$quantity",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      isVehicle
+                      ? "days"
+                      : isHarvest
+                      ? "qty"
+                      : "hours",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    )
+                  ],
+                ),
+
+                /// PLUS BUTTON
+                GestureDetector(
+                  onTap: () {
+                    setState(() => quantity++);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00AD83),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00AD83).withOpacity(0.4),
+                          blurRadius: 8,
+                        )
+                      ],
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          /// ================= DESCRIPTION =================
+          const Text(
+            "description",
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ).tr(),
+
+          const SizedBox(height: 10),
+
+          TextField(
+            controller: descriptionController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: "work_description".tr(),
+              filled: true,
+              fillColor: Colors.grey[100],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// MAIN UI
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      body: Column(
+        children: [
+          buildHeader(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+             child: Column(
+  children: [
+
+    /// 🚗 SHOW ONLY FOR VEHICLES
+    if (isVehicle) ...[
+      const SizedBox(height: 20),
+
+      TextField(
+        controller: sourceController,
+        decoration: InputDecoration(
+          hintText: "Source Location",
+          prefixIcon: const Icon(Icons.my_location),
+          filled: true,
+          fillColor: Colors.grey[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+
+      const SizedBox(height: 12),
+
+      TextField(
+        controller: destinationController,
+        decoration: InputDecoration(
+          hintText: "Destination Location",
+          prefixIcon: const Icon(Icons.location_on),
+          filled: true,
+          fillColor: Colors.grey[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    ],
+
+    /// 🚜 NORMAL MACHINES
+    if (!isVehicle) buildWorkTypes(),
+
+    /// DETAILS
+    if (isVehicle || selectedWorkType != null)
+      buildWorkDetails(),
+  ],
+),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: isSubmitting ? null : submitBooking,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: isSubmitting
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      "submit_booking",
+                      style: TextStyle(fontSize: 16),
+                    ).tr(),
+            ),
+          )
+        ],
+      ),
     );
   }
 }

@@ -26,16 +26,62 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Duration _remainingTime = Duration.zero;
   bool _canRetry = false;
 
+  Map<String, String> machineImages = {};
+  bool isMachineLoading = true;
+
   @override
   void initState() {
     super.initState();
     _setupRetryTimer();
+    fetchMachineImages();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> fetchMachineImages() async {
+    try {
+      final res = await http.post(
+        Uri.parse("${KD.api}/app/get_master_data"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"type": "machine"}),
+      );
+
+      final data = jsonDecode(res.body);
+
+      if (data["status"] == "success") {
+        final list = List<Map<String, dynamic>>.from(
+          data["results"][0]["machinery_type"],
+        );
+
+        Map<String, String> temp = {};
+
+        for (var m in list) {
+          final name = (m["name_in_english"] ?? m["name"] ?? "").toString();
+          final image = (m["image"] ?? "").toString();
+
+          if (name.isNotEmpty) {
+            temp[name.toLowerCase()] = image;
+          }
+        }
+
+        setState(() {
+          machineImages = temp;
+          isMachineLoading = false;
+        });
+      } else {
+        setState(() {
+          isMachineLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isMachineLoading = false;
+      });
+    }
   }
 
   // ---------------- TIME LOGIC ----------------
@@ -49,14 +95,45 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   void _calculateRetryState() {
     final createdAtRaw = widget.order['createdAt'];
+    final workDateRaw = widget.order['workDate'];
 
+    /// ❌ If no data → disable retry
     if (createdAtRaw == null || createdAtRaw.isEmpty) {
       _canRetry = false;
       return;
     }
 
-    final DateTime createdAtUtc =
-        DateTime.parse(createdAtRaw).toUtc();
+    /// ================== CHECK WORK DATE ==================
+    bool isExpired = false;
+
+    if (workDateRaw != null && workDateRaw.toString().isNotEmpty) {
+      try {
+        final workDate = DateTime.parse(workDateRaw);
+        final today = DateTime.now();
+
+        /// Compare only date (ignore time)
+        final todayOnly = DateTime(today.year, today.month, today.day);
+        final workOnly = DateTime(workDate.year, workDate.month, workDate.day);
+
+        if (workOnly.isBefore(todayOnly)) {
+          isExpired = true;
+        }
+      } catch (e) {
+        print("Work date parse error: $e");
+      }
+    }
+
+    /// ❌ If expired → NEVER allow retry
+    if (isExpired) {
+      setState(() {
+        _canRetry = false;
+        _remainingTime = Duration.zero;
+      });
+      return;
+    }
+
+    /// ================== EXISTING 3-HOUR LOGIC ==================
+    final DateTime createdAtUtc = DateTime.parse(createdAtRaw).toUtc();
 
     final DateTime retryAllowedAtUtc =
         createdAtUtc.add(const Duration(hours: 3));
@@ -89,9 +166,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     if (_isRetrying || !_canRetry) return;
 
     final mongoId = widget.order['rawMongoId'] as String?;
-    final fallbackOrderId =
-        widget.order['rawOrderId'] as String? ??
-            widget.order['orderId'] as String?;
+    final fallbackOrderId = widget.order['rawOrderId'] as String? ??
+        widget.order['orderId'] as String?;
 
     final orderIdentifier =
         mongoId?.isNotEmpty == true ? mongoId : fallbackOrderId;
@@ -130,7 +206,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -177,7 +253,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           "Order Details",
           style: TextStyle(color: Colors.white),
         ),
@@ -185,15 +261,53 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Card(
-          elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(
+              colors: [
+                Colors.white,
+                                  Color.fromARGB(215, 223, 241, 223),
+              ],
+              begin: Alignment.topLeft,
+              end:Alignment.bottomRight
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Center(
+                  child: Container(
+                    height: 220,
+                    width: 220,
+                    margin: const EdgeInsets.only(bottom:16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.transparent,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadiusGeometry.circular(12),
+                      child: (machineImages[widget.order['machinery']
+                      .toString()
+                      .toLowerCase()] !=
+                      null &&
+                      machineImages[widget.order['machinery']
+                      .toString()
+                      .toLowerCase()]!
+                      .isNotEmpty)
+                      ? Image.network(
+                        machineImages[widget.order['machinery']
+                        .toString()
+                        .toLowerCase()] !,
+                        fit: BoxFit.cover,
+                      )
+                      :const Icon(Icons.agriculture),
+                    ),
+                  ),
+                ),
+                //const SizedBox(height: 10),
                 _row("Order ID", orderId, Icons.receipt),
                 _row("Owner", owner, Icons.person),
                 GestureDetector(
@@ -217,15 +331,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 const SizedBox(height: 6),
                 Text(description),
                 const Spacer(),
-
-                if (!_canRetry)
+                if (!_canRetry && _remainingTime.inSeconds > 0)
                   Text(
                     "Retry available in ${_formatDuration(_remainingTime)}",
                     style: const TextStyle(color: Colors.grey),
                   ),
-
                 const SizedBox(height: 10),
-
                 Center(
                   child: ElevatedButton.icon(
                     onPressed:
@@ -246,8 +357,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                               : "Retry Locked",
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          _canRetry ? Colors.green : Colors.grey,
+                      backgroundColor: _canRetry ? Colors.green : Colors.grey,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 32, vertical: 14),

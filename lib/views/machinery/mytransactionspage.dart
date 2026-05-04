@@ -16,7 +16,7 @@ class MyTransactionsPage extends StatefulWidget {
 
 class _MyTransactionsPageState extends State<MyTransactionsPage> {
   List<Map<String, String>> orders = [];
-  bool _isLoading = true; // Track initial loading state
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -25,35 +25,49 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
   }
 
   Future<void> _fetchOrdersFromApi() async {
-    setState(() {
-      _isLoading = true; // Show loading only for initial fetch
-    });
+    setState(() => _isLoading = true);
 
-    print("Fetching orders for userId: ${UserSession.userId}");
     final url = Uri.parse("${KD.api}/app/get_machinary_orders");
 
     try {
       final response = await http.post(
         url,
-        body: jsonEncode({
-          "userId": UserSession.userId,
-          "type": "orders"
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        body: jsonEncode({"userId": UserSession.userId, "type": "orders"}),
+        headers: {"Content-Type": "application/json"},
       );
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        print("⭐⭐⭐⭐Orders response: ${response.body}⭐⭐⭐⭐");
 
         if (json['status'] == 'success') {
           final List results = json['results'];
-          orders = results.map<Map<String, String>>((item) {
-            // Validate ownerDetails
-            final ownerDetails = item['ownerDetails'] as List<dynamic>?;
-            final hasOwnerDetails = ownerDetails != null && ownerDetails.isNotEmpty;
+
+          orders = results
+    .where((item) {
+      final status = (item['status'] ?? '').toString().toLowerCase();
+      return status != 'rejected' && status != 'ignored';
+    })
+    .map<Map<String, String>>((item) {
+            final farmer = item['farmerDetails'];
+
+            String fullName = 'Unknown';
+            String phone = 'Not Available';
+
+            if (farmer is List && farmer.isNotEmpty) {
+              final data = farmer[0];
+
+              final nameData = data['full_name'];
+              final phoneData = data['phone'];
+
+              fullName = (nameData is List && nameData.isNotEmpty)
+                  ? nameData.first.toString()
+                  : 'Unknown';
+
+              phone = (phoneData is List && phoneData.isNotEmpty)
+                  ? phoneData.first.toString()
+                  : 'Not Available';
+            }
+
             return {
               "requestId": item['_id'] ?? '',
               "orderId": item['order_id'] ?? '',
@@ -63,51 +77,38 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
               "quantity": item['work_in_quantity'] ?? '',
               "status": item['status'] ?? '',
               "booked": item['created_at']?.split('T')[0] ?? '',
-              "description": item['description'] ?? 'No Description available',
-              "full_name": hasOwnerDetails ? ownerDetails[0]['full_name'] ?? 'Unknown' : 'Unknown',
-              "phone": hasOwnerDetails ? ownerDetails[0]['phone'] ?? 'Not Available' : 'Not Available'
+              "description":
+                  item['description'] ?? 'No Description available',
+              "full_name": fullName,
+              "phone": phone,
             };
           }).toList();
-          setState(() {
-            _isLoading = false;
-          });
+
+          setState(() => _isLoading = false);
         } else {
-          setState(() {
-            _isLoading = false;
-          });
+          setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Failed to fetch orders")),
           );
         }
       } else {
-        print("Failed to fetch orders. Status code: ${response.statusCode}");
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to fetch orders")),
         );
       }
     } catch (e) {
-      print("Error fetching orders: $e");
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error fetching orders: $e")),
       );
     }
   }
 
-  // Phone call
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Cannot make call to $phoneNumber")),
-      );
     }
   }
 
@@ -118,88 +119,104 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _fetchOrdersFromApi,
-              color: const Color.fromARGB(255, 29, 108, 92), 
+              color: const Color(0xFF1D6C5C),
               backgroundColor: Colors.white,
               child: orders.isEmpty
                   ? Center(
                       child: Text(
                         "noTransactionsTitle",
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.grey),
                       ).tr(),
                     )
                   : ListView.builder(
                       itemCount: orders.length,
                       itemBuilder: (context, index) {
                         final order = orders[index];
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 4,
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TransactionDetailPage(transaction: order),
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Order ID: ${order['orderId']}",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    TransactionDetailPage(
+                                        transaction: order),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Colors.white,
+                                  Color.fromARGB(215, 223, 241, 223),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Order ID: ${order['orderId']}",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
                                   ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text("Booked: ${order['booked']}"),
+                                    Text(
+                                      "Status: ${order['status']}",
+                                      style: const TextStyle(
+                                          color: Color(0xFF1D6C5C)),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text("Farmer: ${order['full_name']}"),
+                                GestureDetector(
+                                  onTap: order['phone'] != 'Not Available'
+                                      ? () =>
+                                          _makePhoneCall(order['phone']!)
+                                      : null,
+                                  child: Row(
                                     children: [
-                                      Text("Booked: ${order['booked']}"),
+                                      Icon(Icons.phone,
+                                          size: 20, color: Colors.grey[600]),
+                                      const SizedBox(width: 8),
                                       Text(
-                                        "Status: ${order['status']}",
-                                        style: const TextStyle(color: Colors.blue),
+                                        "${order['phone']}",
+                                        style: TextStyle(
+                                          color: order['phone'] !=
+                                                  'Not Available'
+                                              ? Colors.blue
+                                              : Colors.grey,
+                                          decoration: order['phone'] !=
+                                                  'Not Available'
+                                              ? TextDecoration.underline
+                                              : null,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text("Owner: ${order['full_name']}"),
-                                  GestureDetector(
-                                    onTap: order['phone'] != 'Not Available'
-                                        ? () => _makePhoneCall(order['phone']!)
-                                        : null,
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.phone, size: 20, color: Colors.grey[600]),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          "${order['phone']}",
-                                          style: TextStyle(
-                                            color: order['phone'] != 'Not Available'
-                                                ? Colors.blue
-                                                : Colors.grey,
-                                            decoration: order['phone'] != 'Not Available'
-                                                ? TextDecoration.underline
-                                                : null,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Text("Machinery: ${order['machinery']}"),
-                                  Text("Work Type: ${order['workType']}"),
-                                  Text("Work Date: ${order['workDate']}"),
-                                  Text("Quantity: ${order['quantity']}"),
-                                  Text("Description: ${order['description']}"),
-                                ],
-                              ),
+                                ),
+                                Text("Machinery: ${order['machinery']}"),
+                                Text("Work Type: ${order['workType']}"),
+                                Text("Work Date: ${order['workDate']}"),
+                                Text("Quantity: ${order['quantity']}"),
+                                Text("Description: ${order['description']}"),
+                              ],
                             ),
                           ),
                         );

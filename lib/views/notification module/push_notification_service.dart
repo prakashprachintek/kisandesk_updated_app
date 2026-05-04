@@ -1,10 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:mainproject1/views/notification%20module/ringtone_service.dart';
 import 'notification_page.dart';
 import 'notification_data.dart';
 import '../../main.dart';
-
+import './request_popup.dart';
 
 class PushNotificationService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -12,137 +14,129 @@ class PushNotificationService {
       FlutterLocalNotificationsPlugin();
 
   // ======================
-  // Initialize push notifications
+  // INIT
   // ======================
   static Future<void> initialize() async {
-    // Request notification permissions
+    // 🔥 REQUEST PERMISSION
     NotificationSettings settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    print("🔔 Notification permission: ${settings.authorizationStatus}");
+    print("🔔 Permission: ${settings.authorizationStatus}");
 
-    // Handle foreground messages
+    // 🔥 GET TOKEN
+    String? token = await _messaging.getToken();
+    print("🔥 FCM TOKEN: $token");
+
+    // ======================
+    // FOREGROUND
+    // ======================
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("📩 FOREGROUND MESSAGE RECEIVED");
+
+      RingtoneService.start();
+
+      _showLocalNotification(message);
+
+      _handleNotificationTap(message);
+
+      print("Title: ${message.notification?.title}");
+      print("Body: ${message.notification?.body}");
+      print("Data: ${message.data}");
+
       _showLocalNotification(message);
     });
 
-    // Handle taps when app is in background but not killed
+    // ======================
+    // BACKGROUND CLICK
+    // ======================
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("📩 CLICKED (background)");
       _handleNotificationTap(message);
     });
 
-    // Handle taps when app is killed
+    // ======================
+    // KILLED STATE
+    // ======================
     RemoteMessage? initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
+      print("📩 CLICKED (killed state)");
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _handleNotificationTap(initialMessage);
       });
     }
-
   }
 
   // ======================
-  // Local notifications setup
+  // LOCAL NOTIFICATION INIT
   // ======================
   static Future<void> initializeLocalNotifications() async {
-    const AndroidInitializationSettings androidSettings =
+    const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initSettings =
-        InitializationSettings(android: androidSettings);
-
     await _localNotifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
+      const InitializationSettings(android: androidSettings),
+      onDidReceiveNotificationResponse: (response) {
         if (response.payload != null) {
-          _handlePayloadTap(response.payload!);
+          final data = jsonDecode(response.payload!);
+          _navigate(data);
         }
       },
     );
   }
 
   // ======================
-  // Show local notification for foreground messages
+  // SHOW LOCAL NOTIFICATION
   // ======================
   static Future<void> _showLocalNotification(RemoteMessage message) async {
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      'default_channel_id',
-      'General Notifications',
-      channelDescription: 'Channel for app notifications',
+    const androidDetails = AndroidNotificationDetails(
+      'channel_id',
+      'Notifications',
       importance: Importance.max,
       priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
     );
 
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidDetails);
-
     await _localNotifications.show(
-      message.notification.hashCode,
+      0,
       message.notification?.title ?? '',
       message.notification?.body ?? '',
-      notificationDetails,
-      payload: message.data.isNotEmpty ? message.data.toString() : null,
+      const NotificationDetails(android: androidDetails),
+      payload: jsonEncode(message.data),
     );
   }
 
   // ======================
-  // Handle notification tap (background/killed)
+  // HANDLE TAP
   // ======================
-  static void _handleNotificationTap(RemoteMessage message) {
-    print("📩 Notification tap data: ${message.data}");
+ static void _handleNotificationTap(RemoteMessage message) {
+  final data = message.data;
 
-    MyApp.navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (_) => NotificationPage(
-          notificationData: NotificationData.fromMap(message.data),
-        ),
+  if (MyApp.navigatorKey.currentContext != null) {
+    showDialog(
+      context: MyApp.navigatorKey.currentContext!,
+      barrierDismissible: false, // 🔥 user must act
+      builder: (_) => RequestPopup(
+        notificationData: NotificationData.fromMap(data),
       ),
     );
   }
+}
 
-  // ======================
-  // Handle payload tap (foreground local notification)
-  // ======================
-  static void _handlePayloadTap(String payload) {
-    try {
-      final Map<String, dynamic> data = _parsePayload(payload);
-
-      MyApp.navigatorKey.currentState?.push(
+  static void _navigate(Map<String, dynamic> data) {
+    if (MyApp.navigatorKey.currentState != null) {
+      MyApp.navigatorKey.currentState!.push(
         MaterialPageRoute(
           builder: (_) => NotificationPage(
-            notificationData: NotificationData.fromMap(data),
-          ),
+              notificationData: NotificationData.fromMap(data)),
         ),
       );
-    } catch (e) {
-      print("❌ Error parsing notification payload: $e");
     }
-  }
-
-  // ======================
-  // Convert payload string to Map
-  // ======================
-  static Map<String, dynamic> _parsePayload(String payload) {
-    payload = payload.replaceAll(RegExp(r'^\{|}$'), ''); // remove {}
-    final Map<String, dynamic> result = {};
-    for (var part in payload.split(',')) {
-      var keyValue = part.split(':');
-      if (keyValue.length == 2) {
-        result[keyValue[0].trim()] = keyValue[1].trim();
-      }
-    }
-    return result;
   }
 }
 
-// ======================
-// Background handler
-// ======================
+// BACKGROUND HANDLER
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("📩 Background message: ${message.data}");
+  print("📩 BACKGROUND MESSAGE: ${message.data}");
 }

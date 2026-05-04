@@ -184,9 +184,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
         _pincodeController.text.length == 6 &&
         _selectedDistrict != null &&
         _selectedTaluk != null &&
-        _selectedVillage != null &&
-        _selectedGender != null &&
-        _selectedDateOfBirth != null;
+        _selectedVillage != null;
+    //_selectedGender != null &&
+    //_selectedDateOfBirth != null;
   }
 
   // -------------------------------------------------------------------------
@@ -350,8 +350,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                     return DropdownMenuItem(value: g, child: Text(g));
                   }).toList(),
                   onChanged: (v) => setState(() => _selectedGender = v),
-                  validator: (v) =>
-                      v == null ? tr('Please_select_a_gender') : null,
+                  validator: (_) => null,
+
                 ),
                 const SizedBox(height: 12),
 
@@ -475,8 +475,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
 
                 // ---------- Labour Checkbox ----------
                 InputDecorator(
-                  decoration:
-                      _inputDecoration(tr('Labour')).copyWith(
+                  decoration: _inputDecoration(tr('Labour')).copyWith(
                     // Optional: make it look less like a text field
                     border: InputBorder.none,
                     contentPadding:

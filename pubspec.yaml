@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   win32: ^5.5.4
   cached_network_image: ^3.4.1
+  flutter_ringtone_player: ^4.0.0+4
+  speech_to_text: ^7.0.0
   phonepe_payment_sdk: ^2.0.0
   crypto: ^3.0.3
   flutter_image_compress: ^2.1.2
@@ -128,10 +130,22 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
+    - assets/FPO.webp
+    - assets/nisarga.jpg
+    - assets/iffxo.webp
+    - assets/emate.webp
+    - assets/agro.webp
+    - assets/agro2.webp
+    - assets/agro3.webp
+    - assets/jai.webp
+    - assets/pro.webp
+    - assets/credit.webp
+    - assets/tata.webp
+    - assets/cuc.webp
     - assets/profile.jpg
     - assets/doctor_placeholder.png
+    - assets/doctor_placeholder.webp
     - assets/homen.webp
-
     - assets/car1.webp
     - assets/car4.jpg
     - assets/Machinen.png

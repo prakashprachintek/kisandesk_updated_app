@@ -224,13 +224,19 @@ class _DoctorPageState extends State<DoctorPage> {
                                     ),
                                   );
                                 },
-                                child: Card(
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 6),
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
+                                child: Container(
+  margin: const EdgeInsets.symmetric(vertical: 6),
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(10),
+    gradient: const LinearGradient(
+      colors: [
+        Colors.white,
+        Color(0xFFC8E6C9),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Row(

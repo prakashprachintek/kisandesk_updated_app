@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
@@ -32,6 +33,11 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
   bool workTypeError = false;
   bool vehicleError = false;
   bool imageError = false;
+
+  bool isValidVehicleNumber(String value) {
+  final regExp = RegExp(r'^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$');
+  return regExp.hasMatch(value);
+}
 
   @override
   void initState() {
@@ -247,7 +253,9 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     setState(() {
       machineError = selectedMachine == null;
       workTypeError = selectedWorkTypes.isEmpty;
-      vehicleError = vehicleCtrl.text.trim().isEmpty;
+      final vehicle = vehicleCtrl.text.trim().toUpperCase();
+
+      vehicleError = vehicle.isEmpty || !isValidVehicleNumber(vehicle);
       imageError = image == null;
     });
 
@@ -260,7 +268,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
       // 1. Get original filename
       final String fileName = image!.path.split(Platform.pathSeparator).last;
 
-     // 2. Upload image first
+      // 2. Upload image first
       final uploadUri = Uri.parse("${KD.api}/upload_document");
       final uploadRequest = http.MultipartRequest('POST', uploadUri);
 
@@ -287,9 +295,7 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
         throw Exception(
             "Image upload failed: ${uploadResponse.statusCode} - $uploadBody");
       }
-      
 
-      
       // 3. Send metadata as JSON
       final addUri = Uri.parse("${KD.api}/app/add_my_machine");
 
@@ -489,16 +495,28 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
                         TextFormField(
                           controller: vehicleCtrl,
                           maxLength: 10,
-                          textInputAction: TextInputAction.done,
+                          textCapitalization: TextCapitalization.characters,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp("[A-Za-z0-9]")),
+                          ],
                           onChanged: (v) {
+                            final upper = v.toUpperCase();
+                            if (v != upper) {
+                              vehicleCtrl.value = vehicleCtrl.value.copyWith(
+                                text: upper,
+                                selection: TextSelection.collapsed(
+                                    offset: upper.length),
+                              );
+                            }
                             setState(() => vehicleError = false);
-                            if (v.length == 10)
-                              FocusScope.of(context).unfocus();
                           },
                           decoration: _vehicleDecoration(vehicleError),
                         ),
 
-                        if (vehicleError) _error("This_field_is_required"),
+                        if (vehicleError)
+                          _error(
+                              "Enter valid vehicle number (e.g., AP09AB1234)"),
 
                         const SizedBox(height: 24),
 

@@ -35,8 +35,8 @@ class CachedImageWidget extends StatelessWidget {
       // 2. Error Widget if the image fails to load
       errorWidget: (context, url, error) => Image.asset(
         'assets/land1.jpg',
-        width: double.infinity,
-        height: 120,
+        width: width,
+        height: height,
         fit: BoxFit.cover,
         ),
     );

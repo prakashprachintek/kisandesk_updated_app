@@ -1,6 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/fertilizers/fertilizer_offer_model.dart';
+import 'package:mainproject1/views/fertilizers/my_fertilizer_orders_screen.dart';
 import 'package:mainproject1/views/home/HomePage.dart';
 import '../services/user_session.dart';
 import 'address_service.dart';
@@ -9,6 +11,10 @@ import 'manage_address_screen.dart';
 import 'cart_service.dart';
 import 'fertilizer_api_service.dart';
 import 'fertilizer_model.dart';
+import '../services/user_session.dart';
+
+import 'cart_screen.dart';
+import 'fertilizer_details_screen.dart';
 
 enum PaymentMethod { cod, online }
 
@@ -38,6 +44,23 @@ class _AddressScreenState extends State<AddressScreen> {
     _initializeDefaultAddress();
     _offersFuture = FertilizerApiService().fetchFertilizerOffers();
   }
+
+  void _handleEditClick(BuildContext context, String productId) {
+  if (widget.isBuyNow) {
+    // 👉 Coming from Product Details (Buy Now)
+    Navigator.pop(context);
+  } else {
+    // 👉 Coming from Cart
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CartScreen(),
+      ),
+    );
+  }
+}
+
+
 
   Future<void> _initializeDefaultAddress() async {
     final savedDefault = await AddressService.getDefaultAddress();
@@ -131,48 +154,49 @@ class _AddressScreenState extends State<AddressScreen> {
         return;
       }
 // ────────────────────────────────────────────────
-    //          Add these print statements here
-    // ────────────────────────────────────────────────
+      //          Add these print statements here
+      // ────────────────────────────────────────────────
 
-    print('╔═══════════════════════════════════════════════');
-    print('║          PLACE ORDER BUTTON PRESSED           ');
-    print('╠═══════════════════════════════════════════════');
-    print('║ User ID       : $userId');
-    print('║ Payment       : ${_paymentMethod == PaymentMethod.cod ? "COD" : "Online"}');
-    print('║ Total Amount  : ₹${cart.totalCartValue.toStringAsFixed(0)}');
-    print('║ Items count   : ${cart.items.length}');
+      print('╔═══════════════════════════════════════════════');
+      print('║          PLACE ORDER BUTTON PRESSED           ');
+      print('╠═══════════════════════════════════════════════');
+      print('║ User ID       : $userId');
+      print(
+          '║ Payment       : ${_paymentMethod == PaymentMethod.cod ? "COD" : "Online"}');
+      print('║ Total Amount  : ₹${cart.totalCartValue.toStringAsFixed(0)}');
+      print('║ Items count   : ${cart.items.length}');
 
-    // Print each product being sent
-    print('║ Products sending:');
-    for (var item in cart.items) {
-      print('║   • ${item.productId.padRight(12)}  qty: ${item.quantity}');
-    }
+      // Print each product being sent
+      print('║ Products sending:');
+      for (var item in cart.items) {
+        print('║   • ${item.productId.padRight(12)}  qty: ${item.quantity}');
+      }
 
-    // The exact address string that will be sent
-    final addressString =
-        "$_fullDeliveryAddress\n${_selectedAddress!.fullName} | ${_selectedAddress!.phone}";
-    print('║ Address sending:');
-    print('║   $addressString');
+      // The exact address string that will be sent
+      final addressString =
+          "$_fullDeliveryAddress\n${_selectedAddress!.fullName} | ${_selectedAddress!.phone}";
+      print('║ Address sending:');
+      print('║   $addressString');
 
-    // The exact payload that goes to the API
-    final payload = {
-      'userId': userId,
-      'products': cart.items
-          .map((item) => {
-                'id': item.productId,
-                'quantity': item.quantity.toString(),
-              })
-          .toList(),
-      'amount': cart.totalCartValue.toStringAsFixed(0),
-      'address': addressString,
-    };
+      // The exact payload that goes to the API
+      final payload = {
+        'userId': userId,
+        'products': cart.items
+            .map((item) => {
+                  'id': item.productId,
+                  'quantity': item.quantity.toString(),
+                })
+            .toList(),
+        'amount': cart.totalCartValue.toStringAsFixed(0),
+        'address': addressString,
+      };
 
-    print('║ ──────────────────────────────────────────────');
-    print('║ Payload that will be sent to bookFertilizerOrder:');
-    print(payload);  // ← this is the most important one
-    print('╚═══════════════════════════════════════════════');
+      print('║ ──────────────────────────────────────────────');
+      print('║ Payload that will be sent to bookFertilizerOrder:');
+      print(payload); // ← this is the most important one
+      print('╚═══════════════════════════════════════════════');
 
-    // ────────────────────────────────────────────────
+      // ────────────────────────────────────────────────
 
       final response = await FertilizerApiService().bookFertilizerOrder(
         userId: userId,
@@ -207,9 +231,22 @@ class _AddressScreenState extends State<AddressScreen> {
           ),
         );
 
+        final userId = UserSession.userId;
+
+        if (userId == null || userId.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Please login again")),
+          );
+          return;
+        }
+
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(
+            builder: (_) => MyFertilizerOrdersScreen(
+              farmerId: userId,
+            ),
+          ),
           (route) => false,
         );
       } else {
@@ -394,7 +431,8 @@ class _AddressScreenState extends State<AddressScreen> {
                           side: const BorderSide(color: Colors.green, width: 2),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.fromLTRB(w * 0.04, w * 0.03, w * 0.04, w * 0.04),
+                          padding: EdgeInsets.fromLTRB(
+                              w * 0.04, w * 0.03, w * 0.04, w * 0.04),
                           // padding: EdgeInsets.all(w * 0.04),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,7 +462,8 @@ class _AddressScreenState extends State<AddressScreen> {
                                 ],
                               ),
                               Transform.translate(
-                                offset: Offset(0,-7), // move divider UP (increase/decrease as needed)
+                                offset: Offset(0,
+                                    -7), // move divider UP (increase/decrease as needed)
                                 child: const Divider(color: Colors.green),
                               ),
                               if (_selectedAddress != null) ...[
@@ -432,24 +471,28 @@ class _AddressScreenState extends State<AddressScreen> {
                                   children: [
                                     const Icon(Icons.person,
                                         color: Colors.green),
-                                    SizedBox(width: w * 0.02),
-                                    Text(
-                                      _selectedAddress!.fullName,
-                                      style: TextStyle(
-                                          fontSize: h * 0.02,
-                                          fontWeight: FontWeight.bold),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        _selectedAddress!.fullName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                SizedBox(height: h * 0.005),
-                                Row(
-                                  children: [
+                                    const SizedBox(width: 10),
                                     const Icon(Icons.phone,
-                                        color: Colors.green),
-                                    SizedBox(width: w * 0.02),
+                                        size: 16, color: Colors.green),
+                                    const SizedBox(width: 4),
                                     Text(
                                       _selectedAddress!.phone,
-                                      style: TextStyle(fontSize: h * 0.018),
+                                      style: TextStyle(
+                                        color: Colors.grey.shade800,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -686,13 +729,29 @@ class _AddressScreenState extends State<AddressScreen> {
                                                 ],
                                               ),
                                             ),
-                                            Text(
-                                              '₹${item.totalValue.toStringAsFixed(0)}',
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 17,
-                                                  color: Colors.green),
-                                            ),
+                                            Column(
+  children: [
+    Text(
+      '₹${item.totalValue.toStringAsFixed(0)}',
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 17,
+        color: Colors.green,
+      ),
+    ),
+    const SizedBox(height: 6),
+    GestureDetector(
+      onTap: () {
+        _handleEditClick(context, item.productId);
+      },
+      child: const Icon(
+        Icons.edit,
+        color: Colors.blue,
+        size: 20,
+      ),
+    ),
+  ],
+)
                                           ],
                                         ),
                                       );

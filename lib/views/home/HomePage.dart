@@ -28,6 +28,7 @@ import 'package:mainproject1/views/marketplace/Market_page.dart';
 // Adjust these imports for your actual file structure
 import '../other/privacyPolicyPage.dart';
 import '../other/termsNconditionsPage.dart';
+import '../fpo/fpo_page.dart';
 
 import 'package:http/http.dart' as http;
 import '../other/welcome.dart';
@@ -63,9 +64,13 @@ class _CategoryCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 320,
+        height: 200,
         decoration: BoxDecoration(
-          color: Colors.white,
+          gradient: LinearGradient(colors: 
+          [
+            Colors.white,
+            Color(0xFFC8E6C9)
+          ]),
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
@@ -83,7 +88,7 @@ class _CategoryCard extends StatelessWidget {
             Expanded(
               flex: 7,
               child: Padding(
-                padding: const EdgeInsets.all(3.0),
+                padding: const EdgeInsets.all(2.0),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: Image.asset(
@@ -1186,11 +1191,13 @@ class _HomePageState extends State<HomePage> {
                                     child: CircularProgressIndicator());
                               } else if (snapshot.hasError) {
                                 return Center(
-                                    child: Text('Failed_to_load_market_posts').tr());
+                                    child: Text('Failed_to_load_market_posts')
+                                        .tr());
                               } else if (!snapshot.hasData ||
                                   snapshot.data!.isEmpty) {
                                 return Center(
-                                    child: Text('No_market_posts_available.').tr());
+                                    child: Text('No_market_posts_available.')
+                                        .tr());
                               }
 
                               final posts = snapshot.data!.take(3).toList();
@@ -1201,55 +1208,58 @@ class _HomePageState extends State<HomePage> {
                                 itemCount: posts.length,
                                 itemBuilder: (context, index) {
                                   final post = posts[index];
-                                  return Card(
-                                    elevation: 2,
-                                    margin: EdgeInsets.symmetric(vertical: 8),
-                                    child: ListTile(
-                                      leading: CachedImageWidget(
-                                        imageUrl: post.imageUrl,
-                                        fit: BoxFit.cover,
-                                        width: 60,
-                                        height: 60,
-                                      ),
-                                      // Image.network(
-                                      //   post.imageUrl,
-                                      //   width: 60,
-                                      //   height: 60,
-                                      //   fit: BoxFit.cover,
-                                      //   errorBuilder:
-                                      //       (context, error, stackTrace) =>
-                                      //           Image.asset(
-                                      //     'assets/land1.jpg',
-                                      //     width: 60,
-                                      //     height: 60,
-                                      //     fit: BoxFit.cover,
-                                      //   ),
-                                      // ),
-                                      title: Text(post.title),
-                                      subtitle: Text(
-                                          '₹${post.price} • ${post.location}'),
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    Postdetailspage(
-                                                      name: post.title,
-                                                      price: post.price,
-                                                      imagePath: post.imageUrl,
-                                                      location: post.location,
-                                                      description:
-                                                          post.description,
-                                                      review: post.review,
-                                                      FarmerName:
-                                                          post.FarmerName,
-                                                      Phone: post.phone,
-                                                    )));
-
-                                        // Optional: Navigate to post details
-                                      },
-                                    ),
-                                  );
+                                  return Container(
+  margin: const EdgeInsets.symmetric(vertical: 8),
+  decoration: BoxDecoration(
+    gradient: const LinearGradient(
+      colors: [
+        Colors.white,
+        Color(0xFFC8E6C9),
+      ],
+    ),
+    borderRadius: BorderRadius.circular(16), // 🔥 ROUND CORNERS
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.1),
+        blurRadius: 6,
+        offset: const Offset(0, 3),
+      ),
+    ],
+  ),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(16), // 🔥 IMPORTANT
+    child: ListTile(
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(10), // image round
+        child: CachedImageWidget(
+          imageUrl: post.imageUrl,
+          fit: BoxFit.cover,
+          width: 60,
+          height: 60,
+        ),
+      ),
+      title: Text(post.title),
+      subtitle: Text('₹${post.price} • ${post.location}'),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Postdetailspage(
+              name: post.title,
+              price: post.price,
+              imagePath: post.imageUrl,
+              location: post.location,
+              description: post.description,
+              review: post.review,
+              FarmerName: post.FarmerName,
+              Phone: post.phone,
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+);
                                 },
                               );
                             },
@@ -1494,14 +1504,13 @@ class _HomePageState extends State<HomePage> {
           return Builder(
             builder: (BuildContext context) {
               return GestureDetector(
-
                 onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ShowroomMachinesPage()),
-                    );
-                  },
-                  
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ShowroomMachinesPage()),
+                  );
+                },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 5),
                   decoration: BoxDecoration(
@@ -1536,6 +1545,8 @@ class _HomePageState extends State<HomePage> {
       'assets/doctorsnew.png',
       //'assets/loan.webp',
       //'assets/govtschemes.png',
+      "assets/FPO.webp",
+      "assets/credit.webp"
     ];
     final List<String> labels = [
       tr('Fertilizers'),
@@ -1545,17 +1556,19 @@ class _HomePageState extends State<HomePage> {
       tr('Doctors'),
       //tr('Loan/Insurance'),
       //tr('Govt Schemes'),
+      tr("FPO"),
+      tr("Credit"),
     ];
 
     return GridView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: 4,
+      itemCount: 6,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+        crossAxisCount: 3,
         crossAxisSpacing: 14.0,
         mainAxisSpacing: 18.0,
-        childAspectRatio: 1 / 1.05,
+        childAspectRatio: 0.9,
       ),
       itemBuilder: (context, index) {
         return _CategoryCard(
@@ -1650,28 +1663,133 @@ class _HomePageState extends State<HomePage> {
     2: {'page': MachineryRentPage(), 'key': 'machinery'},
     //2: {'page': FertilizerListScreen(), 'key': ''},
     3: {'page': DoctorPage(), 'key': 'doctors'},
-    //4: {'page': ComingSoonPage(), 'key': ''},
-    //5: {'page': ComingSoonPage(), 'key': ''},
+    4: {'page': FPOPage(), 'key': 'fpos'},
+    5: {'page': ComingSoonPage(), 'key': 'credit'},
   };
   void _showMaintenancePopup(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Service_Status_🛠️').tr(),
-            content: const Text(
-              'This_module_is_Under_Maintenance._\n_We_will_be_back_soon!...',
-              textAlign: TextAlign.center,
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: "Maintenance",
+    barrierColor: Colors.black.withOpacity(0.45),
+    transitionDuration: const Duration(milliseconds: 400),
+
+    pageBuilder: (context, animation, secondaryAnimation) {
+      return Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
             ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          );
-        });
-  }
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                // 🔥 ICON WITH SOFT BACKGROUND
+                Container(
+                  height: 70,
+                  width: 70,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF1D6C5C).withOpacity(0.15),
+                        const Color(0xFF4CAF50).withOpacity(0.1),
+                      ],
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.build_rounded,
+                    size: 34,
+                    color: Color(0xFF1D6C5C),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 🔥 TITLE
+                Text(
+                  "Service_Status_🛠️",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ).tr(),
+
+                const SizedBox(height: 10),
+
+                // 🔥 DESCRIPTION
+                Text(
+                  "This_module_is_Under_Maintenance._\n_We_will_be_back_soon!...",
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    height: 1.5,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ).tr(),
+
+                const SizedBox(height: 26),
+
+                // 🔥 SINGLE PREMIUM BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1D6C5C),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      "OK",
+                      style: TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                        color: Colors.white,
+                      ),
+                    ).tr(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+
+    transitionBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: ScaleTransition(
+          scale: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+          ),
+          child: child,
+        ),
+      );
+    },
+  );
+}
 
   Future<void> _handleCategoryTap(int index) async {
     final Category = _categoryMap[index];
@@ -1679,6 +1797,14 @@ class _HomePageState extends State<HomePage> {
     if (Category == null) return;
     final destinationPage = Category['page'] as Widget;
     final moduleKey = Category['key'] as String;
+
+    if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => destinationPage),
+      );
+      return;
+    }
 
     if (moduleKey.isEmpty) {
       Navigator.push(
