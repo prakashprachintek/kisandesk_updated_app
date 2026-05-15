@@ -229,6 +229,66 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     }
   }
 
+  // ---------------- CANCEL ORDER ----------------
+
+Future<void> _cancelOrder() async {
+  final requestId = widget.order['rawMongoId'] ??
+      widget.order['requestId'];
+
+  if (requestId == null || requestId.toString().isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Request ID not found"),
+      ),
+    );
+    return;
+  }
+
+  try {
+    final response = await http.post(
+      Uri.parse("${KD.api}/app/update_machine_request"),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "requestId": requestId,
+        "userId": UserSession.userId,
+        "status": "Cancel",
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 &&
+        data["status"] == "success") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Order cancelled successfully"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            data["message"] ?? "Failed to cancel order",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Error: $e"),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+
   // ---------------- CALL ----------------
 
   Future<void> _makePhoneCall(String phoneNumber) async {
@@ -337,6 +397,31 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     style: const TextStyle(color: Colors.grey),
                   ),
                 const SizedBox(height: 10),
+                if (status.toString().toLowerCase() == 'pending') ...[
+  SizedBox(
+    width: double.infinity,
+    child: ElevatedButton.icon(
+      onPressed: _cancelOrder,
+      icon: const Icon(Icons.cancel),
+      label: const Text(
+        "Cancel Order",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+    ),
+  ),
+
+  const SizedBox(height: 14),
+],
                 Center(
                   child: ElevatedButton.icon(
                     onPressed:

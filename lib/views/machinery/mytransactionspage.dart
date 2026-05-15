@@ -45,7 +45,7 @@ class _MyTransactionsPageState extends State<MyTransactionsPage> {
           orders = results
     .where((item) {
       final status = (item['status'] ?? '').toString().toLowerCase();
-      return status != 'rejected' && status != 'ignored';
+      return status != 'rejected' && status != 'ignored' && status != 'Cancel';
     })
     .map<Map<String, String>>((item) {
             final farmer = item['farmerDetails'];

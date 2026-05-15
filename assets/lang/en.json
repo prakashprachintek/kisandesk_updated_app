@@ -585,5 +585,73 @@
   "Booking Successful!":"Booking Successful!",
   "Your_machinery_booking_is_confirmed.\nWe_will_contact_you_soon.":"Your machinery booking is confirmed.\nWe will contact you soon.",
   "FPO":"FPO",
-  "Credit":"Credit"
+  "Credit":"Credit",
+  "Popular":"Popular",
+  "No_deliveries_assigned":"No deliveries assigned",
+  "My_Cart": "My Cart",
+  "List_of_labours":"List of labours",
+
+
+
+  "Delivery_&_Payment":"Delivery & Payment",
+  "Payment_Method":"Payment Method",
+  "Cash_on_Delivery_(COD)":"Cash on Delivery (COD)",
+  "Pay_when_product_is_delivered":"Pay when product is delivered",
+  "Error_loading_cart_summary":"Error loading cart summary",
+  "Tap_to_details":"Tap to details",
+  "Total_Payable":"Total_Payable",
+  "Place_Order_•_Pay_on_Delivery":"Place Order • Pay on Delivery",
+  "Pay_Now":"Pay Now",
+  "Coming_Soon....!":"Coming Soon....!",
+   "Agriculture Labour": "Agriculture Labour",
+  "Field Cleaning": "Field Cleaning",
+  "Sugarcane Planting": "Sugarcane Planting",
+  "Weeding": "Weeding",
+  "Cotton Picking": "Cotton Picking",
+  "Vegetable Harvesting": "Vegetable Harvesting",
+  "Crop Loading": "Crop Loading",
+  "Sprayer": "Sprayer",
+
+  "Drivers & Opertors": "Drivers & Opertors",
+  "Tractor Driver": "Tractor Driver",
+  "Truck Driver": "Truck Driver",
+  "JCB Operator": "JCB Operator",
+  "Car Driver": "Car Driver",
+  "Tempo Driver": "Tempo Driver",
+  "Water Tanker Driver": "Water Tanker Driver",
+
+  "Electrical Wors": "Electrical Wors",
+  "House Wiring": "House Wiring",
+  "Motor Installation": "Motor Installation",
+  "Pump Repaar": "Pump Repaar",
+  "Solar Panel Installation": "Solar Panel Installation",
+  "Electrical Maintenace": "Electrical Maintenace",
+
+  "Plumbing Works": "Plumbing Works",
+  "Pipe Fitting": "Pipe Fitting",
+  "Water Tank Installation": "Water Tank Installation",
+  "Motor Pipe Setup": "Motor Pipe Setup",
+  "Leak Repair": "Leak Repair",
+  "Drip Irrigation Setup": "Drip Irrigation Setup",
+
+  "Painting Work": "Painting Work",
+  "Interior Painting": "Interior Painting",
+  "Exterior Painting": "Exterior Painting",
+  "Wall Putty Work": "Wall Putty Work",
+  "Spray Painting": "Spray Painting",
+
+  "Construction Labour": "Construction Labour",
+  "Mason Work": "Mason Work",
+  "Tile Fitting": "Tile Fitting",
+  "Concrete Work": "Concrete Work",
+  "Helper / Coolie": "Helper / Coolie",
+
+  "Cleaning & Maintenance": "Cleaning & Maintenance",
+  "House Cleaning": "House Cleaning",
+  "Farm Cleaning": "Farm Cleaning",
+  "Warehouse Cleaning": "Warehouse Cleaning",
+  "Water Tank Cleaning": "Water Tank Cleaning"
+
+
+
 }

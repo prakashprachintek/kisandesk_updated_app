@@ -1,20 +1,15 @@
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class RingtoneService {
+  static final AudioPlayer _player = AudioPlayer();
 
-  /// 🔊 START CONTINUOUS RING
-  static void start() {
-    FlutterRingtonePlayer().play(
-      android: AndroidSounds.ringtone,
-      ios: IosSounds.glass,
-      looping: true,     // 🔥 keeps ringing
-      volume: 1.0,
-      asAlarm: true,     // 🔥 works even in silent mode
-    );
+  static Future<void> start() async {
+    await _player.setReleaseMode(ReleaseMode.loop);
+    await _player.play(AssetSource('alert.mp3')); // 🔥 same sound
   }
 
-  /// 🛑 STOP RING
-  static void stop() {
-    FlutterRingtonePlayer().stop();
+  static Future<void> stop() async {
+    await _player.stop();
   }
 }

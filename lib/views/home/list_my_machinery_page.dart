@@ -398,8 +398,8 @@ class _ListMyMachineryPageState extends State<ListMyMachineryPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEEF3F9),
       appBar: AppBar(
-        title: Text("List_My_Machinery".tr(),
-            style: const TextStyle(color: Colors.white)),
+        title: Text("List_My_Machines".tr(),
+            style: TextStyle(color: Colors.white)),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

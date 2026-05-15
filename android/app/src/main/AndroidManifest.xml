@@ -26,6 +26,10 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
+
 
         <activity
             android:name=".MainActivity"
@@ -45,6 +49,11 @@
             </intent-filter>
 
             <intent-filter>
+    <action android:name="FLUTTER_NOTIFICATION_CLICK" />
+    <category android:name="android.intent.category.DEFAULT" />
+</intent-filter>
+
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" /> 
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -59,7 +68,7 @@
 
             <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-                android:value="high_importance_channel" />
+                android:value="request_channel" />
 
 
         <!-- Flutter related config -->
@@ -72,14 +81,6 @@
             android:value="AIzaSyD63NwHlVZIzwIiGOFhve0Bs-WBRbB16Bs"/>
 
         <!-- Firebase Messaging Service: Required to receive FCM messages in background & terminated states -->
-        <service
-            android:name="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService"
-            android:exported="true"
-            tools:replace="android:exported">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
 
         <!-- Handles YES/NO button taps -->
         <receiver

@@ -46,6 +46,9 @@ import '../mandi/mandiService.dart';
 import '../doctor/doctor_page.dart';
 import '../machinery/machinery_rent_page.dart';
 import 'package:get/get.dart' hide Trans;
+import '../notification module/push_notification_service.dart';
+import '../notification module/request_popup.dart';
+import '../notification module/notification_data.dart';
 
 class _CategoryCard extends StatelessWidget {
   final String imageUrl;
@@ -66,11 +69,7 @@ class _CategoryCard extends StatelessWidget {
       child: Container(
         height: 200,
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: 
-          [
-            Colors.white,
-            Color(0xFFC8E6C9)
-          ]),
+          gradient: LinearGradient(colors: [Colors.white, Color(0xFFC8E6C9)]),
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
@@ -240,6 +239,9 @@ class _HomePageState extends State<HomePage> {
   String? _profilePicUrl;
   bool _isLoadingPic = true;
 
+  double walletBalance = 0;
+  bool isWalletLoading = true;
+
   Future<void> _changeProfilePicture() async {
     final ImagePicker picker = ImagePicker();
     final XFile? pickedFile = await picker.pickImage(
@@ -358,12 +360,79 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _fetchLocation();
     _fetchProfilePic();
+    _fetchWalletBalance();
+
     marketPostsFuture = fetchMarketPosts();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showToastOverlay(
           context, 'Login_Successful._Welcome_to_Kisan_Desk!'.tr());
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPendingNotification();
+    });
+  }
+
+  void _checkPendingNotification() {
+    final data = PushNotificationService.pendingNotificationData;
+
+    if (data != null) {
+      // clear it so it doesn't show again
+      PushNotificationService.pendingNotificationData = null;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => RequestPopup(
+          notificationData: NotificationData.fromMap(data),
+        ),
+      );
+    }
+  }
+
+  Future<void> _fetchWalletBalance() async {
+    final userId = UserSession.userId;
+
+    if (userId == null) return;
+
+    try {
+      final response = await http.post(
+        Uri.parse('${KD.api}/user/get_user_by_id'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'userId': UserSession.userId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['status'] == 'success') {
+          final results = data['results'];
+
+          setState(() {
+            walletBalance = double.tryParse(
+                  results['wallet_balance'].toString(),
+                ) ??
+                0;
+
+            isWalletLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          isWalletLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isWalletLoading = false;
+      });
+
+      debugPrint("Wallet fetch error: $e");
+    }
   }
 
   void _refreshMarketPosts() {
@@ -759,9 +828,9 @@ class _HomePageState extends State<HomePage> {
               UserSession.user?['full_name'] ?? tr('Guest'),
             ),
             accountEmail: Text(
-              UserSession.user != null
-                  ? '${tr('Wallet_Balance')}: ₹${UserSession.user!['wallet_balance']}'
-                  : tr(''),
+              isWalletLoading
+                  ? tr('Loading...')
+                  : '${tr('Wallet_Balance')}: ₹${walletBalance.toStringAsFixed(0)}',
             ),
             currentAccountPicture: Stack(
               children: [
@@ -1002,6 +1071,8 @@ class _HomePageState extends State<HomePage> {
                                     color: Colors.white, size: 30),
                                 onPressed: () {
                                   Scaffold.of(context).openDrawer();
+
+                                  _fetchWalletBalance();
                                   _fetchProfilePic();
                                 },
                               ),
@@ -1209,57 +1280,63 @@ class _HomePageState extends State<HomePage> {
                                 itemBuilder: (context, index) {
                                   final post = posts[index];
                                   return Container(
-  margin: const EdgeInsets.symmetric(vertical: 8),
-  decoration: BoxDecoration(
-    gradient: const LinearGradient(
-      colors: [
-        Colors.white,
-        Color(0xFFC8E6C9),
-      ],
-    ),
-    borderRadius: BorderRadius.circular(16), // 🔥 ROUND CORNERS
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.1),
-        blurRadius: 6,
-        offset: const Offset(0, 3),
-      ),
-    ],
-  ),
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(16), // 🔥 IMPORTANT
-    child: ListTile(
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(10), // image round
-        child: CachedImageWidget(
-          imageUrl: post.imageUrl,
-          fit: BoxFit.cover,
-          width: 60,
-          height: 60,
-        ),
-      ),
-      title: Text(post.title),
-      subtitle: Text('₹${post.price} • ${post.location}'),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Postdetailspage(
-              name: post.title,
-              price: post.price,
-              imagePath: post.imageUrl,
-              location: post.location,
-              description: post.description,
-              review: post.review,
-              FarmerName: post.FarmerName,
-              Phone: post.phone,
-            ),
-          ),
-        );
-      },
-    ),
-  ),
-);
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Colors.white,
+                                          Color(0xFFC8E6C9),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                          16), // 🔥 ROUND CORNERS
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          16), // 🔥 IMPORTANT
+                                      child: ListTile(
+                                        leading: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              10), // image round
+                                          child: CachedImageWidget(
+                                            imageUrl: post.imageUrl,
+                                            fit: BoxFit.cover,
+                                            width: 60,
+                                            height: 60,
+                                          ),
+                                        ),
+                                        title: Text(post.title),
+                                        subtitle: Text(
+                                            '₹${post.price} • ${post.location}'),
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  Postdetailspage(
+                                                name: post.title,
+                                                price: post.price,
+                                                imagePath: post.imageUrl,
+                                                location: post.location,
+                                                description: post.description,
+                                                review: post.review,
+                                                FarmerName: post.FarmerName,
+                                                Phone: post.phone,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
                                 },
                               );
                             },
@@ -1503,27 +1580,18 @@ class _HomePageState extends State<HomePage> {
           final url = entry.value;
           return Builder(
             builder: (BuildContext context) {
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ShowroomMachinesPage()),
-                  );
-                },
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      url,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    url,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
                   ),
                 ),
               );
@@ -1667,129 +1735,154 @@ class _HomePageState extends State<HomePage> {
     5: {'page': ComingSoonPage(), 'key': 'credit'},
   };
   void _showMaintenancePopup(BuildContext context) {
-  showGeneralDialog(
-    context: context,
-    barrierDismissible: true,
-    barrierLabel: "Maintenance",
-    barrierColor: Colors.black.withOpacity(0.45),
-    transitionDuration: const Duration(milliseconds: 400),
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "Maintenance",
+      barrierColor: Colors.black.withOpacity(0.45),
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+  color: Colors.transparent,
+  child: Container(
+    margin: const EdgeInsets.symmetric(horizontal: 26),
+    padding: const EdgeInsets.fromLTRB(24, 26, 24, 18),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(32),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withOpacity(0.96),
+          const Color(0xFFF3FFF8),
+        ],
+      ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.7),
+        width: 1.2,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.12),
+          blurRadius: 35,
+          spreadRadius: 2,
+          offset: const Offset(0, 18),
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
 
-    pageBuilder: (context, animation, secondaryAnimation) {
-      return Center(
-        child: Material(
-          color: Colors.transparent,
+        // PREMIUM FLOATING ICON
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: -6, end: 6),
+          duration: const Duration(seconds: 2),
+          curve: Curves.easeInOut,
+          builder: (context, value, child) {
+            return Transform.translate(
+              offset: Offset(0, value),
+              child: child,
+            );
+          },
+          onEnd: () {},
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 28),
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+            height: 92,
+            width: 92,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(26),
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF1D6C5C),
+                  Color(0xFF38B68A),
+                ],
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
+                  color: const Color(0xFF1D6C5C).withOpacity(0.35),
                   blurRadius: 30,
-                  offset: const Offset(0, 12),
+                  spreadRadius: 4,
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-
-                // 🔥 ICON WITH SOFT BACKGROUND
-                Container(
-                  height: 70,
-                  width: 70,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF1D6C5C).withOpacity(0.15),
-                        const Color(0xFF4CAF50).withOpacity(0.1),
-                      ],
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.build_rounded,
-                    size: 34,
-                    color: Color(0xFF1D6C5C),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // 🔥 TITLE
-                Text(
-                  "Service_Status_🛠️",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ).tr(),
-
-                const SizedBox(height: 10),
-
-                // 🔥 DESCRIPTION
-                Text(
-                  "This_module_is_Under_Maintenance._\n_We_will_be_back_soon!...",
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    height: 1.5,
-                    color: Colors.grey[600],
-                  ),
-                  textAlign: TextAlign.center,
-                ).tr(),
-
-                const SizedBox(height: 26),
-
-                // 🔥 SINGLE PREMIUM BUTTON
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1D6C5C),
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Text(
-                      "OK",
-                      style: TextStyle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
-                        color: Colors.white,
-                      ),
-                    ).tr(),
-                  ),
-                ),
-              ],
+            child: const Icon(
+              Icons.rocket_launch_rounded,
+              color: Colors.white,
+              size: 42,
             ),
           ),
         ),
-      );
-    },
 
-    transitionBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: animation,
-        child: ScaleTransition(
-          scale: CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutBack,
+        const SizedBox(height: 28),
+
+        // TYPING TEXT EFFECT
+        //rfinal localizedText = tr("Coming_Soon");
+
+        TweenAnimationBuilder<int>(
+          tween: IntTween(
+            begin: 0,
+            end: "Coming_Soon....!".length,
           ),
-          child: child,
+          duration: const Duration(milliseconds: 1800),
+          builder: (context, value, child) {
+            return Text(tr(
+              "Coming_Soon....!").substring(0, value),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: Color(0xFF1D6C5C),
+              ),
+            );
+          },
         ),
-      );
-    },
-  );
-}
+
+        const SizedBox(height: 24),
+
+        // PREMIUM RIGHT TEXT BUTTON
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
+              ),
+            ),
+            child: const Text(
+              "OK",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1D6C5C),
+                letterSpacing: 0.5,
+              ),
+            ).tr(),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutBack,
+            ),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _handleCategoryTap(int index) async {
     final Category = _categoryMap[index];
@@ -1797,14 +1890,6 @@ class _HomePageState extends State<HomePage> {
     if (Category == null) return;
     final destinationPage = Category['page'] as Widget;
     final moduleKey = Category['key'] as String;
-
-    if (index == 4) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => destinationPage),
-      );
-      return;
-    }
 
     if (moduleKey.isEmpty) {
       Navigator.push(

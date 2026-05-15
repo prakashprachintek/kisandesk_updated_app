@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/laborers/labour_details_page.dart';
@@ -390,7 +391,7 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            category,
+            tr(category),
             style: TextStyle(
               color:
                   isSelected ? Colors.white : Colors.black87,
@@ -423,7 +424,7 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
             borderRadius: BorderRadius.circular(18),
           ),
           child: Text(
-            subCategory,
+     tr( subCategory),
             style: TextStyle(
               color:
                   isSelected ? Colors.white : Colors.black87,
@@ -440,13 +441,13 @@ class _ListOfLaboursPageState extends State<ListOfLaboursPage> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2E7D67),
+        //backgroundColor: const Color(0xFF2E7D67),
         elevation: 0,
-        title: const Text(
-          "List of labours",
+        title: Text(
+          "List_of_labours",
           style:
-              TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
+              TextStyle(fontWeight: FontWeight.w600),
+        ).tr(),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),

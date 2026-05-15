@@ -22,7 +22,7 @@ class _DeliveryRequestsScreenState extends State<DeliveryRequestsScreen> {
 
   final List<String> _filterOptions = [
     'All',
-    'Out for Delivery',
+    'Out for Delivery'.tr(),
     'Delivered',
   ];
 

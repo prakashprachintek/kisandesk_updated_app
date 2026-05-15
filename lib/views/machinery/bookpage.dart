@@ -93,7 +93,7 @@ class _SuccessPopupContentState extends State<_SuccessPopupContent>
                 "Your_machinery_booking_is_confirmed.\nWe_will_contact_you_soon.",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey),
-              ),
+              ).tr(),
 
               const SizedBox(height: 20),
 

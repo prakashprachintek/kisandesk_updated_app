@@ -2,8 +2,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mainproject1/views/fertilizers/fertilizer_offer_model.dart';
+import 'package:mainproject1/views/services/user_session.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_config.dart';
 import 'fertilizer_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FertilizerApiService {
   static const String _fetchFertilizerUrl =
@@ -21,9 +24,21 @@ class FertilizerApiService {
 
   Future<FertilizerResponse> fetchFertilizers() async {
     try {
-      final response = await http.post(Uri.parse(_fetchFertilizerUrl));
+      final response = await http.post(
+        Uri.parse(_fetchFertilizerUrl),
+        headers: {'content-Type': 'application/json'},
+        body: jsonEncode({
+          "userId": UserSession.userId,
+        }),
+        );
       if (response.statusCode == 200) {
-        return FertilizerResponse.fromJsonString(response.body);
+        final Map<String, dynamic> json = jsonDecode(response.body);
+
+        final prefs = await SharedPreferences.getInstance();
+        final discount = json['discount'] ?? 0;
+        await prefs.setDouble('fertilizer_discount', discount.toDouble());
+
+        return FertilizerResponse.fromJson(json);
       } else {
         throw Exception('Failed to load fertilizers: ${response.statusCode}');
       }

@@ -78,7 +78,7 @@ class _CartScreenState extends State<CartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Cart', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('My_Cart'.tr(), style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
       ),
       body: FutureBuilder<List<dynamic>>(

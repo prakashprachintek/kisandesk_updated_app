@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mainproject1/views/fertilizers/fertilizer_offer_model.dart';
@@ -12,7 +13,7 @@ import 'cart_service.dart';
 import 'fertilizer_api_service.dart';
 import 'fertilizer_model.dart';
 import '../services/user_session.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'cart_screen.dart';
 import 'fertilizer_details_screen.dart';
 
@@ -32,12 +33,14 @@ class _AddressScreenState extends State<AddressScreen> {
   PaymentMethod _paymentMethod = PaymentMethod.cod;
   Address? _selectedAddress;
   bool _isInitializing = true;
+  double _discountPercent = 0;
 
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _loadDiscount();
     _cartFuture = widget.isBuyNow
         ? CartService().getTempBuyNowCart()
         : CartService().getCart();
@@ -45,22 +48,29 @@ class _AddressScreenState extends State<AddressScreen> {
     _offersFuture = FertilizerApiService().fetchFertilizerOffers();
   }
 
-  void _handleEditClick(BuildContext context, String productId) {
-  if (widget.isBuyNow) {
-    // 👉 Coming from Product Details (Buy Now)
-    Navigator.pop(context);
-  } else {
-    // 👉 Coming from Cart
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const CartScreen(),
-      ),
-    );
+  Future<void> _loadDiscount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final discount = prefs.getDouble('fertilizer_discount') ?? 0;
+
+    setState(() {
+      _discountPercent = discount;
+    });
   }
-}
 
-
+  void _handleEditClick(BuildContext context, String productId) {
+    if (widget.isBuyNow) {
+      // 👉 Coming from Product Details (Buy Now)
+      Navigator.pop(context);
+    } else {
+      // 👉 Coming from Cart
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const CartScreen(),
+        ),
+      );
+    }
+  }
 
   Future<void> _initializeDefaultAddress() async {
     final savedDefault = await AddressService.getDefaultAddress();
@@ -113,7 +123,7 @@ class _AddressScreenState extends State<AddressScreen> {
   }
 
   String get _fullDeliveryAddress {
-    if (_selectedAddress == null) return "No address selected";
+    if (_selectedAddress == null) return "No_address_selected".tr();
     return [
       _selectedAddress!.houseDetails,
       _selectedAddress!.village,
@@ -127,7 +137,7 @@ class _AddressScreenState extends State<AddressScreen> {
   Future<void> _placeOrder() async {
     if (_selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a delivery address')),
+        SnackBar(content: Text('Please_select_a_delivery_address').tr()),
       );
       return;
     }
@@ -141,7 +151,7 @@ class _AddressScreenState extends State<AddressScreen> {
 
       if (cart.items.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Your cart is empty')),
+          SnackBar(content: Text('Your_cart_is_empty').tr()),
         );
         return;
       }
@@ -149,7 +159,7 @@ class _AddressScreenState extends State<AddressScreen> {
       final userId = UserSession.userId;
       if (userId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please login again')),
+          SnackBar(content: Text('Please_login_again').tr()),
         );
         return;
       }
@@ -198,6 +208,11 @@ class _AddressScreenState extends State<AddressScreen> {
 
       // ────────────────────────────────────────────────
 
+      final discountAmount =
+    (cart.totalCartValue * _discountPercent) / 100;
+
+final finalAmount = cart.totalCartValue - discountAmount;
+
       final response = await FertilizerApiService().bookFertilizerOrder(
         userId: userId,
         products: cart.items
@@ -206,7 +221,8 @@ class _AddressScreenState extends State<AddressScreen> {
                   'quantity': item.quantity.toString(),
                 })
             .toList(),
-        amount: cart.totalCartValue.toStringAsFixed(0),
+            amount: finalAmount.toStringAsFixed(0),
+        //amount: cart.totalCartValue.toStringAsFixed(0),
         address: addressString,
       );
 
@@ -235,7 +251,7 @@ class _AddressScreenState extends State<AddressScreen> {
 
         if (userId == null || userId.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Please login again")),
+            SnackBar(content: Text("Please_login_again").tr()),
           );
           return;
         }
@@ -274,10 +290,10 @@ class _AddressScreenState extends State<AddressScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Delivery & Payment',
+        title: Text(
+          'Delivery_&_Payment',
           style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        ).tr(),
         backgroundColor: const Color.fromARGB(255, 29, 108, 92),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -298,7 +314,13 @@ class _AddressScreenState extends State<AddressScreen> {
 
                 final cart =
                     snapshot.data ?? Cart(items: [], totalCartValue: 0.0);
+                //final totalAmount = cart.totalCartValue;
                 final totalAmount = cart.totalCartValue;
+
+final discountAmount =
+    (totalAmount * _discountPercent) / 100;
+
+final finalAmount = totalAmount - discountAmount;
 
                 return SingleChildScrollView(
                   controller: _scrollController,
@@ -520,9 +542,9 @@ class _AddressScreenState extends State<AddressScreen> {
                       SizedBox(height: h * 0.03),
 
                       // Payment Method
-                      const Text('Payment Method',
+                      Text('Payment_Method',
                           style: TextStyle(
-                              fontSize: 21, fontWeight: FontWeight.bold)),
+                              fontSize: 21, fontWeight: FontWeight.bold)).tr(),
                       const SizedBox(height: 12),
                       Card(
                         elevation: 6,
@@ -531,12 +553,12 @@ class _AddressScreenState extends State<AddressScreen> {
                         child: Column(
                           children: [
                             RadioListTile<PaymentMethod>(
-                              title: const Text('Cash on Delivery (COD)',
+                              title: Text('Cash_on_Delivery_(COD)',
                                   style: TextStyle(
                                       fontSize: 17,
-                                      fontWeight: FontWeight.bold)),
+                                      fontWeight: FontWeight.bold)).tr(),
                               subtitle:
-                                  const Text('Pay when product is delivered'),
+                                  Text('Pay_when_product_is_delivered').tr(),
                               secondary: const Icon(Icons.payments,
                                   color: Colors.green),
                               value: PaymentMethod.cod,
@@ -588,11 +610,11 @@ class _AddressScreenState extends State<AddressScreen> {
                           }
 
                           if (!snapshot.hasData || snapshot.hasError) {
-                            return const Card(
+                            return Card(
                               elevation: 6,
                               child: Padding(
                                 padding: EdgeInsets.all(20),
-                                child: Text('Error loading cart summary'),
+                                child: Text('Error_loading_cart_summary').tr(),
                               ),
                             );
                           }
@@ -643,10 +665,10 @@ class _AddressScreenState extends State<AddressScreen> {
                                             fontSize: 19,
                                             fontWeight: FontWeight.bold),
                                       ),
-                                      const Text('Tap to view details',
+                                      Text('Tap_to_details',
                                           style: TextStyle(
                                               color: Colors.green,
-                                              fontSize: 14)),
+                                              fontSize: 14)).tr(),
                                     ],
                                   ),
                                   Text(
@@ -730,28 +752,29 @@ class _AddressScreenState extends State<AddressScreen> {
                                               ),
                                             ),
                                             Column(
-  children: [
-    Text(
-      '₹${item.totalValue.toStringAsFixed(0)}',
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 17,
-        color: Colors.green,
-      ),
-    ),
-    const SizedBox(height: 6),
-    GestureDetector(
-      onTap: () {
-        _handleEditClick(context, item.productId);
-      },
-      child: const Icon(
-        Icons.edit,
-        color: Colors.blue,
-        size: 20,
-      ),
-    ),
-  ],
-)
+                                              children: [
+                                                Text(
+                                                  '₹${item.totalValue.toStringAsFixed(0)}',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 17,
+                                                    color: Colors.green,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 6),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    _handleEditClick(context,
+                                                        item.productId);
+                                                  },
+                                                  child: const Icon(
+                                                    Icons.edit,
+                                                    color: Colors.blue,
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
                                           ],
                                         ),
                                       );
@@ -774,11 +797,32 @@ class _AddressScreenState extends State<AddressScreen> {
                                           style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold)),
-                                      Text('₹${totalAmount.toStringAsFixed(0)}',
-                                          style: const TextStyle(
-                                              fontSize: 26,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.green)),
+                                      Column(
+  crossAxisAlignment: CrossAxisAlignment.end,
+  children: [
+    Text(
+      '₹${totalAmount.toStringAsFixed(0)}',
+      style: const TextStyle(
+        fontSize: 20,
+        decoration: TextDecoration.lineThrough,
+        color: Colors.grey,
+      ),
+    ),
+    if (_discountPercent > 0)
+      Text(
+        '-${_discountPercent.toStringAsFixed(0)}%',
+        style: const TextStyle(color: Colors.green),
+      ),
+    Text(
+      '₹${finalAmount.toStringAsFixed(0)}',
+      style: const TextStyle(
+        fontSize: 26,
+        fontWeight: FontWeight.bold,
+        color: Colors.green,
+      ),
+    ),
+  ],
+),
                                     ],
                                   ),
                                 ),

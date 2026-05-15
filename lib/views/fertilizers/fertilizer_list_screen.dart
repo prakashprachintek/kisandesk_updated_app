@@ -473,7 +473,7 @@ class _FertilizerListScreenState extends State<FertilizerListScreen> {
                   children: [
                     _buildCategoryChip("All".tr(), ""),
                     const SizedBox(width: 10),
-                    _buildCategoryChip("Popular", "popular"),
+                    _buildCategoryChip("Popular".tr(), "popular"),
                     const SizedBox(width: 10),
                     _buildCategoryChip("Herbicides".tr(), "herbicide"),
                     const SizedBox(width: 10),

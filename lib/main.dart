@@ -86,7 +86,8 @@ class _MyAppState extends State<MyApp> {
       VersionControlService.checkAppVersion();
     });
   }
-  static final navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+    GlobalKey<NavigatorState>();
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
@@ -103,17 +104,6 @@ class _MyAppState extends State<MyApp> {
 
       // Optional named route setup if needed
       getPages:AppRoutes.routes,
-    );
-
-    return MaterialApp(
-      title: 'Kisan Desk'.tr(),
-      debugShowCheckedModeBanner: false,
-      theme: _buildThemeData(),
-      navigatorKey: MyApp.navigatorKey, // Needed for navigation from service
-      locale: context.locale,
-      supportedLocales: context.supportedLocales,
-      localizationsDelegates: context.localizationDelegates,
-      home: UserSession.user != null ? HomePage() : KisanDeskScreen(),
     );
   }
 

@@ -101,7 +101,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
           orders = results
     .where((item) {
       final status = (item['status'] ?? '').toString().toLowerCase();
-      return status != 'rejected' && status != 'ignored';
+      return status != 'rejected' && status != 'ignored' && status != 'Cancel';
     })
     .map<Map<String, dynamic>>((item) {
             // Safely extract owner details

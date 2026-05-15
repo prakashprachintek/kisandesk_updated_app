@@ -458,7 +458,7 @@ class _ListMyMachinesPageState extends State<ListMyMachinesPage> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "List_My_Machines",
           style: TextStyle(fontWeight: FontWeight.w600),
         ).tr(),
