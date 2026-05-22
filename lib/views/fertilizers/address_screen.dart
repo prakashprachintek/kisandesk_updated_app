@@ -328,6 +328,7 @@ final finalAmount = totalAmount - discountAmount;
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      
                       // -------------------------
                       // OFFERS CAROUSEL (your code as-is)
                       // -------------------------

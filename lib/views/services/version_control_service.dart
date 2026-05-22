@@ -18,6 +18,7 @@ class VersionControlService {
 
   // -----------------------------------------------------------------
   // Public entry point – no BuildContext needed
+  
   // -----------------------------------------------------------------
   static Future<void> checkAppVersion() async {
     try {

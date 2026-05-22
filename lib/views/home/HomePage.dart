@@ -180,8 +180,19 @@ class MarketPost {
 /// A placeholder cart page if you don't have one
 Future<List<MarketPost>> fetchMarketPosts() async {
   try {
-    final response =
-        await http.post(Uri.parse('${KD.api}/admin/getAll_market_post'));
+    final url = '${KD.api}/admin/getAll_market_post';
+
+print("========== MARKET API ==========");
+print("KD.api => ${KD.api}");
+print("FULL URL => $url");
+
+final response = await http.post(Uri.parse(url));
+
+print("STATUS CODE => ${response.statusCode}");
+print("RESPONSE BODY => ${response.body}");
+print("================================");
+    //final response =
+       // await http.post(Uri.parse('${KD.api}/admin/getAll_market_post'));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> json = jsonDecode(response.body);

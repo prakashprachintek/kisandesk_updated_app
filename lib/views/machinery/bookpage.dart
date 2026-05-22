@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:mainproject1/views/home/HomePage.dart';
 import 'package:mainproject1/views/services/image_caching.dart';
 import 'dart:convert';
 
@@ -103,12 +104,12 @@ class _SuccessPopupContentState extends State<_SuccessPopupContent>
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    Navigator.pushAndRemoveUntil(
+
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const MachineryRentPage(),
+                        builder: (_) => const HomePage(),
                       ),
-                      (route) => false,
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -164,9 +165,14 @@ class _BookPageState extends State<BookPage> {
 
   bool isSubmitting = false;
 
+  String? bookingDateError;
+  String? workTypeError;
+  String? sourceError;
+  String? destinationError;
+
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController sourceController = TextEditingController();
-final TextEditingController destinationController = TextEditingController();
+  final TextEditingController destinationController = TextEditingController();
 
   @override
   void initState() {
@@ -204,104 +210,127 @@ final TextEditingController destinationController = TextEditingController();
       });
     }
   }
-void showSuccessPopup() {
-  showGeneralDialog(
-    context: context,
-    barrierDismissible: false,
-    barrierLabel: "Success",
-    transitionDuration: const Duration(milliseconds: 400),
-    pageBuilder: (_, __, ___) {
-      return const SizedBox(); // required
-    },
-    transitionBuilder: (context, animation, secondaryAnimation, child) {
-      return Transform.scale(
-        scale: Curves.easeOutBack.transform(animation.value),
-        child: Opacity(
-          opacity: animation.value,
-          child: const Center(
-            child: _SuccessPopupContent(),
+
+  void showSuccessPopup() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: "Success",
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (_, __, ___) {
+        return const SizedBox(); // required
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return Transform.scale(
+          scale: Curves.easeOutBack.transform(animation.value),
+          child: Opacity(
+            opacity: animation.value,
+            child: const Center(
+              child: _SuccessPopupContent(),
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-  /// SUBMIT
-void submitBooking() async {
-  if (bookingDate == null) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text("Select date")));
-    return;
-  }
-
-  if (!isVehicle && selectedWorkType == null) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(tr("Select_Work_Type"))));
-    return;
-  }
-
-  setState(() => isSubmitting = true);
-
-  final uri = Uri.parse("${KD.api}/app/book_machinary");
-
-  final payload = {
-    "userId": UserSession.userId,
-    "machineryType": selectedMachinery!,
-    "workDate": bookingDate!,
-    "description": descriptionController.text,
-  };
-
-  /// 🚗 VEHICLE (CAR / CRUISER)
-  if (isVehicle) {
-    payload.addAll({
-      "workInQuantity": "$quantity day",
-      "sourcepoint": sourceController.text,
-      "destinationpoint": destinationController.text,
-      "workType": "",
-    });
-  }
-
-  /// 🌾 HARVEST
-  else if (isHarvest) {
-    payload.addAll({
-      "workInQuantity": "$quantity", // acres/packets
-      "workType": selectedWorkType!,
-    });
-  }
-
-  /// 🚜 NORMAL MACHINES
-  else {
-    payload.addAll({
-      "workInQuantity": "$quantity hour",
-      "workType": selectedWorkType!,
-    });
-  }
-
-  try {
-    final res = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(payload),
+        );
+      },
     );
+  }
 
-    final responseData = jsonDecode(res.body);
+  /// SUBMIT
+  void submitBooking() async {
+    setState(() {
+      bookingDateError = null;
+      workTypeError = null;
+      sourceError = null;
+      destinationError = null;
+    });
 
-    if (responseData["status"] == "success") {
-      showSuccessPopup();
+    bool hasError = false;
 
-    } else {
+    if (bookingDate == null) {
+      bookingDateError = "Please select booking date";
+      hasError = true;
+    }
+
+    if (!isVehicle && selectedWorkType == null) {
+      workTypeError = "Please select work type";
+      hasError = true;
+    }
+
+    if (isVehicle && sourceController.text.trim().isEmpty) {
+      sourceError = "Please enter source";
+      hasError = true;
+    }
+
+    if (isVehicle && destinationController.text.trim().isEmpty) {
+      destinationError = "Please enter destination";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setState(() {});
+      return;
+    }
+
+    setState(() => isSubmitting = true);
+
+    final uri = Uri.parse("${KD.api}/app/book_machinary");
+
+    final payload = {
+      "userId": UserSession.userId,
+      "machineryType": selectedMachinery!,
+      "workDate": bookingDate!,
+      "description": descriptionController.text,
+    };
+
+    /// 🚗 VEHICLE (CAR / CRUISER)
+    if (isVehicle) {
+      payload.addAll({
+        "workInQuantity": "$quantity day",
+        "sourcepoint": sourceController.text,
+        "destinationpoint": destinationController.text,
+        "workType": "",
+      });
+    }
+
+    /// 🌾 HARVEST
+    else if (isHarvest) {
+      payload.addAll({
+        "workInQuantity": "$quantity", // acres/packets
+        "workType": selectedWorkType!,
+      });
+    }
+
+    /// 🚜 NORMAL MACHINES
+    else {
+      payload.addAll({
+        "workInQuantity": "$quantity hour",
+        "workType": selectedWorkType!,
+      });
+    }
+
+    try {
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      final responseData = jsonDecode(res.body);
+
+      if (responseData["status"] == "success") {
+        showSuccessPopup();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData["message"])),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(responseData["message"])),
+        SnackBar(content: Text("Error: $e")),
       );
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error: $e")),
-    );
-  }
 
-  setState(() => isSubmitting = false);
-}
+    setState(() => isSubmitting = false);
+  }
 
   /// IMAGE
   Widget networkImage(String? url) {
@@ -342,7 +371,7 @@ void submitBooking() async {
             width: double.infinity,
             height: 230,
             fit: BoxFit.cover,
-            ),
+          ),
         ),
         Container(
           height: 230,
@@ -430,11 +459,11 @@ void submitBooking() async {
             itemBuilder: (_, i) {
               final w = workTypeList[i];
               final isKannada =
-    Localizations.localeOf(context).languageCode == 'kn';
+                  Localizations.localeOf(context).languageCode == 'kn';
 
-final name = isKannada
-    ? (w["type_in_kannada"] ?? w["type_in_english"])
-    : (w["type_in_english"] ?? w["type"]);
+              final name = isKannada
+                  ? (w["type_in_kannada"] ?? w["type_in_english"])
+                  : (w["type_in_english"] ?? w["type"]);
               final selected = selectedWorkType == name;
 
               return GestureDetector(
@@ -471,7 +500,7 @@ final name = isKannada
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
-                            ),
+                          ),
                           //child: networkImage(w["image"]),
                         ),
                         Positioned.fill(
@@ -591,16 +620,27 @@ final name = isKannada
               ),
             ),
           ),
+          if (bookingDateError != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Text(
+                bookingDateError!,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                ),
+              ),
+            ),
 
           const SizedBox(height: 20),
 
           /// ================= HOURS =================
           Text(
             isVehicle
-            ? "Select_Days".tr()
-            : isHarvest
-              ? "Select_Quantity".tr()
-              : "Select_Hours".tr(),
+                ? "Select_Days".tr()
+                : isHarvest
+                    ? "Select_Quantity".tr()
+                    : "Select_Hours".tr(),
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -654,10 +694,10 @@ final name = isKannada
                     ),
                     Text(
                       isVehicle
-                      ? "days"
-                      : isHarvest
-                      ? "qty"
-                      : "hours",
+                          ? "days"
+                          : isHarvest
+                              ? "qty"
+                              : "hours",
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
@@ -732,52 +772,58 @@ final name = isKannada
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-             child: Column(
-  children: [
+              child: Column(
+                children: [
+                  /// 🚗 SHOW ONLY FOR VEHICLES
+                  if (isVehicle) ...[
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: sourceController,
+                      decoration: InputDecoration(
+                        hintText: "Source Location",
+                        prefixIcon: const Icon(Icons.my_location),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: destinationController,
+                      decoration: InputDecoration(
+                        hintText: "Destination Location",
+                        prefixIcon: const Icon(Icons.location_on),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ],
 
-    /// 🚗 SHOW ONLY FOR VEHICLES
-    if (isVehicle) ...[
-      const SizedBox(height: 20),
+                  /// 🚜 NORMAL MACHINES
+                  if (!isVehicle) buildWorkTypes(),
+                  if (workTypeError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: Text(
+                        workTypeError!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
 
-      TextField(
-        controller: sourceController,
-        decoration: InputDecoration(
-          hintText: "Source Location",
-          prefixIcon: const Icon(Icons.my_location),
-          filled: true,
-          fillColor: Colors.grey[100],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-
-      const SizedBox(height: 12),
-
-      TextField(
-        controller: destinationController,
-        decoration: InputDecoration(
-          hintText: "Destination Location",
-          prefixIcon: const Icon(Icons.location_on),
-          filled: true,
-          fillColor: Colors.grey[100],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-    ],
-
-    /// 🚜 NORMAL MACHINES
-    if (!isVehicle) buildWorkTypes(),
-
-    /// DETAILS
-    if (isVehicle || selectedWorkType != null)
-      buildWorkDetails(),
-  ],
-),
+                  /// DETAILS
+                  if (isVehicle || selectedWorkType != null) buildWorkDetails(),
+                ],
+              ),
             ),
           ),
           Container(

@@ -1,5 +1,5 @@
 class KD {
-  static const String api = 'https://app.kisandesk.com/api';
+  static const String api = 'https://dev.kisandesk.com/api';
 
   // Use the API like this
   //'${KD.api}/<rest content>' ---> e.g '${KD.api}/admin/fetch_mandi_rates'
