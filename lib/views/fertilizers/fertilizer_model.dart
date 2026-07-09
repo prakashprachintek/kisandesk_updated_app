@@ -107,10 +107,10 @@ class Fertilizer {
       createdBy: (json['created_by'] as String?) ?? '',
       activityLog: logs.isNotEmpty ? logs : null,
       category: json['product_category']?.toString() ?? 'Unknown',
-      description: json['product_descriptions'] as String?,
+      description: json['product_descriptions']?.toString(),
       productDetails: json['product_details'] != null
           ? ProductDetails.fromJson(
-              json['product_details'] as Map<String, dynamic>)
+          json['product_details'] as Map<String, dynamic>)
           : null,
       reviews: reviews.isNotEmpty ? reviews : null,
     );
@@ -146,8 +146,8 @@ class FertilizerImage {
 
   factory FertilizerImage.fromJson(Map<String, dynamic> json) {
     return FertilizerImage(
-      fileName: json['fileName'] as String? ?? '',
-      url: json['url'] as String? ?? '',
+      fileName: json['fileName']?.toString() ?? '',
+      url: json['url']?.toString() ?? '',
     );
   }
 }
@@ -160,8 +160,8 @@ class ActivityLog {
 
   factory ActivityLog.fromJson(Map<String, dynamic> json) {
     return ActivityLog(
-      action: json['action'] as String? ?? '',
-      actionAt: json['action_at'] as String? ?? '',
+      action: json['action']?.toString() ?? '',
+      actionAt: json['action_at']?.toString() ?? '',
     );
   }
 }
@@ -179,9 +179,9 @@ class ProductDetails {
 
   factory ProductDetails.fromJson(Map<String, dynamic> json) {
     return ProductDetails(
-      content: json['content'] as String? ?? '',
-      expiryDate: json['expiry_date'] as String? ?? '',
-      usage: json['usage'] as String? ?? '',
+      content: json['content']?.toString() ?? '',
+      expiryDate: json['expiry_date']?.toString() ?? '',
+      usage: json['usage']?.toString() ?? '',
     );
   }
 }
@@ -201,10 +201,10 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      farmer: json['farmer'] as String? ?? 'Anonymous',
-      comment: json['comment'] as String? ?? '',
-      rating: json['rating'] as String? ?? '0',
-      actionAt: json['action_at'] as String? ?? '',
+      farmer: json['farmer']?.toString() ?? 'Anonymous',
+      comment: json['comment']?.toString() ?? '',
+      rating: json['rating']?.toString() ?? '0',
+      actionAt: json['action_at']?.toString() ?? '',
     );
   }
 }
@@ -247,16 +247,16 @@ class RichFertilizerOrder {
         .toList();
 
     return RichFertilizerOrder(
-      id: json['_id'] as String? ?? '',
-      orderId: json['order_id'] as String? ?? '',
-      amount: json['amount'] as String? ?? '0',
-      status: json['status'] as String? ?? 'Pending',
-      createdAt: json['created_at'] as String? ?? '',
-      deliveryAddress: json['delivery_address'] as String? ?? '',
-      paymentMode: json['payment_mode'] as String?,
-      farmerName: json['farmer_name'] as String? ?? 'Unknown Farmer',
-      farmerPhone: json['farmer_phone'] as String? ?? '',
-      farmerVillage: json['farmer_village'] as String? ?? '',
+      id: json['_id']?.toString() ?? '',
+      orderId: json['order_id']?.toString() ?? '', // Fixed: Added .toString()
+      amount: json['amount']?.toString() ?? '0', // Fixed: Added .toString()
+      status: json['status']?.toString() ?? 'Pending', // Fixed: Added .toString()
+      createdAt: json['created_at']?.toString() ?? '', // Fixed: Added .toString()
+      deliveryAddress: json['delivery_address']?.toString() ?? '', // Fixed: Added .toString()
+      paymentMode: json['payment_mode']?.toString(),
+      farmerName: json['farmer_name']?.toString() ?? 'Unknown Farmer', // Fixed: Added .toString()
+      farmerPhone: json['farmer_phone']?.toString() ?? '', // Fixed: Added .toString()
+      farmerVillage: json['farmer_village']?.toString() ?? '', // Fixed: Added .toString()
       products: orderProducts,
     );
   }
@@ -284,9 +284,9 @@ class OrderProductItem {
 
   factory OrderProductItem.fromJson(Map<String, dynamic> json) {
     return OrderProductItem(
-      id: json['id'] as String? ?? '',
-      quantity: json['quantity'] as String? ?? '1',
-      product: NestedProduct.fromJson(json['product'] as Map<String, dynamic>)
+        id: json['id']?.toString() ?? '', // Fixed: Added .toString()
+        quantity: json['quantity']?.toString() ?? '1', // Fixed: Added .toString()
+        product: NestedProduct.fromJson(json['product'] as Map<String, dynamic>)
     );
   }
 }
@@ -321,13 +321,13 @@ class NestedProduct {
         .toList();
 
     return NestedProduct(
-      productName: json['product_name'] as String? ?? 'Unknown Product',
-      mrpPrice: json['mrp_price'] as String? ?? '0',
-      sellPrice: json['sell_price'] as String? ?? '0',
-      productUnit: json['product_unit'] as String? ?? 'Unit',
-      productQuantity: json['product_quantity'] as String? ?? '1',
-      productCategory: json['product_category'] as String? ?? 'Unknown',
-      productDescriptions: json['product_descriptions'] as String?,
+      productName: json['product_name']?.toString() ?? 'Unknown Product', // Fixed
+      mrpPrice: json['mrp_price']?.toString() ?? '0', // Fixed
+      sellPrice: json['sell_price']?.toString() ?? '0', // Fixed
+      productUnit: json['product_unit']?.toString() ?? 'Unit', // Fixed
+      productQuantity: json['product_quantity']?.toString() ?? '1', // Fixed
+      productCategory: json['product_category']?.toString() ?? 'Unknown', // Fixed
+      productDescriptions: json['product_descriptions']?.toString(),
       productDetails: ProductDetail.fromJson(
           json['product_details'] as Map<String, dynamic>? ?? {}),
       images: parsedImages,
@@ -362,8 +362,8 @@ class ProductDetail {
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
     return ProductDetail(
-      content: json['content'] as String? ?? '',
-      usage: json['usage'] as String? ?? '',
+      content: json['content']?.toString() ?? '', // Fixed
+      usage: json['usage']?.toString() ?? '', // Fixed
     );
   }
 }
@@ -422,11 +422,11 @@ class RichFertilizerOrderResponse {
     final resultsList = (json['results'] as List<dynamic>?) ?? [];
 
     return RichFertilizerOrderResponse(
-      status: json['status'] as String? ?? '',
-      message: json['message'] as String? ?? '',
+      status: json['status']?.toString() ?? '', // Fixed
+      message: json['message']?.toString() ?? '', // Fixed
       results: resultsList
           .map((item) =>
-              RichFertilizerOrder.fromJson(item as Map<String, dynamic>))
+          RichFertilizerOrder.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -445,16 +445,16 @@ class CartItem {
   });
 
   Map<String, dynamic> toJson() => {
-        'productId': productId,
-        'quantity': quantity,
-        'totalValue': totalValue,
-      };
+    'productId': productId,
+    'quantity': quantity,
+    'totalValue': totalValue,
+  };
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
-      productId: json['productId'] as String,
-      quantity: json['quantity'] as int,
-      totalValue: json['totalValue'] as double,
+      productId: json['productId'].toString(),
+      quantity: json['quantity'] is int ? json['quantity'] : int.tryParse(json['quantity'].toString()) ?? 0,
+      totalValue: json['totalValue'] is double ? json['totalValue'] : double.tryParse(json['totalValue'].toString()) ?? 0.0,
     );
   }
 }
@@ -469,16 +469,16 @@ class Cart {
   });
 
   Map<String, dynamic> toJson() => {
-        'items': items.map((item) => item.toJson()).toList(),
-        'totalCartValue': totalCartValue,
-      };
+    'items': items.map((item) => item.toJson()).toList(),
+    'totalCartValue': totalCartValue,
+  };
 
   factory Cart.fromJson(Map<String, dynamic> json) {
     return Cart(
       items: (json['items'] as List<dynamic>)
           .map((item) => CartItem.fromJson(item as Map<String, dynamic>))
           .toList(),
-      totalCartValue: json['totalCartValue'] as double? ?? 0.0,
+      totalCartValue: json['totalCartValue'] is double ? json['totalCartValue'] : double.tryParse(json['totalCartValue'].toString()) ?? 0.0,
     );
   }
 }

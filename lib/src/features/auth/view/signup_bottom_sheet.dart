@@ -11,6 +11,8 @@ import 'package:mainproject1/src/features/auth/view_model/login_controller.dart'
 import 'package:mainproject1/src/shared/presentation/widgets/custom_text_field.dart';
 import 'package:mainproject1/views/auth/OTPVerificationScreen.dart';
 import 'package:mainproject1/views/services/api_config.dart';
+import 'package:geolocator/geolocator.dart'; // ADDED: For getting GPS location
+import 'package:geocoding/geocoding.dart'; // ADDED: For converting lat/lng to pincode
 
 class SignupBottomSheet extends StatefulWidget {
   final String phone;
@@ -21,55 +23,288 @@ class SignupBottomSheet extends StatefulWidget {
 }
 
 class _SignupBottomSheetState extends State<SignupBottomSheet> {
-  // final controller = Get.put(LoginController());
   final controller = Get.find<LoginController>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _pincodeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  String? selectedDistrict;
-  String? selectedTaluk;
-  String? selectedVillage;
+  // String? selectedDistrict; // COMMENTED OUT: Removed district field
+  // String? selectedTaluk; // COMMENTED OUT: Removed taluk field
+  // String? selectedVillage; // COMMENTED OUT: Removed village field
   bool hasSubmitted = false;
   bool isSubmitting = false;
+  bool isLoadingPincode = false; // ADDED: Track pincode loading state
 
-  List<String> districts = [];
-  List<String> taluks = [];
-  List<String> villagesList = [];
+  // List<String> districts = []; // COMMENTED OUT: Not needed anymore
+  // List<String> taluks = []; // COMMENTED OUT: Not needed anymore
+  // List<String> villagesList = []; // COMMENTED OUT: Not needed anymore
 
-  Map<String, List<dynamic>> talukasMap = {};
-  Map<String, List<dynamic>> villagesMap = {};
+  // Map<String, List<dynamic>> talukasMap = {}; // COMMENTED OUT: Not needed anymore
+  // Map<String, List<dynamic>> villagesMap = {}; // COMMENTED OUT: Not needed anymore
 
   @override
   void initState() {
     super.initState();
-    _loadLocationData();
-  }
+    // _loadLocationData(); // COMMENTED OUT: No need to load districts/taluks/villages
 
-  Future<void> _loadLocationData() async {
-    final String jsonString =
-    await rootBundle.loadString('assets/loadLocation_data.json');
-    final Map<String, dynamic> locationData = json.decode(jsonString);
-
-    talukasMap = Map.from(locationData['talukas']);
-    villagesMap = Map.from(locationData['villages']);
-
-    talukasMap.forEach((key, value) {
-      value.sort((a, b) =>
-          a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
-    });
-
-    villagesMap.forEach((key, value) {
-      value.sort((a, b) =>
-          a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
-    });
-
-    setState(() {
-      districts =
-      List<String>.from(locationData['districts']['Karnataka'] ?? []);
-      districts.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    // ADDED: Show location permission popup when signup opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showLocationPermissionDialog();
     });
   }
+
+  // ADDED: Beautiful location permission dialog - user MUST select location
+  // UPDATED: Removed "Don't Allow" button - location is mandatory now
+  Future<void> _showLocationPermissionDialog() async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false, // UPDATED: User cannot dismiss, must choose
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), // UPDATED: Better rounded corners
+          child: Padding(
+            padding: const EdgeInsets.all(24), // UPDATED: More padding for better look
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // UPDATED: Better icon design with gradient background
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.buttonPrimary.withOpacity(0.2),
+                        AppColors.buttonPrimary.withOpacity(0.05),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.my_location_rounded,
+                    size: 45,
+                    color: AppColors.buttonPrimary,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // UPDATED: Title with better styling
+                const Text(
+                  "Location Required",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // UPDATED: Clear description
+                Text(
+                  "Turn on location to auto-detect your pincode for faster signup.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey[700],
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // REMOVED: Don't Allow button - location is mandatory now
+                // TextButton(
+                // onPressed: () {
+                // Navigator.of(context).pop();
+                // setState(() => isLoadingPincode = false);
+                // },
+                // child: const Text("Don't Allow"),
+                // ),
+
+                // UPDATED: Button - Only This Time with better design
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(color: AppColors.buttonPrimary, width: 1.5),
+                    ),
+                    onPressed: () async {
+                      Navigator.of(dialogContext).pop(); // Close dialog
+                      await _getUserPincode(accuracy: LocationAccuracy.low); // FIXED: Now triggers location
+                    },
+                    child: Text(
+                      "Only This Time",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.buttonPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // UPDATED: Button - While Using App with gradient
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.buttonPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(dialogContext).pop(); // Close dialog
+                      await _getUserPincode(accuracy: LocationAccuracy.high); // FIXED: Now triggers location + turns on GPS if off
+                    },
+                    child: const Text(
+                      "Enable Location",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // UPDATED: Get user pincode + auto prompt to turn on GPS if it's OFF like Zepto
+  Future<void> _getUserPincode({required LocationAccuracy accuracy}) async {
+    setState(() => isLoadingPincode = true); // Start loading
+    try {
+      // 1. Check if location services are enabled on device
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+      // ADDED: If GPS is OFF, open Android's native "Turn on location?" popup
+      // This is the Zepto-style behavior - system dialog to enable GPS
+      if (!serviceEnabled) {
+        if (mounted) {
+          // ADDED: This triggers Android system popup: "Turn on device location?"
+          // User sees native dialog with "No thanks" and "OK" buttons
+          await Geolocator.openLocationSettings(); // Opens system location settings
+
+          // ADDED: Wait and check again if user enabled it
+          await Future.delayed(const Duration(milliseconds: 500));
+          serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+          // ADDED: If still OFF after popup, show our dialog again to force user
+          if (!serviceEnabled) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Location is required to detect pincode")),
+            );
+            await _showLocationPermissionDialog(); // Re-show our dialog
+            setState(() => isLoadingPincode = false);
+            return;
+          }
+        }
+      }
+
+      // 2. Check and request permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Location permission is required for signup")),
+            );
+            await _showLocationPermissionDialog(); // UPDATED: Re-show dialog if denied
+          }
+          setState(() => isLoadingPincode = false);
+          return;
+        }
+      }
+
+      // 3. If user permanently denied, open app settings
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("Please enable location from settings"),
+              action: SnackBarAction(
+                label: "Settings",
+                onPressed: () => Geolocator.openAppSettings(),
+              ),
+            ),
+          );
+        }
+        setState(() => isLoadingPincode = false);
+        return;
+      }
+
+      // 4. Get current GPS coordinates - this works now because GPS is ON
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: accuracy, // Use accuracy from dialog selection
+      );
+
+      // 5. Convert coordinates to address using reverse geocoding
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      // 6. Extract pincode from address and fill textfield
+      if (placemarks.isNotEmpty && mounted) {
+        String? pincode = placemarks.first.postalCode;
+        if (pincode!= null && pincode.isNotEmpty) {
+          setState(() {
+            _pincodeController.text = pincode;
+            isLoadingPincode = false;
+          });
+        } else {
+          setState(() => isLoadingPincode = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Could not detect pincode. Please enter manually.")),
+          );
+        }
+      }
+    } catch (e) {
+      print("Error getting pincode: $e");
+      if (mounted) {
+        setState(() => isLoadingPincode = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}")),
+        );
+      }
+    }
+  }
+
+  // COMMENTED OUT: Not needed anymore - removed district/taluk/village loading
+  // Future<void> _loadLocationData() async {
+  // final String jsonString =
+  // await rootBundle.loadString('assets/loadLocation_data.json');
+  // final Map<String, dynamic> locationData = json.decode(jsonString);
+  //
+  // talukasMap = Map.from(locationData['talukas']);
+  // villagesMap = Map.from(locationData['villages']);
+  //
+  // talukasMap.forEach((key, value) {
+  // value.sort((a, b) =>
+  // a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
+  // });
+  //
+  // villagesMap.forEach((key, value) {
+  // value.sort((a, b) =>
+  // a.toString().toLowerCase().compareTo(b.toString().toLowerCase()));
+  // });
+  //
+  // setState(() {
+  // districts =
+  // List<String>.from(locationData['districts']['Karnataka']?? []);
+  // districts.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+  // });
+  // }
 
   Future<void> _submitForm() async {
     setState(() => hasSubmitted = true);
@@ -85,9 +320,9 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
           body: jsonEncode({
             "phoneNumber": widget.phone,
             "fullName": _nameController.text.trim(),
-            "district": selectedDistrict,
-            "taluka": selectedTaluk,
-            "village": selectedVillage,
+            "district": "", // COMMENTED OUT - sending empty string
+            "taluka": "", // COMMENTED OUT - sending empty string
+            "village": "", // COMMENTED OUT - sending empty string
             "pincode": _pincodeController.text.trim(),
             "state": "Karnataka",
           }),
@@ -109,7 +344,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
             if (mounted) {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(tr("Sign_Up_Initiated_Successfully"))),
+                SnackBar(content: Text(tr("Sign_Up_Initiated_Successfully" ))),
               );
               Navigator.push(
                 context,
@@ -123,14 +358,14 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content:
-                Text(otpData["message"] ?? tr("Failed_to_generate_OTP")),
+                Text(otpData["message"]?? tr("Failed_to_generate_OTP")),
               ),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(data["message"] ?? tr("Registration_failed")),
+              content: Text(data["message"]?? tr("Registration_failed")),
             ),
           );
         }
@@ -222,111 +457,123 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                         ),
                         const SizedBox(height: 12),
 
-                        // District
-                        DropdownButtonFormField<String>(
-                          value: selectedDistrict,
-                          decoration: _dropdownDecoration(tr("district")),
-                          hint: Text(tr("Select_District"),style: TextStyle(color: Colors.black26),),
-                          items: districts.map((district) {
-                            return DropdownMenuItem(
-                              value: district,
-                              child: Text(district),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedDistrict = value;
-                              selectedTaluk = null;
-                              selectedVillage = null;
-                              taluks = value != null
-                                  ? List<String>.from(talukasMap[value] ?? [])
-                                  : [];
-                              villagesList = [];
-                            });
-                          },
-                          validator: (value) =>
-                          value == null ? tr("Please_select_a_district") : null,
-                        ),
-                        const SizedBox(height: 12),
+                        // District - COMMENTED OUT
+                        // DropdownButtonFormField<String>(
+                        // value: selectedDistrict,
+                        // decoration: _dropdownDecoration(tr("district")),
+                        // hint: Text(tr("Select_District"),style: TextStyle(color: Colors.black26),),
+                        // items: districts.map((district) {
+                        // return DropdownMenuItem(
+                        // value: district,
+                        // child: Text(district),
+                        // );
+                        // }).toList(),
+                        // onChanged: (value) {
+                        // setState(() {
+                        // selectedDistrict = value;
+                        // selectedTaluk = null;
+                        // selectedVillage = null;
+                        // taluks = value!= null
+                        //? List<String>.from(talukasMap[value]?? [])
+                        // : [];
+                        // villagesList = [];
+                        // });
+                        // },
+                        // validator: (value) =>
+                        // value == null? tr("Please_select_a_district") : null,
+                        // ),
+                        // const SizedBox(height: 12),
 
-                        // Taluk
-                        if (selectedDistrict != null)...[
-                          DropdownButtonFormField<String>(
-                            value: selectedTaluk,
-                            isExpanded: true,
-                            decoration: _dropdownDecoration(tr("taluka")),
-                            hint: Text(tr("Select_Taluka",),style: TextStyle(color: Colors.black26),),
-                            items: taluks.map((taluk) {
-                              return DropdownMenuItem<String>(
-                                value: taluk,
-                                child: Text(
-                                  taluk,
-                                  overflow: TextOverflow.ellipsis,
+                        // Taluk - COMMENTED OUT
+                        // if (selectedDistrict!= null)...[
+                        // DropdownButtonFormField<String>(
+                        // value: selectedTaluk,
+                        // isExpanded: true,
+                        // decoration: _dropdownDecoration(tr("taluka")),
+                        // hint: Text(tr("Select_Taluka",),style: TextStyle(color: Colors.black26),),
+                        // items: taluks.map((taluk) {
+                        // return DropdownMenuItem<String>(
+                        // value: taluk,
+                        // child: Text(
+                        // taluk,
+                        // overflow: TextOverflow.ellipsis,
+                        // ),
+                        // );
+                        // }).toList(),
+                        // onChanged: (value) {
+                        // setState(() {
+                        // selectedTaluk = value;
+                        // selectedVillage = null;
+                        // villagesList = value!= null
+                        //? List<String>.from(villagesMap[value]?? [])
+                        // : [];
+                        // });
+                        // },
+                        // validator: (value) =>
+                        // value == null? tr("Please_select_a_taluka") : null,
+                        // ),
+                        // const SizedBox(height: 12),
+                        // ],
+
+                        // Village - COMMENTED OUT
+                        // if (selectedTaluk!= null)...[
+                        // DropdownButtonFormField<String>(
+                        // value: selectedVillage,
+                        // isExpanded: true,
+                        // decoration: _dropdownDecoration(tr("village")),
+                        // hint: Text(tr("Select_Village"),style: TextStyle(color: Colors.black26),),
+                        //
+                        // items: villagesList.map((village) {
+                        // return DropdownMenuItem<String>(
+                        // value: village,
+                        // child: Text(
+                        // village,
+                        // overflow: TextOverflow.ellipsis,
+                        // ),
+                        // );
+                        // }).toList(),
+                        // onChanged: (value) {
+                        // setState(() {
+                        // selectedVillage = value;
+                        // });
+                        // },
+                        // validator: (value) =>
+                        // value == null? tr("Please_select_a_village") : null,
+                        // ),
+                        // const SizedBox(height: 12),
+                        // ],
+
+                        // Pincode - AUTO-FILLED FROM GPS
+                        Stack(
+                          alignment: Alignment.centerRight,
+                          children: [
+                            CustomTextField(
+                              controller: _pincodeController,
+                              fieldType: TextFieldType.pinCode,
+                              keyboardType: TextInputType.number,
+                              label: tr("pincode"),
+                              hint: isLoadingPincode? "Fetching location..." : "Eg: 568038",
+                              readOnly: isLoadingPincode,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return tr("please_enter_pincode");
+                                }
+                                if (value.length!= 6) {
+                                  return tr("pincode_must_be_6_digits");
+                                }
+                                return null;
+                              },
+                            ),
+                            if (isLoadingPincode)
+                              const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
                                 ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedTaluk = value;
-                                selectedVillage = null;
-                                villagesList = value != null
-                                    ? List<String>.from(villagesMap[value] ?? [])
-                                    : [];
-                              });
-                            },
-                            validator: (value) =>
-                            value == null ? tr("Please_select_a_taluka") : null,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-
-
-                        // Village
-                        if (selectedTaluk != null)...[
-                          DropdownButtonFormField<String>(
-                            value: selectedVillage,
-                            isExpanded: true,
-                            decoration: _dropdownDecoration(tr("village")),
-                            hint: Text(tr("Select_Village"),style: TextStyle(color: Colors.black26),),
-
-                            items: villagesList.map((village) {
-                              return DropdownMenuItem<String>(
-                                value: village,
-                                child: Text(
-                                  village,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedVillage = value;
-                              });
-                            },
-                            validator: (value) =>
-                            value == null ? tr("Please_select_a_village") : null,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-
-
-
-                        // Pincode
-                        CustomTextField(
-                          controller: _pincodeController,
-                          fieldType: TextFieldType.pinCode,
-                          keyboardType: TextInputType.number,
-                          label: tr("pincode"),
-                          hint: "Eg: 568038",
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return tr("please_enter_pincode");
-                            }
-                            if (value.length != 6) {
-                              return tr("pincode_must_be_6_digits");
-                            }
-                            return null;
-                          },
+                              ),
+                          ],
                         ),
                         const SizedBox(height: 80), // extra space above button
                       ],
@@ -334,7 +581,6 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                   ),
                 ),
               ),
-
 
               Padding(
                 padding: const EdgeInsets.only(bottom: 40.0),
@@ -352,7 +598,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: isSubmitting ? null : _submitForm,
+                          onPressed: isSubmitting || isLoadingPincode? null : _submitForm,
                           child: isSubmitting
                               ? const SizedBox(
                             height: 22,
@@ -361,7 +607,7 @@ class _SignupBottomSheetState extends State<SignupBottomSheet> {
                           )
                               : Text(tr("submit")),
                         ),
-                        //  Terms
+                        // Terms
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text.rich(

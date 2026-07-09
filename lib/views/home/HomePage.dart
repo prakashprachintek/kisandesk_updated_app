@@ -67,10 +67,10 @@ class _CategoryCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 200,
+        margin: EdgeInsets.symmetric(horizontal: 8), // reduces width a bit
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: [Colors.white, Color(0xFFC8E6C9)]),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(15), // Card still 15
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
@@ -85,33 +85,35 @@ class _CategoryCard extends StatelessWidget {
           children: [
             // top image
             Expanded(
-              flex: 7,
+              flex: 5,
               child: Padding(
-                padding: const EdgeInsets.all(2.0),
+                padding: const EdgeInsets.all(4.0),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(10), // <-- CHANGED: Was 15. Now 8 = less round edge like your screenshot
                   child: Image.asset(
                     imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    height: double.infinity,
+                    height: 60
+                    , // smaller image
                   ),
                 ),
               ),
             ),
-            // label
+            // label - CENTERED
             Expanded(
-              flex: 3,
+              flex: 2,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                alignment: Alignment.center, // <-- KEPT CENTER
                 child: Text(
                   label,
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 14,
+                    fontSize: 12, // smaller
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
@@ -121,7 +123,6 @@ class _CategoryCard extends StatelessWidget {
     );
   }
 }
-
 /// A small item model for "Deals"/"Recommended"
 class _SimpleItem {
   final String title;
@@ -1209,9 +1210,9 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          // 0) Mandi Rates Carousel
-                          _buildMandiRatesCarousel(),
-                          SizedBox(height: 16),
+                          // // 0) Mandi Rates Carousel
+                          // _buildMandiRatesCarousel(),
+                          // SizedBox(height: 16),
 
                           // 1) Carousel
                           _buildCarouselSlideshow(),
@@ -1624,8 +1625,8 @@ class _HomePageState extends State<HomePage> {
       'assets/doctorsnew.png',
       //'assets/loan.webp',
       //'assets/govtschemes.png',
-      "assets/FPO.webp",
-      "assets/credit.webp"
+     // "assets/FPO.webp",
+      //"assets/credit.webp"
     ];
     final List<String> labels = [
       tr('Fertilizers'),
@@ -1635,30 +1636,35 @@ class _HomePageState extends State<HomePage> {
       tr('Doctors'),
       //tr('Loan/Insurance'),
       //tr('Govt Schemes'),
-      tr("FPO"),
-      tr("Credit"),
+      //tr("FPO"),
+     // tr("Credit"),
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: 6,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 14.0,
-        mainAxisSpacing: 18.0,
-        childAspectRatio: 0.9,
-      ),
-      itemBuilder: (context, index) {
-        return _CategoryCard(
-          imageUrl: imagePaths[index],
-          label: labels[index],
-          onTap: () => _handleCategoryTap(index),
+    return LayoutBuilder( // <-- ADDED: to get screen width
+      builder: (context, constraints) {
+        double cardWidth = (constraints.maxWidth - 20 - 10) / 2; // screen - padding - spacing / 2
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: 4,
+          padding: const EdgeInsets.symmetric(horizontal: 10), // <-- CHANGED: 10 each side
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10.0,
+            mainAxisSpacing: 10.0,
+            childAspectRatio: cardWidth / (cardWidth * 0.75), // <-- KEY: Height = 75% of width. This keeps ratio same on all phones
+          ),
+          itemBuilder: (context, index) {
+            return _CategoryCard(
+              imageUrl: imagePaths[index],
+              label: labels[index],
+              onTap: () => _handleCategoryTap(index),
+            );
+          },
         );
       },
     );
   }
-
   /// -----------------------------------------
   /// "Deals of the Day" horizontal slider
   Widget _buildDealsOfDay() {
@@ -1742,8 +1748,8 @@ class _HomePageState extends State<HomePage> {
     2: {'page': MachineryRentPage(), 'key': 'machinery'},
     //2: {'page': FertilizerListScreen(), 'key': ''},
     3: {'page': DoctorPage(), 'key': 'doctors'},
-    4: {'page': FPOPage(), 'key': 'fpos'},
-    5: {'page': ComingSoonPage(), 'key': 'credit'},
+  //  4: {'page': FPOPage(), 'key': 'fpos'},
+   // 5: {'page': ComingSoonPage(), 'key': 'credit'},
   };
   void _showMaintenancePopup(BuildContext context) {
     showGeneralDialog(
